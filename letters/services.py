@@ -9,6 +9,7 @@ from arsip import services as arsip
 from audit import services as audit
 from config.numbering import next_number
 from notifications import services as notify
+from pengaturan import aturan
 from workflow import services as workflow
 from workflow.models import TaskSource, TaskStatus
 
@@ -71,6 +72,8 @@ def create_disposition(user, letter, *, parent=None, **fields):
         raise PermissionDenied
     if parent and parent.to_user_id != user.pk:
         raise PermissionDenied
+    aturan.cek_penerima(user, pengguna=fields.get("to_user"), unit=fields.get("to_unit"),
+                        field_pengguna="to_user", field_unit="to_unit")
     disp = Disposition(letter=letter, from_user=user, parent=parent, **fields)
     if disp.requires_action and not disp.due_date:
         raise ValidationError({"due_date": "Disposisi yang memerlukan tindakan wajib memiliki tenggat."})

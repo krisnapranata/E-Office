@@ -1,7 +1,8 @@
 from django import forms
 
-from accounts.models import OrganizationUnit, User
 from accounts.files import validate_upload
+from accounts.models import OrganizationUnit, User
+from pengaturan import aturan
 
 from .models import Priority, Task, TaskSource, TaskStatus
 from .services import PROGRESS_STATUSES
@@ -17,12 +18,16 @@ class DirectTaskForm(forms.ModelForm):
                   "completion_criteria", "requires_evidence", "requires_verification"]
         widgets = {"start_date": DATE, "due_date": DATE}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, pemberi=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["source_note"].required = True
         self.fields["due_date"].required = True
+        # aturan "tugas hanya ke bawahan": unit & PIC disaring; kolaborator tetap lintas unit
         self.fields["unit"].queryset = OrganizationUnit.objects.filter(is_active=True)
         self.fields["pic"].queryset = User.objects.filter(is_active=True)
+        aturan.saring_field(self.fields["unit"], pemberi, "unit")
+        aturan.saring_field(self.fields["pic"], pemberi)
+        self.fields["collaborators"].queryset = User.objects.filter(is_active=True)
 
 
 class ProgressForm(forms.Form):
@@ -52,6 +57,10 @@ class ReassignForm(forms.Form):
                                  required=False)
     due_date = forms.DateField(label="Tenggat baru", widget=DATE, required=False)
     reason = forms.CharField(label="Alasan perubahan", widget=forms.Textarea(attrs={"rows": 2}))
+
+    def __init__(self, *args, pemberi=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        aturan.saring_field(self.fields["pic"], pemberi)
 
 
 class ReasonForm(forms.Form):

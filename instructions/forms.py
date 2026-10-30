@@ -1,6 +1,7 @@
 from django import forms
 
 from accounts.models import OrganizationUnit, User
+from pengaturan import aturan
 
 from .models import Instruction
 
@@ -25,3 +26,9 @@ class InstructionForm(forms.ModelForm):
 class TargetForm(forms.Form):
     unit = forms.ModelChoiceField(queryset=OrganizationUnit.objects.filter(is_active=True))
     pic = forms.ModelChoiceField(label="PIC", queryset=User.objects.filter(is_active=True))
+
+    def __init__(self, *args, pemberi=None, **kwargs):
+        """`pemberi` = pemberi instruksi (pihak atas nama), untuk aturan "tugas hanya ke bawahan"."""
+        super().__init__(*args, **kwargs)
+        aturan.saring_field(self.fields["unit"], pemberi, "unit")
+        aturan.saring_field(self.fields["pic"], pemberi)

@@ -59,7 +59,7 @@ def incoming_detail(request, pk):
         request.user, letter.dispositions.select_related("from_user", "to_user", "to_unit"))
     form = None
     if can_dispose(request.user):
-        form = DispositionForm(initial={"to_unit": None})
+        form = DispositionForm(initial={"to_unit": None}, pemberi=request.user)
     return render(request, "letters/incoming_detail.html", {
         "letter": letter, "dispositions": dispositions, "form": form})
 
@@ -72,7 +72,7 @@ def disposition_create(request, pk):
     if request.GET.get("parent") or request.POST.get("parent"):
         parent = get_object_or_404(Disposition, pk=request.GET.get("parent") or request.POST["parent"],
                                    letter=letter)
-    form = DispositionForm(request.POST or None)
+    form = DispositionForm(request.POST or None, pemberi=request.user)
     if request.method == "POST" and form.is_valid():
         try:
             disp = services.create_disposition(request.user, letter, parent=parent,

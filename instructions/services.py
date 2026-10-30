@@ -8,6 +8,7 @@ from arsip import services as arsip
 from audit import services as audit
 from config.numbering import next_number
 from notifications import services as notify
+from pengaturan import aturan
 from workflow import services as workflow
 from workflow.models import Task, TaskSource
 
@@ -56,6 +57,12 @@ def issue(instruction, user):
     targets = list(instruction.targets.select_related("unit", "pic"))
     if not targets:
         raise ValidationError("Tentukan minimal satu penerima (unit dan PIC).")
+    for t in targets:                    # pemberi = pimpinan "atas nama", bukan sekretaris yang mencatat
+        try:
+            aturan.cek_penerima(instruction.issuer, pengguna=t.pic, unit=t.unit)
+        except ValidationError:
+            raise ValidationError(f"Penerima {t.pic} ({t.unit.code}) di luar unit pemberi instruksi; aturan "
+                                  "\"tugas hanya ke bawahan\" aktif. Hapus penerima itu atau minta Direktur menerbitkan.")
     instruction.status = Instruction.Status.DITERBITKAN
     instruction.issued_at = timezone.now()
     instruction.save()

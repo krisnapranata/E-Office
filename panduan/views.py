@@ -21,7 +21,20 @@ def _konteks_aturan():
         "penerbit_instruksi": ", ".join(label.get(r, r) for r in cfg["INSTRUCTION_ISSUER_ROLES"]),
         "hari_agenda": " dan ".join("hari-H" if d == 0 else f"H-{d}" for d in cfg.get("AGENDA_REMINDER_DAYS", [1, 0])),
         "tahun_retensi": cfg.get("RETENTION_YEARS", {}).get("DEFAULT", 5),
+        **_aturan_ke_bawah(),
     }
+
+
+def _aturan_ke_bawah():
+    from pengaturan import aturan
+
+    if aturan.aktif():
+        return {"aturan_ke_bawah": "aktif", "aturan_ke_bawah_arti":
+                "Wakil Direktur dan Kepala Unit hanya dapat memilih pegawai di unit sendiri dan sub-unitnya sebagai "
+                "penerima tugas, disposisi, dan instruksi; pilihan lain tidak muncul di formulir."}
+    return {"aturan_ke_bawah": "tidak aktif", "aturan_ke_bawah_arti":
+            "Formulir menampilkan semua pegawai aktif; berikan tugas kepada bawahan di unit/bidang Anda sesuai "
+            "kebijakan rumah sakit."}
 
 
 # Urutan kolom matriks = urutan organisasi
@@ -40,18 +53,27 @@ def _matriks_wewenang():
     def u(r):
         return User(role=r)
 
+    from pengaturan import aturan
+
     pimpinan = {Role.WADIR, Role.KEPALA_UNIT}
+    ke_bawah = aturan.aktif()
+
+    def ke_bawah_saja(r, boleh):
+        if not boleh:
+            return ("tidak", "")
+        return ("syarat", "hanya ke unit & sub-unitnya") if ke_bawah and r in aturan.PERAN_TERBATAS else ("ya", "")
+
     baris = []
 
     def tambah(tindakan, fn):
         baris.append((tindakan, [fn(r) for r in PERAN_MATRIKS]))
 
-    tambah("Memberi penugasan langsung", lambda r: ("ya", "") if can_assign_task(u(r)) else ("tidak", ""))
+    tambah("Memberi penugasan langsung", lambda r: ke_bawah_saja(r, can_assign_task(u(r))))
     tambah("Menerbitkan instruksi", lambda r: (
-        ("syarat", "atas nama pimpinan") if r == Role.SEKRETARIS else ("ya", "")) if can_issue_instruction(u(r))
-        else ("tidak", ""))
+        ("syarat", "atas nama pimpinan") if r == Role.SEKRETARIS else ke_bawah_saja(r, True))
+        if can_issue_instruction(u(r)) else ("tidak", ""))
     tambah("Mencatat surat masuk/keluar", lambda r: ("ya", "") if can_register_letter(u(r)) else ("tidak", ""))
-    tambah("Membuat disposisi", lambda r: ("ya", "") if can_dispose(u(r)) else ("tidak", ""))
+    tambah("Membuat disposisi", lambda r: ke_bawah_saja(r, can_dispose(u(r))))
     tambah("Meneruskan disposisi", lambda r: ("syarat", "bila ia penerimanya") if can_dispose(u(r)) else ("tidak", ""))
     tambah("Membuat agenda/rapat", lambda r: ("ya", "") if can_create_event(u(r)) else ("tidak", ""))
     tambah("Menyetujui notulen", lambda r: ("syarat", "bila pimpinan rapat") if can_create_event(u(r)) else ("tidak", ""))
@@ -111,7 +133,7 @@ def bangun(user):
             "jalur": [(i, n, _isi(m, nilai), k, p, v, c) for i, n, m, k, p, v, c in konten.JALUR_TUGAS],
             "pantau": [(p, _isi(a, nilai), b, _isi(c, nilai)) for p, a, b, c in konten.PANTAU_TUGAS],
             "contoh": [(siapa, _isi(t, nilai)) for siapa, t in konten.CONTOH_ALUR],
-            "catatan": konten.CATATAN_ALUR,
+            "catatan": [_isi(c, nilai) for c in konten.CATATAN_ALUR],
             "matriks": _matriks_wewenang(),
         },
         "modul": [{"no": m["no"], "nama": m["nama"], "ikon": m["ikon"], "url": reverse(m["url"]),

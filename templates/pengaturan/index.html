@@ -3,11 +3,33 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <div><h1 class="h3 mb-1">Pengaturan Aplikasi</h1>
-    <span class="text-muted small">Mode tersimpan di database: tidak berubah saat aplikasi diperbarui atau dibangun ulang.</span></div>
+    <span class="text-muted small">Pengaturan tersimpan di database: tidak berubah saat aplikasi diperbarui atau dibangun ulang.</span></div>
   <span class="badge fs-6 {% if p.is_demo %}text-bg-warning{% else %}text-bg-success{% endif %}">{{ p.get_mode_display }}</span>
 </div>
 <div class="row g-4">
   <div class="col-lg-7">
+    <section class="card mb-4" id="aturan-penugasan"><div class="card-header d-flex justify-content-between align-items-center">
+      <span><i class="bi bi-diagram-2 me-2" aria-hidden="true"></i>Aturan penugasan: tugas hanya ke bawahan</span>
+      <span class="badge {% if p.tugas_hanya_ke_bawah %}text-bg-success{% else %}text-bg-secondary{% endif %}">{% if p.tugas_hanya_ke_bawah %}Aktif{% else %}Tidak aktif{% endif %}</span></div>
+      <div class="card-body">
+        <p class="small mb-2">Bila <b>aktif</b>, Wakil Direktur dan Kepala Unit hanya dapat memilih pegawai di <b>unit sendiri dan sub-unitnya</b> sebagai penerima:</p>
+        <ul class="small mb-2">
+          <li>penugasan langsung (PIC) dan saat <i>ubah penanggung jawab</i>,</li>
+          <li>disposisi dan terusan disposisi (penerima dan unit),</li>
+          <li>instruksi (dihitung dari pimpinan pemberi instruksi, termasuk yang dicatat sekretaris <i>atas nama</i>).</li>
+        </ul>
+        <p class="small text-muted">Tetap bebas: <b>Direktur</b> (boleh ke siapa saja), <b>kolaborator</b> lintas unit, dan PIC <b>keputusan rapat</b>. Pilihan di formulir ikut disaring, dan server menolak bila dipaksa. Tugas yang sudah ada tidak berubah.</p>
+        <form method="post" action="{% url 'pengaturan:aturan' %}" class="d-flex flex-wrap gap-3 align-items-center">{% csrf_token %}
+          <span class="small">Saat ini: <b>{% if p.tugas_hanya_ke_bawah %}Aktif{% else %}Tidak aktif, semua pegawai dapat dipilih{% endif %}</b></span>
+          {% if p.tugas_hanya_ke_bawah %}
+          <input type="hidden" name="aktif" value="0"><button class="btn btn-outline-secondary btn-sm" data-confirm="Nonaktifkan aturan? Semua pegawai aktif dapat dipilih lagi sebagai penerima tugas.">Nonaktifkan aturan</button>
+          {% else %}
+          <input type="hidden" name="aktif" value="1"><button class="btn btn-primary btn-sm" data-confirm="Aktifkan aturan? Wakil Direktur dan Kepala Unit hanya dapat menugaskan pegawai di unit sendiri dan sub-unitnya.">Aktifkan aturan</button>
+          {% endif %}
+        </form>
+      </div>
+    </section>
+
     <section class="card mb-4"><div class="card-header"><i class="bi bi-database me-2" aria-hidden="true"></i>Data demo saat ini</div>
       <div class="table-responsive"><table class="table table-sm mb-0">
         <tbody>{% for k, v in ringkasan.items %}<tr><th class="fw-normal text-capitalize">{{ k }}</th><td class="text-end fw-semibold">{{ v }}</td></tr>{% endfor %}</tbody>
@@ -47,6 +69,7 @@
     <section class="card mb-4"><div class="card-header">Status</div><div class="card-body">
       <dl class="row mb-0 small">
         <dt class="col-5">Mode</dt><dd class="col-7">{{ p.get_mode_display }}</dd>
+        <dt class="col-5">Tugas hanya ke bawahan</dt><dd class="col-7">{% if p.tugas_hanya_ke_bawah %}Aktif{% else %}Tidak aktif{% endif %}</dd>
         <dt class="col-5">Direset pada</dt><dd class="col-7">{{ p.direset_pada|date:"d-m-Y H:i"|default:"–" }}</dd>
         <dt class="col-5">Direset oleh</dt><dd class="col-7">{{ p.direset_oleh|default:"–" }}</dd>
       </dl></div></section>

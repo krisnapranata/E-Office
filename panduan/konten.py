@@ -176,9 +176,9 @@ CATATAN_ALUR = [
     "Direktur. Direktur menerima eskalasi bila ia atasan langsung PIC (mis. PIC-nya Kepala Unit/Wakil Direktur).",
     "<b>Nama pemberi tugas</b> selalu tampil: di Beranda, di bawah judul tugas (<i>Diberikan oleh</i>), dan di daftar "
     "tugas. Untuk instruksi yang dicatat sekretaris, yang tampil adalah pimpinan yang memberi instruksi.",
-    "<b>Kebijakan penerima tugas:</b> berikan tugas kepada bawahan di unit/bidang Anda. Untuk pekerjaan lintas unit, "
-    "jadikan orang unit lain sebagai <b>kolaborator</b> atau minta melalui atasan bersama. (Formulir saat ini "
-    "menampilkan semua pegawai aktif; disiplin ini dijaga oleh kebijakan rumah sakit.)",
+    "<b>Aturan \"tugas hanya ke bawahan\": {aturan_ke_bawah}.</b> {aturan_ke_bawah_arti} Untuk pekerjaan lintas unit, "
+    "jadikan orang unit lain sebagai <b>kolaborator</b> atau minta melalui atasan bersama. Aturan ini diatur "
+    "Administrator di menu <b>Pengaturan Aplikasi</b>.",
     "Tugas berklasifikasi <b>Rahasia</b> hanya terlihat oleh pihak yang terlibat dan Direktur, tidak oleh atasan unit "
     "maupun Auditor.",
 ]
@@ -611,6 +611,9 @@ FAQ = [
      "Ya. Direktur melihat semua tugas: di menu Tugas, Ringkasan tugas, Laporan, dan otomatis di <i>Perlu dikejar</i> "
      "bila terlambat atau terhambat. Direktur tidak mendapat notifikasi untuk setiap tugas baru, dan yang memeriksa "
      "hasilnya tetap Kepala Unit."),
+    ("Bisakah Kepala Unit memberi tugas ke pegawai unit lain?",
+     "Bergantung pada aturan \"tugas hanya ke bawahan\" (saat ini: <b>{aturan_ke_bawah}</b>). {aturan_ke_bawah_arti} "
+     "Direktur selalu boleh menugaskan siapa saja; kolaborator boleh dari unit mana pun."),
     ("Tugas saya terlambat. Siapa yang diberi tahu?",
      "Anda (saat tenggat lewat), lalu atasan langsung Anda bila terlambat ≥ {hari_eskalasi} hari. Tugas terlambat juga "
      "tampil di Beranda pemberi tugas dan Direktur."),

@@ -10,3 +10,4 @@ Setiap baris = satu file rencana (tidak pernah diubah).
 - [2026-10-30-rencana-e2e-v6.md](2026-10-30-rencana-e2e-v6.md) — 50 skenario, rute tercakup 89/89 (tampilan sederhana: menu per peran, Notifikasi pindah ke lonceng)
 - [2026-10-30-rencana-e2e-v7.md](2026-10-30-rencana-e2e-v7.md) — 51 skenario, rute tercakup 90/90 (Beranda pimpinan, Beri arahan, pratinjau berkas, grafik Laporan)
 - [2026-10-30-rencana-e2e-v8.md](2026-10-30-rencana-e2e-v8.md) — 51 skenario, rute tercakup 90/90 (pemberi tugas tampil di Beranda, detail, daftar)
+- [2026-10-30-rencana-e2e-v9.md](2026-10-30-rencana-e2e-v9.md) — 52 skenario, rute tercakup 91/91 (Pengaturan: aturan tugas hanya ke bawahan)

@@ -5,9 +5,10 @@ from django.utils import timezone
 
 from audit import services as audit
 from notifications import services as notify
+from pengaturan import aturan
 
 from .access import can_manage_task, can_report_progress, can_verify
-from .models import Task, TaskEvidence, TaskStatus, TaskUpdate, TaskVerification
+from .models import Task, TaskEvidence, TaskSource, TaskStatus, TaskUpdate, TaskVerification
 
 S = TaskStatus
 
@@ -74,6 +75,8 @@ def create_task(*, created_by, issue=True, collaborators=(), **fields):
     fields.setdefault("verifier", created_by)
     task = Task(created_by=created_by, **fields)
     validate_task(task)
+    if task.source_type == TaskSource.LANGSUNG:          # sumber lain dicek di disposisi/instruksi asalnya
+        aturan.cek_penerima(created_by, pengguna=task.pic, unit=task.unit)
     task.save()
     if collaborators:
         task.collaborators.set(collaborators)
@@ -208,6 +211,7 @@ def reassign(task, user, *, pic=None, due_date=None, reason):
         raise ValidationError({"reason": "Alasan perubahan wajib diisi."})
     changes = {}
     if pic and pic.pk != task.pic_id:
+        aturan.cek_penerima(user, pengguna=pic)
         changes["pic"] = (task.pic, pic)
         task.pic = pic
     if due_date and due_date != task.due_date:

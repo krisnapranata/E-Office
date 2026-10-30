@@ -1,6 +1,7 @@
 from django import forms
 
 from accounts.models import OrganizationUnit, User
+from pengaturan import aturan
 
 from .models import Disposition, IncomingLetter, OutgoingLetter
 
@@ -28,10 +29,12 @@ class DispositionForm(forms.ModelForm):
         fields = ["to_user", "to_unit", "directive", "priority", "due_date", "requires_action"]
         widgets = {"due_date": DATE, "directive": forms.Textarea(attrs={"rows": 3})}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, pemberi=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["to_user"].queryset = User.objects.filter(is_active=True)
         self.fields["to_unit"].queryset = OrganizationUnit.objects.filter(is_active=True)
+        aturan.saring_field(self.fields["to_user"], pemberi)
+        aturan.saring_field(self.fields["to_unit"], pemberi, "unit")
 
 
 class LetterFilterForm(forms.Form):

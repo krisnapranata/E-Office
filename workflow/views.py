@@ -80,7 +80,7 @@ TAB_TUGAS = [
 @login_required
 def task_create(request):
     require(can_assign_task(request.user))
-    form = DirectTaskForm(request.POST or None)
+    form = DirectTaskForm(request.POST or None, pemberi=request.user)
     if request.method == "POST" and form.is_valid():
         data = form.cleaned_data
         collaborators = data.pop("collaborators")
@@ -127,7 +127,7 @@ def task_detail(request, pk):
                                                "status": TaskStatus.BERJALAN}),
         "evidence_form": EvidenceForm(),
         "verify_form": VerifyForm(),
-        "reassign_form": ReassignForm(initial={"pic": task.pic, "due_date": task.due_date}),
+        "reassign_form": ReassignForm(initial={"pic": task.pic, "due_date": task.due_date}, pemberi=user),
         "reason_form": ReasonForm(),
         "statuses": TaskStatus,
     }
@@ -248,7 +248,7 @@ def task_verify(request, pk):
 @require_POST
 def task_reassign(request, pk):
     def run(task):
-        form = ReassignForm(request.POST)
+        form = ReassignForm(request.POST, pemberi=request.user)
         if not form.is_valid():
             raise ValidationError([v[0] for v in form.errors.values()])
         services.reassign(task, request.user, **form.cleaned_data)

@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from accounts.files import respons_berkas
+from pengaturan.aturan import lingkup as lingkup_aturan
 from accounts.permissions import can_issue_instruction, require
 from arsip import services as arsip_services
 from audit import services as audit
@@ -71,7 +72,7 @@ def instruction_detail(request, pk):
         "targets": ins.targets.select_related("unit", "pic"),
         "tasks": ins.tasks.select_related("pic", "unit"),
         "editable": editable,
-        "target_form": TargetForm() if editable else None,
+        "target_form": TargetForm(pemberi=ins.issuer) if editable else None,
         "can_cancel": ins.status != Instruction.Status.DIBATALKAN and (
             request.user.pk in (ins.created_by_id, ins.on_behalf_of_id)
             or request.user.role == "DIREKTUR"),
@@ -83,9 +84,12 @@ def instruction_detail(request, pk):
 def target_add(request, pk):
     ins = _get(request, pk)
     require(services.can_edit_instruction(request.user, ins))
-    form = TargetForm(request.POST)
+    form = TargetForm(request.POST, pemberi=ins.issuer)
     if form.is_valid():
         InstructionTarget.objects.get_or_create(instruction=ins, **form.cleaned_data)
+    elif lingkup_aturan(ins.issuer) is not None and request.POST.get("pic") and request.POST.get("unit"):
+        messages.error(request, "Aturan \"tugas hanya ke bawahan\" aktif: penerima harus di unit pemberi instruksi "
+                                "atau sub-unitnya.")
     else:
         messages.error(request, "Unit dan PIC wajib dipilih.")
     return redirect("instructions:detail", ins.pk)

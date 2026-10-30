@@ -29,3 +29,32 @@ def _(u):
     u.get(url("dashboard:home"), tidak_ada=["MODE DEMO"])
     u.post(url("pengaturan:demo"), harap=200, follow=True, ada=["Mode Demo aktif", "MODE DEMO"])
     u.harap(User.objects.filter(username="demo_dimas.aditya").exists(), "demo tidak dimuat ulang")
+
+
+@skenario("pengaturan", "Aturan \"tugas hanya ke bawahan\": admin mengaktifkan → Kepala IGD tidak bisa menugaskan staf Farmasi → nonaktif lagi",
+          crud=True, role="ka_igd", menu=["pengaturan:aturan", "workflow:create"])
+def _(u):
+    from audit.models import AuditLog
+    from ._bantu import JUDUL_QA, hari
+
+    w = u.w
+    data = lambda judul, pic: {"title": f"{JUDUL_QA} {judul}", "source_note": "QA", "unit": w.igd.pk, "pic": pic.pk,
+                               "priority": "SEDANG", "classification": "BIASA", "due_date": hari(5)}
+    u.post(url("pengaturan:aturan"), {"aktif": "1"}, harap=403)                     # bukan admin
+    u.harap(not PengaturanAplikasi.ambil().tugas_hanya_ke_bawah, "non-admin mengubah aturan")
+    u.get(url("workflow:create"), ada=[w.staf_farmasi.get_full_name() or w.staf_farmasi.username])   # nonaktif: semua tampil
+    w.admin = user(Role.ADMIN, unit=w.dir_unit, username="qa_admin2")
+    u.sebagai("admin")
+    u.get(url("pengaturan:index"), ada=["Aturan penugasan", "Tidak aktif"])
+    u.post(url("pengaturan:aturan"), {"aktif": "1"}, harap=200, follow=True, ada=["AKTIF"])
+    u.harap(PengaturanAplikasi.ambil().tugas_hanya_ke_bawah, "aturan tidak aktif")
+    u.harap(AuditLog.objects.filter(action="app.aturan.ke_bawah").exists(), "perubahan aturan tidak diaudit")
+    u.sebagai("ka_igd")
+    u.post(url("workflow:create"), data("Lintas unit", w.staf_farmasi), harap=200, ada=["tugas hanya ke bawahan"])
+    u.harap(not Task.objects.filter(title=f"{JUDUL_QA} Lintas unit").exists(), "tugas lintas unit tetap dibuat")
+    u.post(url("workflow:create"), data("Bawahan sendiri", w.staf_igd), harap=302)
+    u.sebagai("direktur")
+    u.post(url("workflow:create"), data("Direktur bebas", w.staf_farmasi), harap=302)
+    u.sebagai("admin")
+    u.post(url("pengaturan:aturan"), {"aktif": "0"}, harap=302)
+    u.harap(not PengaturanAplikasi.ambil().tugas_hanya_ke_bawah, "aturan tidak kembali nonaktif")
