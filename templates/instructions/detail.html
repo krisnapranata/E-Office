@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ ins.code }}{% endblock %}
+{% block content %}
+<h1 class="h3">{{ ins.code }} — {{ ins.title }} <span class="badge text-bg-secondary">{{ ins.get_status_display }}</span></h1>
+<div class="row g-4"><div class="col-lg-7">
+<div class="card mb-4"><div class="card-body"><dl class="row mb-0">
+  <dt class="col-sm-4">Tanggal</dt><dd class="col-sm-8">{{ ins.instruction_date|date:"d-m-Y" }}</dd>
+  <dt class="col-sm-4">Pemberi instruksi</dt><dd class="col-sm-8">{{ ins.issuer }}{% if ins.on_behalf_of %} (dicatat oleh {{ ins.created_by }}){% endif %}</dd>
+  <dt class="col-sm-4">Prioritas / Tenggat</dt><dd class="col-sm-8">{{ ins.get_priority_display }} / {{ ins.due_date|date:"d-m-Y"|default:"–" }}</dd>
+  <dt class="col-sm-4">Klasifikasi</dt><dd class="col-sm-8">{{ ins.get_classification_display }}</dd>
+  <dt class="col-sm-4">Uraian</dt><dd class="col-sm-8">{{ ins.description|linebreaksbr }}</dd>
+  <dt class="col-sm-4">Kriteria selesai</dt><dd class="col-sm-8">{{ ins.completion_criteria|linebreaksbr|default:"–" }}</dd>
+  <dt class="col-sm-4">Bukti / verifikasi</dt><dd class="col-sm-8">{{ ins.requires_evidence|yesno:"Wajib,Tidak wajib" }} / {{ ins.requires_verification|yesno:"Wajib,Tidak wajib" }}</dd>
+  <dt class="col-sm-4">Lampiran</dt><dd class="col-sm-8">{% if ins.attachment %}<a href="{% url 'instructions:attachment' ins.pk %}">Unduh</a>{% else %}–{% endif %}</dd>
+  {% if ins.cancelled_reason %}<dt class="col-sm-4">Alasan batal</dt><dd class="col-sm-8">{{ ins.cancelled_reason }}</dd>{% endif %}
+</dl></div></div>
+<div class="card mb-4"><div class="card-header">Penerima</div><table class="table table-sm mb-0"><thead><tr><th>Unit</th><th>PIC</th><th>Dibaca</th><th></th></tr></thead><tbody>
+{% for t in targets %}<tr><td>{{ t.unit }}</td><td>{{ t.pic }}</td><td>{{ t.read_at|date:"d-m-Y H:i"|default:"Belum" }}</td>
+<td>{% if editable %}<form method="post" action="{% url 'instructions:target_remove' ins.pk t.pk %}">{% csrf_token %}<button class="btn btn-sm btn-link text-danger">hapus</button></form>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="4" class="text-muted">Belum ada penerima.</td></tr>{% endfor %}</tbody></table></div>
+<div class="card mb-4"><div class="card-header">Tugas yang dihasilkan</div><ul class="list-group list-group-flush">
+{% for t in tasks %}<li class="list-group-item"><a href="{% url 'workflow:detail' t.pk %}">{{ t }}</a> · {{ t.unit.code }} · {{ t.pic }} · {{ t.get_status_display }} · {{ t.progress }}%</li>
+{% empty %}<li class="list-group-item text-muted">Tugas dibuat saat instruksi diterbitkan.</li>{% endfor %}</ul></div>
+</div>
+<div class="col-lg-5">
+{% if editable %}
+<div class="card mb-3"><div class="card-header">Tambah penerima</div><div class="card-body">
+<form method="post" action="{% url 'instructions:target_add' ins.pk %}">{% csrf_token %}{% with form=target_form %}{% include "_form.html" %}{% endwith %}<button class="btn btn-outline-primary">Tambah</button></form></div></div>
+<div class="card mb-3"><div class="card-body d-flex gap-2">
+<a class="btn btn-outline-secondary" href="{% url 'instructions:edit' ins.pk %}">Ubah draf</a>
+<form method="post" action="{% url 'instructions:issue' ins.pk %}">{% csrf_token %}<button class="btn btn-success" data-confirm="Terbitkan instruksi? Setelah terbit, isi tidak dapat diubah.">Terbitkan</button></form>
+</div></div>
+{% endif %}
+{% if can_cancel %}
+<div class="card mb-3"><div class="card-header">Batalkan instruksi</div><div class="card-body">
+<form method="post" action="{% url 'instructions:cancel' ins.pk %}">{% csrf_token %}<textarea name="reason" class="mb-2" rows="2" placeholder="Alasan pembatalan" required></textarea><button class="btn btn-outline-danger btn-sm" data-confirm="Batalkan instruksi beserta tugas terbukanya?">Batalkan</button></form></div></div>
+{% endif %}
+</div></div>
+{% endblock %}

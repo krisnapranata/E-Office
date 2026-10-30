@@ -1,0 +1,1 @@
+<span class="badge text-bg-{% if s == 'SELESAI' %}success{% elif s == 'DIBATALKAN' %}dark{% elif s == 'TERHAMBAT' or s == 'PERLU_PERBAIKAN' %}warning{% elif s == 'MENUNGGU_VERIFIKASI' %}info{% elif s == 'BERJALAN' %}primary{% else %}secondary{% endif %}">{{ label }}</span>

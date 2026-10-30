@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Notifikasi{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h3 mb-0">Notifikasi</h1>
+<form method="post" action="{% url 'notifications:mark_all_read' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-secondary">Tandai semua dibaca</button></form></div>
+<ul class="list-group">
+{% for n in page %}<li class="list-group-item d-flex justify-content-between {% if not n.read_at %}fw-semibold{% endif %}">
+  <div>{{ n.title }}<div class="small text-muted fw-normal">{{ n.message }} · {{ n.created_at|date:"d-m-Y H:i" }}</div></div>
+  <form method="post" action="{% url 'notifications:open' n.pk %}">{% csrf_token %}<button class="btn btn-sm btn-link">Buka</button></form></li>
+{% empty %}<li class="list-group-item text-muted">Tidak ada notifikasi.</li>{% endfor %}</ul>
+{% include "_pagination.html" %}
+{% endblock %}

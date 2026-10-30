@@ -1,0 +1,9 @@
+<div class="sidebar-bottom">
+  <div class="sidebar-profile glass">
+    <div class="sidebar-avatar"><i class="bi bi-person" aria-hidden="true"></i></div>
+    <div class="sidebar-profile-text label">
+      <div class="sidebar-profile-name">{{ user.get_full_name|default:user.username }}</div>
+      <div class="sidebar-profile-role">{{ user.get_role_display }}</div>
+    </div>
+  </div>
+</div>

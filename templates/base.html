@@ -1,0 +1,36 @@
+{% load static %}<!DOCTYPE html>
+<html lang="id" data-bs-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}E-Office{% endblock %} · E-Office RS</title>
+  {% comment %}
+  Urutan cascade WAJIB: bootstrap -> ikon/font -> tema (emboss-blue-glass @import blue-glass @import mint-forest)
+  -> app.css (penyesuaian kecil E-Office). Semua aset lokal; tanpa CDN. Lihat skill emboss-blue-glass-theme.
+  {% endcomment %}
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}">
+  <link rel="stylesheet" href="{% static 'css/fonts/google-fonts-inter.css' %}">
+  <link rel="stylesheet" href="{% static 'css/tema/emboss-blue-glass.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
+</head>
+<body class="{% block body_class %}page-dense{% endblock %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<script src="{% static 'js/sidebar-pin-init.js' %}"></script>
+<div class="bg-orbs" aria-hidden="true"><span></span><span></span><span></span></div>
+{% include "partials/sidebar.html" %}
+<div class="content-area app-main">
+  {% include "partials/topbar.html" %}
+  <main id="workspace">
+    {% for m in messages %}
+    <div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags }}{% endif %} alert-dismissible fade show" role="alert">{{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button></div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="new-footer text-center py-3"><p class="mb-0 small">© 2025 Krisna Pranata | E-Office Rumah Sakit</p></footer>
+</div>
+<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/theme-glass.js' %}"></script>
+<script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Executive Dashboard</h1>
+  <span class="text-muted">Data per {{ today|date:"d M Y" }} · sesuai hak akses Anda</span>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><a class="text-decoration-none" href="{% url 'instructions:list' %}?status=DITERBITKAN"><div class="card"><div class="card-body"><div class="text-muted small">Instruksi aktif</div><div class="fs-2 fw-bold">{{ active_instructions }}</div></div></div></a></div>
+  <div class="col-md-4"><a class="text-decoration-none" href="{% url 'instructions:list' %}?status=DITERBITKAN&unread=1"><div class="card"><div class="card-body"><div class="text-muted small">Instruksi belum dibaca penerima</div><div class="fs-2 fw-bold">{{ unread_instructions }}</div></div></div></a></div>
+  <div class="col-md-4"><a class="text-decoration-none" href="{% url 'letters:disposition_list' %}?pending=1"><div class="card"><div class="card-body"><div class="text-muted small">Disposisi menunggu tindak lanjut</div><div class="fs-2 fw-bold">{{ pending_dispositions }}</div></div></div></a></div>
+</div>
+<h2 class="h5">Status tugas</h2>
+<div class="row g-3 mb-4">
+  {% for label, n, qs, color in cards %}
+  <div class="col-6 col-md-3 col-xl"><a class="text-decoration-none" href="{% url 'workflow:list' %}?{{ qs }}">
+    <div class="card border-{{ color }}"><div class="card-body"><div class="text-muted small">{{ label }}</div><div class="fs-3 fw-bold text-{{ color }}">{{ n }}</div></div></div></a></div>
+  {% endfor %}
+</div>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card mb-4"><div class="card-header">Tugas terlambat</div>
+      <table class="table table-sm mb-0"><thead><tr><th>Tugas</th><th>Unit</th><th>PIC</th><th>Tenggat</th></tr></thead><tbody>
+      {% for t in overdue %}<tr><td><a href="{% url 'workflow:detail' t.pk %}">{{ t }}</a></td><td>{{ t.unit.code }}</td><td>{{ t.pic }}</td><td class="text-danger">{{ t.due_date|date:"d-m-Y" }}</td></tr>
+      {% empty %}<tr><td colspan="4" class="text-muted">Tidak ada.</td></tr>{% endfor %}
+      </tbody></table></div>
+    <div class="card mb-4"><div class="card-header">Kinerja unit</div>
+      <table class="table table-sm mb-0"><thead><tr><th>Unit</th><th>Total</th><th>Selesai</th><th>Terlambat</th><th>Tepat waktu</th></tr></thead><tbody>
+      {% for u in units %}<tr><td><a href="{% url 'workflow:list' %}?unit={{ u.unit_id }}">{{ u.unit__code }}</a> <span class="text-muted small">{{ u.unit__name }}</span></td><td>{{ u.total }}</td><td>{{ u.done }}</td><td><a href="{% url 'workflow:list' %}?unit={{ u.unit_id }}&flag=overdue">{{ u.overdue }}</a></td><td>{% if u.on_time_pct is not None %}{{ u.on_time_pct }}%{% else %}–{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="5" class="text-muted">Belum ada data.</td></tr>{% endfor %}
+      </tbody></table></div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card mb-4"><div class="card-header">Tren penyelesaian (per minggu)</div><div class="card-body">
+      {% for r in trend %}<div class="d-flex align-items-center mb-1"><span class="small text-muted trend-label">{{ r.week|date:"d M" }}</span>
+        <div class="progress flex-grow-1" style="height:1rem"><div class="progress-bar" style="width:{{ r.pct }}%"></div></div><span class="ms-2 small trend-value">{{ r.done }}</span></div>{% endfor %}
+    </div></div>
+    <div class="card mb-4"><div class="card-header">Terhambat — butuh perhatian</div><ul class="list-group list-group-flush">
+      {% for t in blocked %}<li class="list-group-item"><a href="{% url 'workflow:detail' t.pk %}">{{ t }}</a> <span class="text-muted small">{{ t.unit.code }} · {{ t.pic }}</span></li>
+      {% empty %}<li class="list-group-item text-muted">Tidak ada.</li>{% endfor %}</ul></div>
+    <div class="card mb-4"><div class="card-header">Agenda hari ini</div><div class="card-body text-muted small">Modul E-Agenda dijadwalkan pada Tahap 2.</div></div>
+    {% if recent_activity %}
+    <div class="card mb-4"><div class="card-header">Aktivitas terbaru</div><ul class="list-group list-group-flush small">
+      {% for a in recent_activity %}<li class="list-group-item">{{ a.created_at|date:"d-m H:i" }} · {{ a.user|default:"sistem" }} · {{ a.action }} · {{ a.object_repr }}</li>{% endfor %}</ul></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

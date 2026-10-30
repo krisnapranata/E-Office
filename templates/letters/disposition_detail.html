@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Disposisi #{{ disp.pk }}{% endblock %}
+{% block content %}
+<h1 class="h3">Disposisi #{{ disp.pk }}</h1>
+<div class="card mb-4" style="max-width:48rem"><div class="card-body"><dl class="row mb-0">
+  <dt class="col-sm-4">Surat</dt><dd class="col-sm-8"><a href="{% url 'letters:incoming_detail' disp.letter_id %}">{{ disp.letter }}</a></dd>
+  <dt class="col-sm-4">Dari → Kepada</dt><dd class="col-sm-8">{{ disp.from_user }} → {{ disp.to_user }} ({{ disp.to_unit }})</dd>
+  <dt class="col-sm-4">Arahan</dt><dd class="col-sm-8">{{ disp.directive|linebreaksbr }}</dd>
+  <dt class="col-sm-4">Prioritas / Tenggat</dt><dd class="col-sm-8">{{ disp.get_priority_display }} / {{ disp.due_date|date:"d-m-Y"|default:"–" }}</dd>
+  <dt class="col-sm-4">Status</dt><dd class="col-sm-8">{{ disp.get_status_display }}{% if disp.read_at %} · dibaca {{ disp.read_at|date:"d-m-Y H:i" }}{% endif %}</dd>
+  {% if disp.parent_id %}<dt class="col-sm-4">Terusan dari</dt><dd class="col-sm-8"><a href="{% url 'letters:disposition_detail' disp.parent_id %}">#{{ disp.parent_id }}</a></dd>{% endif %}
+  <dt class="col-sm-4">Tugas tertaut</dt><dd class="col-sm-8">{% for t in tasks %}<a href="{% url 'workflow:detail' t.pk %}">{{ t }}</a> ({{ t.get_status_display }})<br>{% empty %}–{% endfor %}</dd>
+</dl></div></div>
+{% if can_forward %}<a class="btn btn-outline-primary" href="{% url 'letters:disposition_create' disp.letter_id %}?parent={{ disp.pk }}">Teruskan disposisi</a>{% endif %}
+{% endblock %}

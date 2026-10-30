@@ -1,0 +1,111 @@
+{% load static %}<!DOCTYPE html>
+<html lang="id" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — E-Office Rumah Sakit</title>
+  <link rel="stylesheet" href="{% static 'css/fonts/google-fonts-inter.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}">
+  {# Tema dipakai untuk TOKEN warna (--mc-*); tata letak di login.css. Desain sama dengan login casemix. #}
+  <link rel="stylesheet" href="{% static 'css/tema/emboss-blue-glass.css' %}">
+  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  {% comment %}
+  Halaman mandiri (tidak meng-extend base.html), memakai django.contrib.auth LoginView: field `username` dan
+  `password`, galat di form.non_field_errors. Kartu kanan-kiri = informasi fitur yang memang ada di aplikasi;
+  jangan menambah tombol untuk fitur yang tidak ada (lupa password, SSO, dll.).
+  {% endcomment %}
+</head>
+<body class="le-body">
+{% include "registration/_login_latar.html" %}
+
+<main class="le-halaman">
+  <section class="le-info" aria-label="Tentang E-Office">
+    <div class="le-merek">
+      <div class="le-merek-ikon"><i class="bi bi-building-check" aria-hidden="true"></i></div>
+      <div>
+        <div class="le-merek-nama">E-Office</div>
+        <div class="le-merek-sub">Kendali Kerja Direktur Rumah Sakit</div>
+      </div>
+    </div>
+    <h2 class="le-judul">Setiap Arahan, <span>Tuntas Tertelusur.</span></h2>
+    <p class="le-desk">Surat, disposisi, instruksi, dan tugas tersambung dalam satu sistem — dari arahan Direktur hingga bukti dan verifikasi.</p>
+    <ul class="le-fitur">
+      <li><i class="bi bi-envelope-paper" aria-hidden="true"></i>Surat &amp; Disposisi</li>
+      <li><i class="bi bi-megaphone" aria-hidden="true"></i>Instruksi Direktur</li>
+      <li><i class="bi bi-list-check" aria-hidden="true"></i>Tugas &amp; Monitoring</li>
+      <li><i class="bi bi-shield-lock" aria-hidden="true"></i>Akses Aman dan Terkontrol</li>
+    </ul>
+
+    <h3 class="le-integrasi-judul">ALUR KERJA TERINTEGRASI</h3>
+    <div class="le-integrasi">
+      <article class="le-int" aria-label="Pengingat otomatis">
+        <div class="le-int-kepala">
+          <span class="le-int-logo"><i class="bi bi-alarm fs-4" aria-hidden="true"></i></span>
+          <span class="le-int-label">E-Reminder</span>
+        </div>
+        <p>Pengingat H-2 sebelum tenggat, penanda terlambat, dan eskalasi otomatis ke atasan.</p>
+      </article>
+      <article class="le-int" aria-label="Verifikasi dan audit">
+        <div class="le-int-kepala">
+          <span class="le-int-logo"><i class="bi bi-patch-check fs-4" aria-hidden="true"></i></span>
+          <span class="le-int-label">Verifikasi &amp; Audit</span>
+        </div>
+        <p>Bukti pelaksanaan diverifikasi pejabat berwenang; setiap perubahan tercatat di audit trail.</p>
+        <div class="le-int-layanan" aria-label="Status yang dipantau"><span>Berjalan</span><span>Terlambat</span><span>Selesai</span></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="le-kartu" aria-labelledby="leJudul">
+    <div class="le-rs">
+      <div class="le-rs-logo"><i class="bi bi-hospital" aria-hidden="true"></i></div>
+      <div class="le-rs-nama">Rumah Sakit</div>
+      <div class="le-rs-sub">E-Office Terintegrasi</div>
+    </div>
+    <div class="le-garis"></div>
+    <h1 id="leJudul">Selamat Datang</h1>
+    <p class="le-sub">Masuk ke akun E-Office Anda untuk melanjutkan pekerjaan.</p>
+
+    {% if form.errors %}<div id="lePesan" role="alert">
+      <div class="le-pesan le-pesan-error"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+        <span>{% if form.non_field_errors %}{{ form.non_field_errors|join:" " }}{% else %}Username dan password wajib diisi.{% endif %}</span></div>
+    </div>{% endif %}
+
+    <form method="post" id="leForm" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <div class="le-grup">
+        <label for="username">Username</label>
+        <div class="le-isian">
+          <i class="bi bi-person" aria-hidden="true"></i>
+          <input class="le-input" type="text" id="username" name="username" value="{{ form.username.value|default:'' }}"
+                 placeholder="Masukkan username" autocomplete="username" autocapitalize="none" spellcheck="false"
+                 required autofocus{% if form.errors %} aria-invalid="true" aria-describedby="lePesan"{% endif %}>
+        </div>
+      </div>
+      <div class="le-grup">
+        <label for="password">Password</label>
+        <div class="le-isian">
+          <i class="bi bi-lock" aria-hidden="true"></i>
+          <input class="le-input le-input-sandi" type="password" id="password" name="password"
+                 placeholder="Masukkan password" autocomplete="current-password" required
+                 {% if form.errors %} aria-invalid="true" aria-describedby="lePesan"{% endif %}>
+          <button type="button" class="le-mata" id="leMata" aria-controls="password" aria-pressed="false"
+                  aria-label="Tampilkan password" title="Tampilkan password"><i class="bi bi-eye" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <button type="submit" class="le-tombol" id="leTombol">
+        <span class="le-putar" aria-hidden="true"></span><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+        <span class="le-tombol-teks">Masuk ke E-Office</span>
+      </button>
+    </form>
+
+    <p class="le-kaki">
+      <span class="le-kaki-aman"><i class="bi bi-shield-lock" aria-hidden="true"></i>Koneksi aman — jangan bagikan password Anda.</span><br>
+      &copy; 2025 Krisna Pranata &mdash; E-Office Rumah Sakit
+    </p>
+  </section>
+</main>
+<script src="{% static 'js/login.js' %}"></script>
+</body>
+</html>

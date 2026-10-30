@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h3">{{ title }}</h1>
+{% if parent %}<p class="text-muted">Meneruskan disposisi #{{ parent.pk }} dari {{ parent.from_user }}.</p>{% endif %}
+<div class="card"><div class="card-body" style="max-width:48rem">
+<form method="post" enctype="multipart/form-data">{% csrf_token %}{% if parent %}<input type="hidden" name="parent" value="{{ parent.pk }}">{% endif %}{% include "_form.html" %}<button class="btn btn-primary">Simpan</button></form>
+</div></div>
+{% endblock %}

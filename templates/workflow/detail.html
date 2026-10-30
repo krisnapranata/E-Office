@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ task }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div><h1 class="h3 mb-1">{{ task }}</h1>
+    {% include "_status.html" with s=task.status label=task.get_status_display %}
+    {% if task.is_overdue %}<span class="badge text-bg-danger">Terlambat</span>{% endif %}
+    <span class="badge text-bg-light border">{{ task.get_classification_display }}</span>
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'workflow:list' %}">Kembali</a>
+</div>
+<div class="row g-4">
+<div class="col-lg-7">
+  <div class="card mb-4"><div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-4">Sumber</dt><dd class="col-sm-8">{{ task.get_source_type_display }}
+        {% if task.instruction %} — <a href="{% url 'instructions:detail' task.instruction_id %}">{{ task.instruction.code }}</a>{% endif %}
+        {% if task.disposition %} — <a href="{% url 'letters:disposition_detail' task.disposition_id %}">Disposisi #{{ task.disposition_id }}</a>{% endif %}
+        {% if task.source_note %} — {{ task.source_note }}{% endif %}</dd>
+      <dt class="col-sm-4">Unit / PIC</dt><dd class="col-sm-8">{{ task.unit }} / {{ task.pic }}</dd>
+      <dt class="col-sm-4">Kolaborator</dt><dd class="col-sm-8">{{ task.collaborators.all|join:", "|default:"–" }}</dd>
+      <dt class="col-sm-4">Prioritas</dt><dd class="col-sm-8">{{ task.get_priority_display }}</dd>
+      <dt class="col-sm-4">Mulai / Tenggat</dt><dd class="col-sm-8">{{ task.start_date|date:"d-m-Y"|default:"–" }} / {{ task.due_date|date:"d-m-Y"|default:"–" }}{% if task.due_label %} ({{ task.due_label }}){% endif %}</dd>
+      <dt class="col-sm-4">Progres dilaporkan</dt><dd class="col-sm-8"><div class="progress"><div class="progress-bar" style="width:{{ task.progress }}%">{{ task.progress }}%</div></div></dd>
+      <dt class="col-sm-4">Verifikator</dt><dd class="col-sm-8">{{ task.verifier }} {% if not task.requires_verification %}(verifikasi tidak wajib){% endif %}</dd>
+      <dt class="col-sm-4">Kriteria selesai</dt><dd class="col-sm-8">{{ task.completion_criteria|linebreaksbr|default:"–" }}</dd>
+      <dt class="col-sm-4">Deskripsi</dt><dd class="col-sm-8">{{ task.description|linebreaksbr|default:"–" }}</dd>
+    </dl>
+  </div></div>
+
+  <div class="card mb-4"><div class="card-header">Bukti pelaksanaan {% if task.requires_evidence %}<span class="badge text-bg-secondary">wajib</span>{% endif %}</div>
+    <ul class="list-group list-group-flush">
+    {% for e in evidences %}<li class="list-group-item"><a href="{% url 'workflow:evidence_download' e.pk %}">{{ e.original_name }}</a> <span class="text-muted small">{{ e.description }} · {{ e.uploaded_by }} · {{ e.uploaded_at|date:"d-m-Y H:i" }}</span></li>
+    {% empty %}<li class="list-group-item text-muted">Belum ada bukti.</li>{% endfor %}</ul>
+  </div>
+
+  <div class="card mb-4"><div class="card-header">Riwayat progres</div><ul class="list-group list-group-flush">
+    {% for u in updates %}<li class="list-group-item small"><strong>{{ u.created_at|date:"d-m-Y H:i" }}</strong> · {{ u.author }}{% if u.progress is not None %} · {{ u.progress }}%{% endif %}{% if u.status_to %} · {{ u.status_from }} → {{ u.status_to }}{% endif %}
+      {% if u.note %}<div>{{ u.note }}</div>{% endif %}{% if u.obstacle %}<div class="text-danger">Hambatan: {{ u.obstacle }}</div>{% endif %}{% if u.decision_needed %}<div class="text-warning-emphasis">Butuh keputusan: {{ u.decision_needed }}</div>{% endif %}</li>
+    {% empty %}<li class="list-group-item text-muted">Belum ada pembaruan.</li>{% endfor %}</ul></div>
+
+  <div class="card mb-4"><div class="card-header">Verifikasi</div><ul class="list-group list-group-flush">
+    {% for v in verifications %}<li class="list-group-item small">{{ v.created_at|date:"d-m-Y H:i" }} · {{ v.verifier }} · <strong>{{ v.get_decision_display }}</strong> {{ v.note }}</li>
+    {% empty %}<li class="list-group-item text-muted">Belum ada.</li>{% endfor %}</ul></div>
+
+  <div class="card mb-4"><div class="card-header">Audit trail</div><ul class="list-group list-group-flush small">
+    {% for a in audit %}<li class="list-group-item">{{ a.created_at|date:"d-m-Y H:i" }} · {{ a.user|default:"sistem" }} · {{ a.action }} · {{ a.changes }}</li>
+    {% empty %}<li class="list-group-item text-muted">–</li>{% endfor %}</ul></div>
+</div>
+
+<div class="col-lg-5">
+  {% if is_pic and task.status == statuses.MENUNGGU_PENERIMAAN %}
+  <div class="card mb-3"><div class="card-body"><form method="post" action="{% url 'workflow:accept' task.pk %}">{% csrf_token %}<button class="btn btn-success w-100">Terima tugas</button></form></div></div>
+  {% endif %}
+
+  {% if can_report and task.status != statuses.MENUNGGU_PENERIMAAN and task.status != statuses.MENUNGGU_VERIFIKASI %}
+  <div class="card mb-3"><div class="card-header">Laporkan progres</div><div class="card-body">
+    <form method="post" action="{% url 'workflow:progress' task.pk %}">{% csrf_token %}{% with form=progress_form %}{% include "_form.html" %}{% endwith %}<button class="btn btn-primary">Simpan progres</button></form>
+  </div></div>
+  <div class="card mb-3"><div class="card-header">Unggah bukti</div><div class="card-body">
+    <form method="post" enctype="multipart/form-data" action="{% url 'workflow:evidence' task.pk %}">{% csrf_token %}{% with form=evidence_form %}{% include "_form.html" %}{% endwith %}<button class="btn btn-outline-primary">Unggah</button></form>
+  </div></div>
+  {% if is_pic and task.status == statuses.BERJALAN or is_pic and task.status == statuses.PERLU_PERBAIKAN %}
+  <div class="card mb-3"><div class="card-header">Kirim hasil</div><div class="card-body">
+    <form method="post" action="{% url 'workflow:submit' task.pk %}">{% csrf_token %}<textarea name="note" class="form-control mb-2" rows="2" placeholder="Ringkasan hasil"></textarea>
+      <button class="btn btn-success" data-confirm="Kirim hasil {% if task.requires_verification %}untuk verifikasi{% else %}dan tutup tugas{% endif %}?">Kirim {% if task.requires_verification %}untuk verifikasi{% else %}&amp; selesai{% endif %}</button></form>
+  </div></div>
+  {% endif %}
+  {% endif %}
+
+  {% if can_verify %}
+  <div class="card mb-3 border-info"><div class="card-header">Verifikasi hasil</div><div class="card-body">
+    <form method="post" action="{% url 'workflow:verify' task.pk %}">{% csrf_token %}{% with form=verify_form %}{% include "_form.html" %}{% endwith %}<button class="btn btn-info">Simpan keputusan</button></form>
+  </div></div>
+  {% endif %}
+
+  {% if can_manage %}
+  <div class="card mb-3"><div class="card-header">Pengendalian</div><div class="card-body">
+    <form method="post" action="{% url 'workflow:request_update' task.pk %}" class="mb-3">{% csrf_token %}<button class="btn btn-outline-secondary btn-sm">Minta pembaruan ke PIC</button></form>
+    <form method="post" action="{% url 'workflow:reassign' task.pk %}" class="mb-3">{% csrf_token %}{% with form=reassign_form %}{% include "_form.html" %}{% endwith %}<button class="btn btn-outline-primary btn-sm">Ubah PIC/tenggat</button></form>
+    <form method="post" action="{% url 'workflow:cancel' task.pk %}">{% csrf_token %}{% with form=reason_form %}{% include "_form.html" %}{% endwith %}<button class="btn btn-outline-danger btn-sm" data-confirm="Batalkan tugas ini?">Batalkan tugas</button></form>
+  </div></div>
+  {% endif %}
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% comment %}
+Latar abstrak medis halaman login (dipakai registration/login.html; disalin dari casemix). SVG inline — BUKAN file .svg statis — karena warnanya harus
+ikut token tema aktif (fill/stop memakai var(--le-*) dari static/css/login.css; file .svg di <img> tidak bisa
+membaca variabel CSS). Generik: tanpa logo/nama RS. aria-hidden, pointer-events none (lihat .le-latar di CSS).
+Lapisan: cahaya lembut -> bentuk lengkung besar -> pola titik -> plus medis -> gelombang sudut kanan atas ->
+gelombang berlapis bawah. id gradien/pola berawalan le- supaya tidak bentrok.
+{% endcomment %}
+<div class="le-latar" aria-hidden="true">
+    <svg class="le-latar-utama" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" focusable="false">
+        <defs>
+            <radialGradient id="leCahaya1" cx="50%" cy="50%" r="50%">
+                <stop offset="0" class="le-st-cahaya" stop-opacity=".95"/>
+                <stop offset="1" class="le-st-cahaya" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="leCahaya2" cx="50%" cy="50%" r="50%">
+                <stop offset="0" class="le-st-aksen" stop-opacity=".22"/>
+                <stop offset="1" class="le-st-aksen" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="leLengkung" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" class="le-st-tosca" stop-opacity=".20"/>
+                <stop offset="1" class="le-st-hutan" stop-opacity=".05"/>
+            </linearGradient>
+            <linearGradient id="leLengkung2" x1="1" y1="0" x2="0" y2="1">
+                <stop offset="0" class="le-st-cahaya" stop-opacity=".55"/>
+                <stop offset="1" class="le-st-cahaya" stop-opacity="0"/>
+            </linearGradient>
+            <pattern id="leTitik" width="22" height="22" patternUnits="userSpaceOnUse">
+                <circle cx="3" cy="3" r="1.8" class="le-isi-aksen"/>
+            </pattern>
+            <radialGradient id="leRedup" cx="50%" cy="50%" r="50%">
+                <stop offset="0" stop-color="#fff" stop-opacity="1"/>
+                <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+            </radialGradient>
+            <mask id="leMaskTitik1"><rect x="40" y="40" width="300" height="230" fill="url(#leRedup)"/></mask>
+            <mask id="leMaskTitik2"><rect x="1150" y="330" width="260" height="260" fill="url(#leRedup)"/></mask>
+        </defs>
+
+        <!-- cahaya lembut -->
+        <circle cx="260" cy="120" r="420" fill="url(#leCahaya1)"/>
+        <circle cx="1180" cy="260" r="460" fill="url(#leCahaya2)"/>
+        <circle cx="700" cy="860" r="380" fill="url(#leCahaya2)"/>
+
+        <!-- bentuk lengkung besar transparan -->
+        <path d="M980,-60 C1180,40 1330,150 1500,140 L1500,-60 Z" fill="url(#leLengkung)"/>
+        <path d="M1500,560 C1330,520 1220,640 1260,780 C1290,880 1400,920 1500,900 Z" fill="url(#leLengkung)"/>
+        <ellipse cx="-40" cy="520" rx="300" ry="380" fill="url(#leLengkung)"/>
+        <path d="M600,-80 C760,60 1000,90 1180,-20 L1180,-80 Z" fill="url(#leLengkung2)"/>
+        <circle cx="1060" cy="470" r="330" fill="none" class="le-garis-aksen" stroke-width="1.5" stroke-opacity=".18"/>
+        <circle cx="1060" cy="470" r="250" fill="none" class="le-garis-aksen" stroke-width="1" stroke-opacity=".12" stroke-dasharray="3 10"/>
+        <circle cx="120" cy="760" r="210" fill="none" class="le-garis-aksen" stroke-width="1.5" stroke-opacity=".14"/>
+
+        <!-- pola titik -->
+        <rect x="40" y="40" width="300" height="230" fill="url(#leTitik)" mask="url(#leMaskTitik1)" opacity=".55"/>
+        <rect x="1150" y="330" width="260" height="260" fill="url(#leTitik)" mask="url(#leMaskTitik2)" opacity=".5"/>
+
+        <!-- plus medis samar -->
+        <g class="le-isi-aksen">
+            <path transform="translate(640 90) scale(1.4)" opacity=".22" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z"/>
+            <path transform="translate(1340 70)" opacity=".2" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z"/>
+            <path transform="translate(70 640) scale(.9)" opacity=".18" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z"/>
+            <path transform="translate(720 690) scale(.75)" opacity=".18" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z"/>
+            <path transform="translate(1250 300) scale(.7)" opacity=".16" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z"/>
+        </g>
+        <g class="le-garis-aksen" fill="none" stroke-width="2.4" opacity=".22">
+            <path transform="translate(560 300)" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z"/>
+            <path transform="translate(1390 520) scale(1.2)" d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z"/>
+        </g>
+        <!-- garis EKG tipis -->
+        <polyline class="le-garis-aksen" fill="none" stroke-width="2" stroke-opacity=".14" stroke-linecap="round" stroke-linejoin="round"
+                  points="0,420 160,420 190,380 215,470 240,400 260,420 520,420"/>
+    </svg>
+
+    <!-- gelombang sudut kanan atas -->
+    <svg class="le-gelombang-atas" viewBox="0 0 600 260" preserveAspectRatio="none" focusable="false">
+        <defs>
+            <linearGradient id="leGelAtas" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" class="le-st-tosca" stop-opacity=".0"/>
+                <stop offset="1" class="le-st-hutan" stop-opacity=".22"/>
+            </linearGradient>
+        </defs>
+        <path d="M600,0 L600,230 C500,250 420,150 300,120 C190,92 110,40 60,0 Z" fill="url(#leGelAtas)"/>
+        <path d="M600,0 L600,140 C520,150 470,80 380,60 C300,42 250,18 220,0 Z" class="le-isi-aksen" opacity=".10"/>
+    </svg>
+
+    <!-- gelombang berlapis bawah -->
+    <svg class="le-gelombang" viewBox="0 0 1440 360" preserveAspectRatio="none" focusable="false">
+        <defs>
+            <linearGradient id="leGel1" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" class="le-st-tosca" stop-opacity=".16"/>
+                <stop offset="1" class="le-st-aksen" stop-opacity=".22"/>
+            </linearGradient>
+            <linearGradient id="leGel2" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" class="le-st-aksen" stop-opacity=".22"/>
+                <stop offset="1" class="le-st-hutan" stop-opacity=".30"/>
+            </linearGradient>
+            <linearGradient id="leGel3" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" class="le-st-hutan" stop-opacity=".40"/>
+                <stop offset=".6" class="le-st-aksen" stop-opacity=".34"/>
+                <stop offset="1" class="le-st-tosca" stop-opacity=".30"/>
+            </linearGradient>
+        </defs>
+        <path d="M0,150 C200,90 380,200 620,150 C860,100 1040,40 1240,90 C1330,112 1390,130 1440,120 L1440,360 L0,360 Z" fill="url(#leGel1)"/>
+        <path d="M0,215 C240,160 420,260 700,215 C960,172 1140,130 1440,190 L1440,360 L0,360 Z" fill="url(#leGel2)"/>
+        <path d="M0,275 C260,240 470,320 760,282 C1030,246 1220,228 1440,268 L1440,360 L0,360 Z" fill="url(#leGel3)"/>
+        <path d="M0,206 C240,151 420,251 700,206 C960,163 1140,121 1440,181" fill="none" class="le-garis-cahaya" stroke-width="2" stroke-opacity=".7"/>
+    </svg>
+</div>

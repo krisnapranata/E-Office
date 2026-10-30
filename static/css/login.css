@@ -1,0 +1,325 @@
+/* Halaman login (templates/registration/login.html) — emboss/neumorphism + kaca, warna dari TOKEN tema aktif.
+ * Disalin dari casemix (idrgapp/login.css). Berkas CSS tema dimuat lebih dulu di template; di sini hanya tata letak.
+ * Semua kelas berawalan le- supaya tidak bentrok. JANGAN menulis kata url diikuti kurung di komentar file ini:
+ * collectstatic (manifest) membacanya sebagai rujukan aset dan build Docker gagal. */
+
+:root {
+    --le-bg: var(--mc-page, #E8F8F1);
+    --le-teks: var(--mc-text, #17352D);
+    --le-teks2: var(--mc-text-muted, #52665E);
+    --le-aksen: var(--mc-primary, #087F5B);
+    --le-galat: var(--mc-danger, #B91C1C);
+    --le-tombol: var(--mc-primary, #087F5B);
+    --le-tombol2: var(--mc-primary-hover, #066649);
+    --le-gelap: #C3CDD4;
+    --le-terang: #FFFFFF;
+    --le-gelap: color-mix(in srgb, var(--le-bg) 80%, #34495E);
+    --le-terang: color-mix(in srgb, var(--le-bg) 25%, #FFFFFF);
+    --le-kaca: color-mix(in srgb, #FFFFFF 55%, transparent);
+    --le-kaca-garis: color-mix(in srgb, #FFFFFF 75%, transparent);
+    --le-placeholder: color-mix(in srgb, var(--le-teks2) 75%, var(--le-bg));
+    --le-ornamen: color-mix(in srgb, var(--le-aksen) 14%, transparent);
+    /* warna latar abstrak: semuanya turunan token tema (tidak ada palet baru) */
+    --le-tosca: var(--mc-focus, #0F9F75);
+    --le-hutan: var(--mc-forest, #173F35);
+    --le-cahaya: #FFFFFF;
+    --le-latar-a: color-mix(in srgb, var(--le-bg) 35%, #FFFFFF);
+    --le-latar-b: var(--le-bg);
+    --le-latar-c: color-mix(in srgb, var(--mc-teal-soft, var(--le-bg)) 80%, var(--le-tosca));
+    /* permukaan kartu sedikit lebih terang dari latar = terlihat timbul */
+    --le-permukaan: color-mix(in srgb, var(--le-bg) 55%, #FFFFFF);
+    --le-gelap-p: color-mix(in srgb, var(--le-permukaan) 82%, #34495E);
+    --le-terang-p: #FFFFFF;
+}
+/* Tema gelap: bayangan terang samar, kaca gelap; --mc-primary gelap = indigo MUDA (teks putih tak terbaca),
+   jadi tombol memakai indigo tua. */
+html[data-bs-theme="dark"] {
+    --le-gelap: color-mix(in srgb, var(--le-bg) 55%, #000000);
+    --le-terang: color-mix(in srgb, var(--le-bg) 88%, #FFFFFF);
+    --le-kaca: color-mix(in srgb, #FFFFFF 6%, transparent);
+    --le-kaca-garis: color-mix(in srgb, #FFFFFF 12%, transparent);
+    --le-tombol: #4F46E5;
+    --le-tombol2: #4338CA;
+    --le-ornamen: color-mix(in srgb, var(--le-aksen) 10%, transparent);
+    /* --mc-forest tema gelap = lavender MUDA -> hutan diturunkan dari latar + aksen */
+    --le-hutan: color-mix(in srgb, var(--le-bg) 55%, var(--le-aksen));
+    --le-cahaya: color-mix(in srgb, var(--le-aksen) 16%, var(--le-bg));
+    --le-latar-a: color-mix(in srgb, var(--le-bg) 92%, #FFFFFF);
+    --le-latar-b: var(--le-bg);
+    --le-latar-c: color-mix(in srgb, var(--le-bg) 85%, var(--le-aksen));
+    --le-permukaan: color-mix(in srgb, var(--le-bg) 93%, #FFFFFF);
+    --le-gelap-p: color-mix(in srgb, var(--le-bg) 50%, #000000);
+    --le-terang-p: color-mix(in srgb, var(--le-bg) 82%, #FFFFFF);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+/* lebih spesifik dari aturan body tema (html[data-bs-theme] body = 0,1,2) */
+html[data-bs-theme] body.le-body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--le-bg);
+    background-image: linear-gradient(155deg, var(--le-latar-a) 0%, var(--le-latar-b) 48%, var(--le-latar-c) 100%);
+    background-attachment: fixed;
+    color: var(--le-teks);
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------- latar abstrak (partial idrgapp/_login_latar.html; generik, tanpa identitas RS) ---------------- */
+.le-latar { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.le-latar svg { position: absolute; display: block; }
+.le-latar-utama { inset: 0; width: 100%; height: 100%; }
+.le-gelombang { left: 0; bottom: 0; width: 100%; height: 40vh; min-height: 220px; }
+.le-gelombang-atas { top: 0; right: 0; width: min(46vw, 640px); height: 30vh; min-height: 170px; }
+.le-st-aksen { stop-color: var(--le-aksen); }
+.le-st-tosca { stop-color: var(--le-tosca); }
+.le-st-hutan { stop-color: var(--le-hutan); }
+.le-st-cahaya { stop-color: var(--le-cahaya); }
+.le-isi-aksen { fill: var(--le-aksen); }
+.le-garis-aksen { stroke: var(--le-aksen); }
+.le-garis-cahaya { stroke: var(--le-cahaya); }
+@media (prefers-reduced-motion: no-preference) {
+    .le-gelombang path:first-child { animation: le-ombak 14s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+}
+@keyframes le-ombak { to { transform: translateX(-18px) scaleY(1.04); } }
+
+/* ---------------- tata letak ---------------- */
+.le-halaman {
+    position: relative; z-index: 1;
+    min-height: 100vh; min-height: 100dvh;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 56px;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 36px 40px;
+}
+
+/* ---------------- panel kiri: informasi SIMRS ---------------- */
+.le-info { padding: 8px 0; }
+.le-merek { display: flex; align-items: center; gap: 14px; margin-bottom: 30px; }
+.le-merek-ikon {
+    width: 58px; height: 58px; flex-shrink: 0; border-radius: 18px;
+    display: grid; place-items: center; font-size: 28px; color: var(--le-aksen);
+    background: var(--le-permukaan);
+    box-shadow: 8px 8px 16px var(--le-gelap), -8px -8px 16px var(--le-terang), inset 1px 1px 0 var(--le-kaca-garis);
+}
+.le-merek-ikon img { width: 42px; height: 42px; object-fit: contain; border-radius: 10px; }
+.le-merek-nama { font-size: 24px; font-weight: 800; letter-spacing: .6px; color: var(--le-aksen); line-height: 1.1; }
+.le-merek-sub { font-size: 13px; font-weight: 600; color: var(--le-teks2); margin-top: 3px; }
+
+.le-judul {
+    font-size: clamp(30px, 3.3vw, 44px); line-height: 1.14; font-weight: 800;
+    margin: 0 0 16px; color: var(--le-teks); letter-spacing: -.5px;
+}
+.le-judul span { color: var(--le-aksen); white-space: nowrap; }
+.le-desk { font-size: 15.5px; line-height: 1.65; color: var(--le-teks2); max-width: 520px; margin: 0 0 26px; }
+
+.le-fitur { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; margin: 0 0 30px; list-style: none; max-width: 560px; }
+.le-fitur li {
+    display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 16px;
+    background: color-mix(in srgb, var(--le-permukaan) 90%, transparent);
+    border: 1px solid var(--le-kaca-garis);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    font-size: 13.5px; font-weight: 600; color: var(--le-teks);
+    box-shadow: 6px 6px 14px var(--le-gelap), -6px -6px 12px var(--le-terang);
+}
+.le-fitur i {
+    width: 34px; height: 34px; flex-shrink: 0; border-radius: 11px;
+    display: grid; place-items: center; font-size: 16px; color: var(--le-aksen);
+    background: var(--le-permukaan);
+    box-shadow: inset 3px 3px 6px var(--le-gelap-p), inset -3px -3px 6px var(--le-terang-p);
+}
+
+.le-integrasi-judul {
+    display: flex; align-items: center; gap: 10px; margin: 0 0 12px;
+    /* teks kecil langsung di atas latar bergradasi: warna teks utama (teks2 = 4,2:1 di HP) */
+    font-size: 11.5px; font-weight: 800; letter-spacing: 1.2px; color: var(--le-teks);
+}
+.le-integrasi-judul::after { content: ""; flex: 1; height: 1px; background: color-mix(in srgb, var(--le-teks2) 30%, transparent); }
+.le-integrasi { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; max-width: 600px; }
+.le-int {
+    position: relative; padding: 14px 16px 15px; border-radius: 18px;
+    /* kaca PADAT: kartu duduk di atas gelombang; --le-kaca (55% / 6%) membuat deskripsi turun ke 2,2:1 */
+    background: color-mix(in srgb, var(--le-permukaan) 88%, transparent); border: 1px solid var(--le-kaca-garis);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    box-shadow: 8px 8px 18px var(--le-gelap), -6px -6px 14px var(--le-terang);
+}
+.le-int-kepala { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; min-height: 40px; margin-bottom: 8px; }
+/* logo resmi apa adanya (proporsi asli, tanpa filter) di atas pelat putih */
+.le-int-logo {
+    height: 40px; padding: 5px 8px; border-radius: 10px; background: #FFFFFF;
+    display: flex; align-items: center; box-shadow: 0 1px 3px rgba(15, 23, 42, .12);
+}
+.le-int-logo img { height: 28px; width: auto; display: block; }
+/* SVG resmi BPJS terbaru: viewBox rapat tanpa ruang kosong (PNG lama punya margin lebar) -> lebih kecil */
+.le-int-logo-svg img { height: 22px; }
+.le-int-ikon {
+    width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; display: grid; place-items: center;
+    font-size: 19px; color: var(--le-aksen); background: var(--le-bg);
+    box-shadow: inset 3px 3px 6px var(--le-gelap), inset -3px -3px 6px var(--le-terang);
+}
+.le-int-nama { font-size: 15px; font-weight: 800; color: var(--le-teks); line-height: 1.15; }
+.le-int-label {
+    display: inline-block; margin-top: 3px; padding: 1px 8px; border-radius: 999px; white-space: nowrap;
+    font-size: 11px; font-weight: 700;
+    /* aksen murni di atas latar aksen tipis hanya ±4,1:1 (Mint) -> dicampur warna teks tema */
+    color: color-mix(in srgb, var(--le-aksen) 62%, var(--le-teks));
+    background: color-mix(in srgb, var(--le-aksen) 12%, transparent);
+}
+.le-int p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--le-teks2); }
+.le-int-layanan { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.le-int-layanan span {
+    font-size: 11px; font-weight: 600; color: var(--le-teks); padding: 2px 8px; border-radius: 8px;
+    background: color-mix(in srgb, var(--le-teks2) 12%, transparent);
+}
+
+/* ---------------- panel kanan: kartu login ---------------- */
+.le-kartu {
+    width: 100%; max-width: 450px; justify-self: center;
+    position: relative;
+    background-color: var(--le-permukaan);
+    background-image: linear-gradient(160deg, color-mix(in srgb, #FFFFFF 35%, transparent), transparent 45%);
+    border-radius: 28px; padding: 34px 38px 28px;
+    border: 1px solid var(--le-kaca-garis);
+    box-shadow: 18px 18px 40px var(--le-gelap), -14px -14px 34px var(--le-terang),
+                inset 1px 1px 0 var(--le-kaca-garis), inset -1px -1px 0 color-mix(in srgb, var(--le-gelap) 35%, transparent);
+}
+html[data-bs-theme="dark"] .le-kartu { background-image: linear-gradient(160deg, color-mix(in srgb, #FFFFFF 5%, transparent), transparent 45%); }
+.le-rs { text-align: center; margin-bottom: 22px; }
+.le-rs-logo {
+    width: 84px; height: 84px; margin: 0 auto 12px; border-radius: 24px;
+    display: grid; place-items: center; background: var(--le-permukaan);
+    box-shadow: 7px 7px 14px var(--le-gelap-p), -7px -7px 14px var(--le-terang-p);
+}
+.le-rs-logo img { width: 60px; height: 60px; object-fit: contain; border-radius: 12px; }
+.le-rs-logo i { font-size: 36px; color: var(--le-aksen); }
+.le-rs-nama { font-size: 17px; font-weight: 800; color: var(--le-teks); line-height: 1.3; }
+.le-rs-sub { font-size: 12.5px; font-weight: 600; color: var(--le-teks2); margin-top: 2px; }
+.le-garis { height: 1px; margin: 0 0 20px; background: color-mix(in srgb, var(--le-teks2) 25%, transparent); }
+.le-kartu h1 { font-size: 24px; font-weight: 800; margin: 0 0 6px; color: var(--le-teks); }
+.le-kartu .le-sub { font-size: 14px; color: var(--le-teks2); margin: 0 0 22px; line-height: 1.5; }
+
+.le-pesan {
+    display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; margin-bottom: 18px;
+    border-radius: 14px; font-size: 14px; font-weight: 600; line-height: 1.45; color: var(--le-teks);
+    box-shadow: inset 4px 4px 8px var(--le-gelap-p), inset -4px -4px 8px var(--le-terang-p);
+}
+.le-pesan i { font-size: 17px; line-height: 1.2; }
+.le-pesan-error, .le-pesan-danger { color: var(--le-galat); }
+
+.le-grup { margin-bottom: 18px; }
+.le-grup label { display: block; font-size: 13px; font-weight: 700; margin: 0 0 8px 4px; color: var(--le-teks); }
+.le-isian { position: relative; }
+.le-isian > i {
+    position: absolute; left: 17px; top: 50%; transform: translateY(-50%);
+    font-size: 18px; color: var(--le-teks2); pointer-events: none; transition: color .2s ease;
+}
+.le-input {
+    width: 100%; height: 54px; padding: 0 18px 0 48px;
+    background: var(--le-permukaan); border: 2px solid transparent; border-radius: 14px;
+    font: inherit; font-size: 15.5px; color: var(--le-teks);
+    box-shadow: inset 5px 5px 10px var(--le-gelap-p), inset -5px -5px 10px var(--le-terang-p);
+    outline: none; transition: border-color .2s ease, box-shadow .2s ease;
+    -webkit-appearance: none; appearance: none;
+}
+.le-input::placeholder { color: var(--le-placeholder); }
+/* tema memberi outline fokus global !important -> cincin dobel; isian punya border + bayangan fokus sendiri */
+.le-input:focus-visible { outline: none !important; }
+.le-input:focus {
+    border-color: var(--le-aksen);
+    box-shadow: inset 3px 3px 7px var(--le-gelap-p), inset -3px -3px 7px var(--le-terang-p),
+                0 0 0 4px color-mix(in srgb, var(--le-aksen) 18%, transparent);
+}
+.le-isian:focus-within > i { color: var(--le-aksen); }
+.le-input[aria-invalid="true"] { border-color: color-mix(in srgb, var(--le-galat) 60%, transparent); }
+.le-input-sandi { padding-right: 56px; }
+
+.le-mata {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    width: 40px; height: 40px; border: 0; border-radius: 12px;
+    background: var(--le-permukaan); color: var(--le-teks2);
+    display: grid; place-items: center; font-size: 18px; cursor: pointer;
+    box-shadow: 3px 3px 6px var(--le-gelap-p), -3px -3px 6px var(--le-terang-p);
+    transition: color .2s ease, box-shadow .2s ease;
+}
+.le-mata:hover { color: var(--le-aksen); }
+.le-mata[aria-pressed="true"] {
+    color: var(--le-aksen);
+    box-shadow: inset 3px 3px 6px var(--le-gelap-p), inset -3px -3px 6px var(--le-terang-p);
+}
+
+.le-tombol {
+    width: 100%; height: 56px; margin-top: 6px; border: 0; border-radius: 15px;
+    background-color: var(--le-tombol);
+    background-image: linear-gradient(135deg, var(--le-tombol), var(--le-tombol2));
+    color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; letter-spacing: .3px;
+    display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;
+    box-shadow: 7px 7px 15px var(--le-gelap-p), -5px -5px 12px var(--le-terang-p), inset 0 1px 0 rgba(255, 255, 255, .28);
+    transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+.le-tombol:hover { transform: translateY(-2px); filter: brightness(1.06);
+    box-shadow: 10px 10px 22px var(--le-gelap-p), -6px -6px 14px var(--le-terang-p), inset 0 1px 0 rgba(255, 255, 255, .32); }
+.le-tombol:active { transform: translateY(1px);
+    box-shadow: inset 4px 4px 9px rgba(0, 0, 0, .22), inset -2px -2px 6px rgba(255, 255, 255, .15); }
+.le-tombol[aria-busy="true"] { cursor: progress; filter: saturate(.85); transform: none; }
+.le-putar {
+    width: 18px; height: 18px; border-radius: 50%; display: none;
+    border: 2.5px solid rgba(255, 255, 255, .45); border-top-color: #fff;
+    animation: le-putar .8s linear infinite;
+}
+.le-tombol[aria-busy="true"] .le-putar { display: inline-block; }
+.le-tombol[aria-busy="true"] .bi { display: none; }
+@keyframes le-putar { to { transform: rotate(360deg); } }
+
+.le-kaki { text-align: center; margin: 22px 0 0; font-size: 12.5px; color: var(--le-teks2); line-height: 1.6; }
+.le-kaki-aman { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.le-kaki-aman i { color: var(--le-aksen); }
+
+/* ---------------- responsif ---------------- */
+@media (max-width: 1099.98px) {
+    .le-halaman { gap: 36px; padding: 32px 28px; }
+    .le-fitur { grid-template-columns: minmax(0, 1fr); }
+}
+/* satu kolom: kartu login DULU (prioritas), informasi + integrasi ringkas di bawahnya */
+@media (max-width: 899.98px) {
+    .le-halaman { grid-template-columns: minmax(0, 1fr); gap: 26px; padding: 24px 20px 32px; align-content: start; }
+    .le-kartu { order: 1; }
+    .le-info { order: 2; max-width: 560px; width: 100%; justify-self: center; }
+    .le-merek { margin-bottom: 14px; }
+    .le-judul { font-size: 24px; margin-bottom: 8px; }
+    .le-desk { font-size: 14px; margin-bottom: 16px; }
+    .le-fitur { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 20px; }
+    /* layar sempit = halaman bergulir: latar FIXED membuat teks panel info lewat di atas gelombang pekat
+       (terukur 1,6:1). Latar ikut halaman, gelombang di dasar halaman (di bawah kartu integrasi). */
+    html[data-bs-theme] body.le-body { position: relative; background-attachment: scroll; }
+    .le-latar { position: absolute; }
+    .le-gelombang { height: 220px; min-height: 0; }
+    .le-gelombang-atas { width: 70vw; height: 150px; min-height: 0; }
+}
+@media (max-width: 520px) {
+    .le-halaman { padding: 16px 16px 28px; gap: 22px; }
+    .le-kartu { padding: 26px 20px 22px; border-radius: 24px;
+        box-shadow: 10px 10px 22px var(--le-gelap), -10px -10px 22px var(--le-terang); }
+    .le-rs-logo { width: 70px; height: 70px; border-radius: 20px; }
+    .le-rs-logo img { width: 50px; height: 50px; }
+    .le-kartu h1 { font-size: 21px; }
+    .le-fitur, .le-integrasi { grid-template-columns: minmax(0, 1fr); }
+    .le-merek-ikon { width: 48px; height: 48px; font-size: 23px; }
+    .le-merek-nama { font-size: 20px; }
+}
+@media (max-height: 700px) and (min-width: 900px) {
+    .le-halaman { padding-top: 20px; padding-bottom: 20px; }
+    .le-merek { margin-bottom: 18px; }
+    .le-desk { margin-bottom: 18px; }
+    .le-fitur { margin-bottom: 20px; }
+    .le-kartu { padding-top: 26px; padding-bottom: 22px; }
+    .le-rs { margin-bottom: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation-duration: 1.5s !important; }
+    .le-tombol:hover, .le-tombol:active { transform: none; }
+}

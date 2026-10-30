@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ letter.agenda_number }}{% endblock %}
+{% block content %}
+<h1 class="h3">{{ letter.agenda_number }} — {{ letter.subject }}</h1>
+<div class="row g-4"><div class="col-lg-6">
+<div class="card mb-4"><div class="card-body"><dl class="row mb-0">
+  <dt class="col-sm-4">Nomor surat</dt><dd class="col-sm-8">{{ letter.letter_number }}</dd>
+  <dt class="col-sm-4">Tanggal surat / diterima</dt><dd class="col-sm-8">{{ letter.letter_date|date:"d-m-Y" }} / {{ letter.received_date|date:"d-m-Y" }}</dd>
+  <dt class="col-sm-4">Pengirim</dt><dd class="col-sm-8">{{ letter.sender }}</dd>
+  <dt class="col-sm-4">Klasifikasi</dt><dd class="col-sm-8">{{ letter.get_classification_display }}</dd>
+  <dt class="col-sm-4">Ringkasan</dt><dd class="col-sm-8">{{ letter.summary|linebreaksbr|default:"–" }}</dd>
+  <dt class="col-sm-4">Lampiran</dt><dd class="col-sm-8">{% if letter.attachment %}<a href="{% url 'letters:attachment' 'masuk' letter.pk %}">Unduh</a>{% else %}–{% endif %}</dd>
+</dl></div></div>
+<div class="card mb-4"><div class="card-header">Disposisi</div><ul class="list-group list-group-flush">
+{% for d in dispositions %}<li class="list-group-item"><a href="{% url 'letters:disposition_detail' d.pk %}">#{{ d.pk }}</a> {{ d.from_user }} → {{ d.to_user }} ({{ d.to_unit.code }}) · {{ d.get_status_display }}{% if d.parent_id %} · terusan #{{ d.parent_id }}{% endif %}</li>
+{% empty %}<li class="list-group-item text-muted">Belum ada disposisi.</li>{% endfor %}</ul></div>
+</div>
+{% if form %}<div class="col-lg-6"><div class="card"><div class="card-header">Buat disposisi</div><div class="card-body">
+<form method="post" action="{% url 'letters:disposition_create' letter.pk %}">{% csrf_token %}{% include "_form.html" %}<button class="btn btn-primary">Kirim disposisi</button></form>
+</div></div></div>{% endif %}
+</div>
+{% endblock %}

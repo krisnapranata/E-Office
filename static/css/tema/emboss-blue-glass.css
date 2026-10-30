@@ -1,0 +1,218 @@
+/* =====================================================================
+   Tema "Emboss Blue Glass" — terang, KACA BIRU TIMBUL.
+   Latar biru pucat, panel kaca putih yang TIMBUL (bayangan ganda gelap
+   kanan-bawah + putih kiri-atas, kilau tepi), isian form CEKUNG, tombol
+   timbul yang tertekan saat diklik, sidebar navy, aksen biru laut.
+   BUKAN tema gelap — area kertas tetap putih.
+
+   CARA KERJA (pola yang sama dengan blue-glass.css — baca catatannya):
+   - `@import` blue-glass.css (yang sendiri meng-@import mint-forest.css):
+     tata letak dari mint-forest, warna biru + tambalan modul dari
+     blue-glass, lapisan EMBOSS di berkas ini.
+   - audit_statis.py hanya membaca berkas yang terdaftar di registri (tidak
+     mengikuti @import), jadi TOKEN ditulis LENGKAP di sini dan aturan
+     `color-scheme: light` area kertas ikut ditulis ulang (bagian 9).
+   - Efek timbul panel memakai TOKEN `--glass-shadow` (dipakai basis untuk
+     .card/.panel/.glass/.shadow/.shadow-sm) — jadi semua panel ikut tanpa
+     daftar selektor panjang; panel di DALAM panel diberi timbul tipis.
+   - Area kertas (.paper dkk.) dikecualikan dari isian cekung & tombol
+     timbul: dokumen/cetak tidak boleh ikut berubah.
+   - JANGAN menulis literal kata url + kurung di komentar CSS (collectstatic
+     membaca komentar sebagai rujukan aset -> build Docker gagal, AGENTS.md
+     15c). Mengubah berkas ini = naikkan `versi` tema di tema/registry.py.
+   ===================================================================== */
+
+@import url("blue-glass.css");
+
+/* ---------- 1. TOKENS (lengkap; nilai biru dari blue-glass + emboss) ---------- */
+:root {
+    --mc-page: #E3EBF5;
+    --mc-surface: #FFFFFF;
+    --mc-primary: #0B6BC4;
+    --mc-primary-hover: #0957A0;
+    --mc-forest: #0B3976;
+    --mc-teal-soft: #E1EFFC;
+    --mc-sage: #F3F7FB;
+    --mc-text: #17395F;
+    --mc-text-muted: #4C6275;
+    --mc-border: #D3E0EE;
+    --mc-focus: #1687ED;
+    --mc-success: #15803D;
+    --mc-warning: #B45309;
+    --mc-danger: #B91C1C;
+    --mc-info: #0E7490;
+
+    /* warna bayangan emboss (dipakai di bawah) */
+    --eb-gelap: rgba(120, 148, 182, .42);
+    --eb-gelap-tipis: rgba(120, 148, 182, .28);
+    --eb-terang: rgba(255, 255, 255, .95);
+    --eb-kilau: inset 0 1px 0 rgba(255, 255, 255, .9);
+
+    --bg-base: var(--mc-page);
+    --bg-elevated: var(--mc-surface);
+    --glass-bg: rgba(255, 255, 255, 0.88);
+    --glass-bg-hover: #F2F8FE;
+    --glass-bg-strong: #FFFFFF;
+    --glass-border: rgba(255, 255, 255, .85);
+    --glass-border-hover: #9CBFE4;
+    --glass-blur: blur(14px) saturate(120%);
+    /* PANEL TIMBUL: semua .card/.panel/.glass/.shadow memakai token ini */
+    --glass-shadow: 9px 9px 22px var(--eb-gelap), -8px -8px 18px var(--eb-terang), var(--eb-kilau);
+    --glass-solid: rgba(255, 255, 255, 0.97);
+    --accent: var(--mc-primary);
+    --accent-2: var(--mc-forest);
+    --accent-light: var(--mc-focus);
+    --accent-grad: linear-gradient(135deg, #1687ED 0%, #0A4F96 100%);
+    --accent-glow: 0 6px 16px rgba(13, 111, 196, .24);
+    --accent-soft: rgba(13, 111, 196, .12);
+    --text-primary: var(--mc-text);
+    --text-secondary: var(--mc-text-muted);
+    --text-muted: #556B82;
+    --success: var(--mc-success);
+    --danger: var(--mc-danger);
+    --warning: var(--mc-warning);
+    --info: var(--mc-info);
+
+    --mc-sidebar: #104B91;
+    --bg-sidebar: linear-gradient(180deg, #11509A 0%, #0E4383 58%, #0B3976 100%);
+    --tone-rgb: 22, 135, 237;
+    --tone-fg: #0F74BE;
+    --mc-border-hover: #9CBFE4;
+}
+
+/* ---------- 2. LATAR: biru pucat hampir rata (emboss butuh latar tenang) ---------- */
+html[data-bs-theme="light"] body,
+.bg-orbs {
+    background:
+        radial-gradient(ellipse at 85% -5%, rgba(120, 180, 240, .20), transparent 40%),
+        radial-gradient(ellipse at 10% 95%, rgba(170, 200, 232, .30), transparent 45%),
+        linear-gradient(160deg, #E9F0F8 0%, #E1E9F3 55%, #E6EDF6 100%);
+    background-attachment: fixed;
+}
+
+/* ---------- 3. PANEL ---------- */
+/* Panel utama halaman kerja (6b basis memberi latar putih + border; di sini kilau tepi + sudut) */
+:where(.page-dense) :is(.content-area, .tg-scope) :is(.card, .glass, .panel, .menu-section, .ok-card, .ob-card, .sg-card, .pb-card, .rm-card, .bg-white, .hospital-file-sidebar, .klaim-compact-card, .compact-doc-card, .summary-card) {
+    border-color: rgba(255, 255, 255, .9) !important;
+    box-shadow: var(--glass-shadow);
+}
+/* panel di DALAM panel: timbul tipis (bayangan besar bertumpuk = berat) */
+:where(.page-dense) :is(.content-area, .tg-scope) :where(.card, .glass, .panel, .menu-section, .ok-card, .ob-card, .sg-card, .pb-card, .rm-card, .bg-white, .hospital-file-sidebar, .klaim-compact-card, .compact-doc-card, .summary-card) :is(.card, .glass, .panel, .menu-section, .ok-card, .ob-card, .sg-card, .pb-card, .rm-card, .bg-white, .hospital-file-sidebar, .klaim-compact-card, .compact-doc-card, .summary-card) {
+    box-shadow: 4px 4px 10px var(--eb-gelap-tipis), -3px -3px 8px var(--eb-terang), var(--eb-kilau) !important;
+}
+/* kartu dashboard & tile menu: timbul, naik saat disorot */
+.dash-stat, .menu-tile, .dash-hero, .dash-clock {
+    box-shadow: var(--glass-shadow) !important;
+    border-color: rgba(255, 255, 255, .9) !important;
+}
+.dash-stat:hover, .menu-tile:hover, .menu-tile:focus-visible {
+    box-shadow: 12px 12px 26px var(--eb-gelap), -9px -9px 20px var(--eb-terang), var(--eb-kilau) !important;
+}
+/* ikon kotak dashboard: cekung */
+.dash-bento .icon-tile {
+    box-shadow: inset 3px 3px 7px var(--eb-gelap-tipis), inset -3px -3px 7px var(--eb-terang) !important;
+}
+
+/* ---------- 4. ISIAN FORM: CEKUNG (kecuali area kertas) ----------
+   Bukan hanya .form-control: modul punya kelas isian sendiri — Operasi .ok-input (152 isian di template
+   operasi/), .ok-date-input, .ok-search-input, register .rg-sel, partograf layar .pg-input, dan isian TANPA kelas.
+   Dulu hanya .form-control/.form-select -> seluruh form Operasi tanpa efek cekung (laporan user 2026-10-25).
+   Keadaan galat (.is-invalid / .ok-invalid) TIDAK ditimpa (bingkai merah harus tetap terlihat).
+   (a) bayangan cekung untuk SEMUA isian; (b) latar + bingkai netral hanya untuk isian yang warnanya tidak
+   bermakna — .rg-sel (warna kategori Kecil/Sedang/Besar) dan #lo-pk-cari (kotak cari berwarna) dikecualikan. */
+:is(.content-area, .tg-scope, .modal) :is(.form-control, .form-select, .ok-input, .ok-date-input, .ok-search-input, .rg-sel, .pg-input):not(.is-invalid):not(.ok-invalid):not(:is(.paper, .document-page, .document-page-eklaim, .surat-page, .pgp-page, .sgp-page, .bv-doc, .hospital-file-content) *),
+:is(.content-area, .tg-scope) :is(textarea, select):not([class]):not(:is(.paper, .document-page, .document-page-eklaim, .surat-page, .pgp-page, .sgp-page, .bv-doc, .hospital-file-content) *),
+:is(.content-area, .tg-scope) input:not([class]):is([type="text"], [type="search"], [type="number"], [type="date"], [type="time"], [type="datetime-local"], [type="email"], [type="password"], [type="tel"], :not([type])):not(:is(.paper, .document-page, .document-page-eklaim, .surat-page, .pgp-page, .sgp-page, .bv-doc, .hospital-file-content) *) {
+    box-shadow: inset 2px 2px 5px var(--eb-gelap-tipis), inset -2px -2px 5px var(--eb-terang) !important;
+}
+:is(.content-area, .tg-scope, .modal) :is(.form-control, .form-select, .ok-input, .ok-date-input, .ok-search-input, .pg-input):not(.is-invalid):not(.ok-invalid):not(#lo-pk-cari):not(:is(.paper, .document-page, .document-page-eklaim, .surat-page, .pgp-page, .sgp-page, .bv-doc, .hospital-file-content) *),
+:is(.content-area, .tg-scope) :is(textarea, select):not([class]):not(:is(.paper, .document-page, .document-page-eklaim, .surat-page, .pgp-page, .sgp-page, .bv-doc, .hospital-file-content) *),
+:is(.content-area, .tg-scope) input:not([class]):is([type="text"], [type="search"], [type="number"], [type="date"], [type="time"], [type="datetime-local"], [type="email"], [type="password"], [type="tel"], :not([type])):not(:is(.paper, .document-page, .document-page-eklaim, .surat-page, .pgp-page, .sgp-page, .bv-doc, .hospital-file-content) *) {
+    background-color: #F4F8FC !important;
+    border-color: rgba(160, 185, 212, .55) !important;
+}
+/* readonly / disabled: tetap terbaca sebagai "tidak bisa diubah" (lebih redup, tanpa cekung dalam) */
+:is(.content-area, .tg-scope, .modal) :is(.form-control, .form-select, .ok-input, .ok-date-input, .pg-input):is([readonly], :disabled):not(:is(.paper, .document-page, .document-page-eklaim, .surat-page, .pgp-page, .sgp-page, .bv-doc, .hospital-file-content) *) {
+    background-color: #ECF1F7 !important;
+    box-shadow: inset 1px 1px 3px var(--eb-gelap-tipis) !important;
+}
+/* fokus — `:not(#lo-pk-cari)` di sini HANYA untuk menyamakan spesifisitas (selektor id) dengan aturan latar di
+   atas; tanpa itu aturan latar menang dan isian tidak berubah saat diklik. */
+:is(.content-area, .tg-scope, .modal) :is(.form-control, .form-select, .ok-input, .ok-date-input, .ok-search-input, .rg-sel, .pg-input):not(.is-invalid):not(.ok-invalid):not(#lo-pk-cari):not(:is(.paper, .document-page, .document-page-eklaim, .surat-page, .pgp-page, .sgp-page, .bv-doc, .hospital-file-content) *):focus,
+:is(.content-area, .tg-scope) :is(textarea, select, input):not([class]):focus {
+    background-color: #FFFFFF !important;
+    border-color: var(--mc-focus) !important;
+    box-shadow: inset 1px 1px 3px var(--eb-gelap-tipis), 0 0 0 .22rem rgba(22, 135, 237, .22) !important;
+}
+.topbar .search-box {
+    box-shadow: inset 2px 2px 5px var(--eb-gelap-tipis), inset -2px -2px 5px var(--eb-terang);
+}
+
+/* ---------- 5. TOMBOL: timbul, tertekan saat diklik ---------- */
+:is(.content-area, .tg-scope, .modal, .topbar) .btn:not(.btn-link):not(.btn-close):not(:is(.paper, .document-page, .document-page-eklaim, .surat-page, .pgp-page, .sgp-page, .bv-doc) *) {
+    box-shadow: 4px 4px 10px var(--eb-gelap-tipis), -3px -3px 8px var(--eb-terang), inset 0 1px 0 rgba(255, 255, 255, .35) !important;
+    transition: box-shadow .15s ease, transform .15s ease, filter .15s ease;
+}
+:is(.content-area, .tg-scope, .modal, .topbar) .btn:not(.btn-link):not(.btn-close):not(:disabled):not(.disabled):hover {
+    transform: translateY(-1px);
+}
+:is(.content-area, .tg-scope, .modal, .topbar) .btn:not(.btn-link):not(.btn-close):not(:disabled):not(.disabled):active {
+    transform: translateY(1px);
+    box-shadow: inset 3px 3px 7px rgba(8, 40, 80, .28), inset -2px -2px 5px rgba(255, 255, 255, .25) !important;
+}
+/* tombol putih/garis (.btn-light/.btn-outline-*) = tombol neumorfik putih — HANYA saat DIAM.
+   Saat disorot/aktif/terpilih Bootstrap memakai teks PUTIH di atas latar warna; latar putih yang dikunci
+   !important di semua keadaan membuat tulisan hilang saat disorot (terukur 1,05:1: "Baru", "Laporan RM",
+   tab Ralan/Ranap casemix). Karena itu keadaan interaktif dikecualikan, dan .btn-check terpilih dipulihkan. */
+:is(.content-area, .tg-scope, .modal) :is(.btn-light, .btn-outline-secondary, .btn-outline-primary):not(:hover):not(:active):not(.active):not(.show):not(:focus-visible):not(:disabled):not(:is(.paper, .document-page, .document-page-eklaim, .surat-page, .pgp-page, .sgp-page, .bv-doc) *) {
+    background-color: #F7FAFD !important;
+    border-color: rgba(255, 255, 255, .9) !important;
+}
+/* `:not(#_)` = selektor id yang tak pernah cocok, SENGAJA: menaikkan spesifisitas ke tingkat id. Aturan latar putih
+   di atas punya enam :not(...) -> lebih spesifik dari `.btn-check:checked + .btn` -> pilihan radio TERPILIH (casemix
+   Belum Pulang/Tgl Masuk/Pulang) bertulisan putih di latar putih begitu mouse pergi (terukur 1,05:1). */
+:is(.content-area, .tg-scope, .modal) :is(.btn-check:checked, .btn-check:active) + :is(.btn-light, .btn-outline-secondary, .btn-outline-primary):not(#_),
+:is(.content-area, .tg-scope, .modal) :is(.btn-light, .btn-outline-secondary, .btn-outline-primary).active:not(#_) {
+    background-color: var(--bs-btn-active-bg) !important;
+    border-color: var(--bs-btn-active-border-color) !important;
+    color: var(--bs-btn-active-color) !important;
+}
+.topbar-btn {
+    box-shadow: 4px 4px 10px var(--eb-gelap-tipis), -3px -3px 8px var(--eb-terang), var(--eb-kilau) !important;
+}
+
+/* ---------- 6. TAB & PIL: tab aktif timbul, lainnya rata ---------- */
+:is(.content-area, .tg-scope) :is(.nav-tabs, .nav-pills) .nav-link.active:not(.sidebar-link) {
+    box-shadow: 4px 4px 10px var(--eb-gelap-tipis), -3px -3px 8px var(--eb-terang), var(--eb-kilau) !important;
+}
+
+/* ---------- 7. DAFTAR PASIEN & ITEM TERPILIH ---------- */
+:is(.content-area, .tg-scope) :is(.patient-item, .pb-plist-item, .casemix-patient-item, .ok-pasien-item):not(.active):not(.sdipilih):not(.selected) {
+    box-shadow: 3px 3px 8px var(--eb-gelap-tipis), -2px -2px 6px var(--eb-terang);
+}
+:is(.content-area, .tg-scope) :is(.pasien-row, .patient-item, .pb-plist-item, .casemix-patient-item, .ok-pasien-item, .list-group-item):is(.active, .table-active, .sdipilih, .selected) {
+    box-shadow: inset 3px 3px 7px var(--eb-gelap-tipis), inset -3px -3px 7px var(--eb-terang) !important;
+}
+
+/* ---------- 8. SIDEBAR & MODAL ---------- */
+.sidebar-desktop.sidebar {
+    box-shadow: 8px 8px 22px rgba(11, 57, 118, .30), -4px -4px 12px rgba(255, 255, 255, .7), inset 0 1px 0 rgba(255, 255, 255, .12) !important;
+}
+.sidebar .sidebar-link.active,
+.sidebar .nav-link.active {
+    box-shadow: 0 4px 10px rgba(6, 30, 62, .35), inset 0 1px 0 rgba(255, 255, 255, .7) !important;
+}
+.modal-content {
+    border: 1px solid rgba(255, 255, 255, .9) !important;
+    box-shadow: 14px 14px 34px rgba(60, 90, 130, .30), -8px -8px 22px rgba(255, 255, 255, .6), var(--eb-kilau);
+}
+
+/* ---------- 9. AREA KERTAS (ditulis ulang untuk audit_statis — lihat blue-glass.css bag. 11) ---------- */
+:is(.content-area, .tg-scope, .modal) :is(.paper, .document-page, .document-page-eklaim, .surat-page, .pgp-page, .sgp-page, .bv-doc) {
+    color-scheme: light;
+    accent-color: #4F46E5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :is(.content-area, .tg-scope, .modal, .topbar) .btn { transition: none; transform: none !important; }
+}
