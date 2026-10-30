@@ -60,3 +60,46 @@ class PanduanTests(TestCase):
     def test_sidebar_has_guide_link(self):
         self.client.force_login(self.w.staf_igd)
         self.assertContains(self.client.get("/"), reverse("panduan:index"))
+
+
+class AlurTugasPanduanTests(TestCase):
+    """Bagian 'Alur tugas': siapa memberi, mengerjakan, memantau — harus sama dengan aturan sistem."""
+
+    def setUp(self):
+        self.w = f.World()
+
+    def _alur(self):
+        self.client.force_login(self.w.staf_igd)
+        r = self.client.get(reverse("panduan:index"))
+        return r, r.context["alur_tugas"]
+
+    def _sel(self, a, tindakan, peran):
+        kolom = a["matriks"]["kolom"].index(str(dict(Role.choices)[peran]))
+        return dict(a["matriks"]["baris"])[tindakan][kolom][0]
+
+    def test_bagian_tampil_lengkap_tanpa_placeholder(self):
+        r, a = self._alur()
+        html = r.content.decode()
+        for teks in ('id="alur-tugas"', "Empat jalur pekerjaan", "Wewenang per peran", "Siapa memantau apa",
+                     "Kepala IGD memberi tugas ke staf, Direktur memantau", "Pemeriksa = pemberi tugas"):
+            self.assertIn(teks, html)
+        isi = str(a["samping"]) + str(a["jalur"]) + str(a["pantau"]) + str(a["contoh"])
+        self.assertNotIn("{", isi)
+        self.assertEqual(len(a["jalur"]), 4)
+
+    def test_matriks_sesuai_hak_akses(self):
+        _, a = self._alur()
+        self.assertEqual(self._sel(a, "Memberi penugasan langsung", Role.KEPALA_UNIT), "ya")
+        self.assertEqual(self._sel(a, "Memberi penugasan langsung", Role.STAF), "tidak")
+        self.assertEqual(self._sel(a, "Melihat tugas", Role.DIREKTUR), "ya")
+        self.assertEqual(self._sel(a, "Minta kabar, beri arahan, ubah PIC/tenggat, batalkan", Role.AUDITOR), "tidak")
+        self.assertEqual(self._sel(a, "Memeriksa & menutup tugas", Role.KEPALA_UNIT), "syarat")
+        self.assertEqual(self._sel(a, "Memeriksa & menutup tugas", Role.STAF), "tidak")
+
+    @override_settings(EOFFICE={"INSTRUCTION_ISSUER_ROLES": ["DIREKTUR"], "REMINDER_DAYS_BEFORE": [2],
+                                "ESCALATION_DAYS_OVERDUE": 7, "REMINDER_HOUR": 7})
+    def test_matriks_dan_teks_mengikuti_pengaturan(self):
+        r, a = self._alur()
+        self.assertEqual(self._sel(a, "Menerbitkan instruksi", Role.WADIR), "tidak")
+        self.assertEqual(self._sel(a, "Menerbitkan instruksi", Role.DIREKTUR), "ya")
+        self.assertIn("≥ 7 hari", str(a["samping"]))

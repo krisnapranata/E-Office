@@ -1,0 +1,77 @@
+{% with a=alur_tugas %}
+<section id="alur-tugas" class="card mb-4"><div class="card-header"><i class="bi bi-diagram-2 me-2" aria-hidden="true"></i>Alur tugas: siapa memberi, siapa mengerjakan, siapa memantau</div>
+  <div class="card-body">
+    <p class="mb-4">{{ a.ringkas|safe }}</p>
+
+    <h2 class="h6 fw-bold mb-2" id="alur-tugas-tingkat">A. Tingkatan pemberi tugas</h2>
+    <div class="row g-3 mb-4 align-items-start">
+      <div class="col-lg-7">
+        <ol class="hirarki list-unstyled mb-0" aria-label="Tingkatan dari Direktur sampai Staf">
+          {% for ikon, peran, tugas, panah in a.hirarki %}
+          <li>
+            <div class="hirarki-kotak"><span class="panduan-ikon" aria-hidden="true"><i class="bi {{ ikon }}"></i></span>
+              <div><div class="fw-semibold">{{ peran }}</div><div class="small text-muted">{{ tugas|safe }}</div></div></div>
+            {% if panah %}<div class="hirarki-panah"><i class="bi bi-arrow-down" aria-hidden="true"></i> <span>{{ panah }}</span></div>{% endif %}
+          </li>
+          {% endfor %}
+        </ol>
+      </div>
+      <div class="col-lg-5">
+        {% for ikon, judul, teks in a.samping %}
+        <div class="hirarki-catatan mb-2"><i class="bi {{ ikon }} me-2" aria-hidden="true"></i><b>{{ judul }}.</b> {{ teks|safe }}</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <h2 class="h6 fw-bold mb-2" id="alur-tugas-jalur">B. Empat jalur pekerjaan</h2>
+    <p class="small text-muted">Apa pun jalurnya, hasilnya sama: <b>satu tugas</b> dengan PIC, tenggat, bukti, dan pemeriksa, sehingga dipantau dengan cara yang sama.</p>
+    <div class="row g-3 mb-4">
+      {% for ikon, nama, memberi, penerima, pemberi, pemeriksa, contoh in a.jalur %}
+      <div class="col-md-6"><div class="kartu-jalur h-100">
+        <div class="fw-semibold mb-2"><span class="panduan-ikon d-inline-grid me-2" aria-hidden="true"><i class="bi {{ ikon }}"></i></span>{{ nama }}</div>
+        <dl class="mb-0">
+          <dt>Siapa yang memberi</dt><dd>{{ memberi|safe }}</dd>
+          <dt>Kepada siapa</dt><dd>{{ penerima|safe }}</dd>
+          <dt>Tertulis sebagai pemberi · pemeriksa hasil</dt><dd>{{ pemberi|safe }} · {{ pemeriksa|safe }}</dd>
+          <dt>Contoh</dt><dd class="text-muted mb-0">{{ contoh|safe }}</dd>
+        </dl>
+      </div></div>
+      {% endfor %}
+    </div>
+
+    <h2 class="h6 fw-bold mb-2" id="alur-tugas-wewenang">C. Wewenang per peran</h2>
+    <p class="small text-muted mb-2"><span class="tanda tanda-ya"><i class="bi bi-check-lg" aria-hidden="true"></i></span> boleh ·
+      <span class="tanda tanda-syarat"><i class="bi bi-dash-circle" aria-hidden="true"></i></span> boleh dengan syarat (lihat keterangan) ·
+      <span class="tanda tanda-tidak">—</span> tidak boleh. Tabel ini dibaca langsung dari aturan hak akses sistem.</p>
+    <div class="table-responsive mb-4"><table class="table table-sm align-top tabel-panduan tabel-wewenang">
+      <thead><tr><th>Tindakan</th>{% for k in a.matriks.kolom %}<th class="text-center">{{ k }}</th>{% endfor %}</tr></thead><tbody>
+      {% for tindakan, sel in a.matriks.baris %}
+      <tr><td class="fw-semibold">{{ tindakan }}</td>
+        {% for tanda, ket in sel %}<td class="text-center">{% if tanda == 'ya' %}<span class="tanda tanda-ya" title="Boleh"><i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">Boleh</span></span>{% elif tanda == 'syarat' %}<span class="tanda tanda-syarat" title="Boleh dengan syarat"><i class="bi bi-dash-circle" aria-hidden="true"></i><span class="visually-hidden">Dengan syarat</span></span>{% else %}<span class="tanda tanda-tidak" title="Tidak boleh">—<span class="visually-hidden">Tidak boleh</span></span>{% endif %}{% if ket %}<div class="small text-muted">{{ ket }}</div>{% endif %}</td>{% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody></table></div>
+
+    <h2 class="h6 fw-bold mb-2" id="alur-tugas-pantau">D. Siapa memantau apa</h2>
+    <div class="table-responsive mb-4"><table class="table table-sm align-top tabel-panduan">
+      <thead><tr><th>Peran</th><th>Tugas yang terlihat</th><th>Tempat memantau</th><th>Notifikasi yang diterima</th></tr></thead><tbody>
+      {% for peran, lihat, tempat, notif in a.pantau %}
+      <tr><td class="text-nowrap fw-semibold">{{ peran }}</td><td>{{ lihat|safe }}</td><td>{{ tempat|safe }}</td><td>{{ notif|safe }}</td></tr>
+      {% endfor %}
+    </tbody></table></div>
+
+    <h2 class="h6 fw-bold mb-2" id="alur-tugas-contoh">E. Contoh lengkap: Kepala IGD memberi tugas ke staf, Direktur memantau</h2>
+    <ol class="contoh-alur mb-4">
+      {% for siapa, teks in a.contoh %}<li><span class="badge text-bg-light border me-1">{{ siapa|safe }}</span> {{ teks|safe }}</li>{% endfor %}
+    </ol>
+
+    <h2 class="h6 fw-bold mb-2" id="alur-tugas-catatan">F. Hal penting yang sering disalahpahami</h2>
+    <ul class="mb-3">{% for c in a.catatan %}<li class="mb-2">{{ c|safe }}</li>{% endfor %}</ul>
+
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'dashboard:home' %}"><i class="bi bi-house-door me-1" aria-hidden="true"></i>Buka Beranda</a>
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'workflow:list' %}"><i class="bi bi-check2-square me-1" aria-hidden="true"></i>Buka daftar Tugas</a>
+    </div>
+  </div>
+</section>
+{% endwith %}

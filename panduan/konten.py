@@ -52,6 +52,138 @@ PENANDA = [
                          "judulnya tidak ditampilkan di notifikasi."),
 ]
 
+# --------------------------------------------------------------------------- alur tugas: memberi, mengerjakan, memantau
+# Bagian "Alur tugas" di halaman Panduan. Matriks wewenang dihitung dari fungsi izin yang dipakai sistem
+# (panduan.views._matriks_wewenang), jadi tidak bisa berbeda dengan perilaku sebenarnya.
+ALUR_TUGAS_RINGKAS = (
+    "Pekerjaan di E-Office <b>mengalir dari atas ke bawah</b>. Direktur berada di puncak: memberi instruksi, "
+    "mendisposisikan surat, dan dapat menugaskan siapa saja. Wakil Direktur meneruskan ke unit di bidangnya, "
+    "Kepala Unit membagi pekerjaan ke stafnya. Laporan progres, hambatan, bukti, dan hasil <b>naik kembali</b> ke "
+    "orang yang memberi tugas, dan orang itulah yang memeriksa serta menutup tugasnya."
+)
+
+# Diagram tingkatan: (ikon, peran, tugas utama, label panah ke tingkat di bawahnya)
+HIRARKI = [
+    ("bi-person-badge", "Direktur",
+     "Memberi instruksi, mendisposisikan surat, menugaskan langsung, memantau <b>seluruh</b> rumah sakit.",
+     "instruksi · disposisi · tugas langsung"),
+    ("bi-diagram-3", "Wakil Direktur / Manajer",
+     "Meneruskan disposisi, menerbitkan instruksi bidang, membagi tugas ke unit di bidangnya, memantau bidangnya.",
+     "terusan disposisi · tugas langsung"),
+    ("bi-people", "Kepala Unit / Instalasi",
+     "Membagi tugas ke staf, memeriksa hasil staf, menerima eskalasi keterlambatan staf, memantau unitnya.",
+     "tugas langsung · terusan disposisi"),
+    ("bi-person-workspace", "Staf / PIC",
+     "Menerima tugas, mengerjakan, melaporkan progres &amp; hambatan, mengunggah bukti, mengirim hasil.", ""),
+]
+HIRARKI_SAMPING = [
+    ("bi-arrow-up-circle", "Naik ke pemberi tugas",
+     "Laporan progres, hambatan, <i>keputusan yang dibutuhkan</i>, bukti, dan hasil dikirim ke <b>pemberi tugas</b>, "
+     "yang sekaligus menjadi <b>pemeriksa</b>."),
+    ("bi-arrow-down-right-circle", "Direktur boleh melompat",
+     "Direktur dapat menugaskan Kepala Unit atau Staf secara langsung tanpa melalui Wakil Direktur."),
+    ("bi-alarm", "Eskalasi otomatis",
+     "Bila tugas terlambat ≥ {hari_eskalasi} hari, sistem memberi tahu <b>atasan langsung</b> PIC "
+     "(bila kosong: kepala unit tugas)."),
+]
+
+# Empat jalur pekerjaan: ikon, nama, siapa memberi, kepada siapa, tercatat sebagai pemberi, pemeriksa, contoh
+JALUR_TUGAS = [
+    ("bi-megaphone", "Instruksi",
+     "{penerbit_instruksi} (Sekretaris mencatat <i>atas nama</i> pimpinan).",
+     "Satu atau beberapa unit; setiap penerima (PIC) mendapat satu tugas.",
+     "Pimpinan pemberi instruksi (pihak <i>atas nama</i>, bukan sekretaris yang mengetik).",
+     "Pemberi instruksi.",
+     "Direktur menginstruksikan \"Evaluasi waktu tunggu IGD\" ke Kepala IGD dan Kepala Farmasi."),
+    ("bi-signpost-split", "Disposisi surat",
+     "Direktur, Wakil Direktur, Kepala Unit. Penerima disposisi dapat <b>meneruskan</b> ke bawahannya.",
+     "Satu penerima per disposisi; bila <i>memerlukan tindakan</i>, menjadi satu tugas.",
+     "Pemberi disposisi.",
+     "Pemberi disposisi.",
+     "Surat Dinkes → Direktur → Wakil Direktur Pelayanan → Kepala IGD."),
+    ("bi-check2-square", "Penugasan langsung",
+     "Direktur, Wakil Direktur, Kepala Unit (tombol <b>Beri tugas</b>).",
+     "Satu PIC, boleh dengan kolaborator. Alasan/asal tugas wajib diisi.",
+     "Pembuat tugas.",
+     "Pembuat tugas.",
+     "Kepala IGD menugaskan staf IGD \"Rekap kunjungan dan waktu tanggap IGD Oktober\"."),
+    ("bi-journal-check", "Keputusan rapat",
+     "Pimpinan rapat, setelah notulen <b>disetujui</b>.",
+     "PIC tiap butir keputusan yang <i>memerlukan tindakan</i>.",
+     "Pimpinan rapat.",
+     "Pimpinan rapat.",
+     "Rapat mutu memutuskan \"Perbaiki alur triase\"; PIC: Kepala IGD."),
+]
+
+# Siapa memantau apa: peran, yang terlihat, di mana memantau, notifikasi yang diterima
+PANTAU_TUGAS = [
+    ("Direktur",
+     "<b>Semua</b> tugas rumah sakit, termasuk yang Rahasia, dari jalur mana pun, termasuk tugas yang diberikan "
+     "Kepala Unit kepada stafnya.",
+     "Beranda: <i>Menunggu keputusan Anda</i>, <i>Perlu dikejar</i> (terlambat &amp; terhambat seluruh RS), "
+     "<i>Ringkasan tugas</i>; menu <b>Tugas</b> (saring per unit/PIC/status); menu <b>Laporan</b> (grafik per unit).",
+     "Tugas yang <b>diberikannya</b> (hasil dikirim, minta keputusan), disposisi untuk dirinya, eskalasi bila ia "
+     "atasan langsung PIC."),
+    ("Wakil Direktur",
+     "Tugas di unit bidangnya beserta sub-unitnya (kecuali Rahasia yang tidak melibatkannya), ditambah tugas yang "
+     "ia beri, periksa, atau kerjakan.",
+     "Beranda (3 bagian pimpinan), menu Tugas, menu Laporan: angka hanya untuk bidangnya.",
+     "Tugas yang diberikannya, disposisi untuknya, eskalasi bila ia atasan langsung PIC."),
+    ("Kepala Unit",
+     "Tugas di unitnya beserta sub-unitnya (kecuali Rahasia yang tidak melibatkannya), ditambah tugas yang ia beri, "
+     "periksa, atau kerjakan.",
+     "Beranda (3 bagian pimpinan), menu Tugas, menu Laporan: angka hanya untuk unitnya.",
+     "Hasil staf yang menunggu diperiksa, permintaan keputusan, <b>eskalasi keterlambatan staf</b>."),
+    ("Staf / PIC",
+     "Hanya tugas di mana ia PIC atau kolaborator, serta instruksi/disposisi yang ditujukan kepadanya.",
+     "Beranda: <i>Perlu Anda kerjakan</i> dan <i>Tugas saya yang sedang berjalan</i>; menu Tugas.",
+     "Tugas baru, pengingat {hari_pengingat}, terlambat, hasil dikembalikan, arahan pimpinan, permintaan kabar."),
+    ("Auditor",
+     "Semua tugas kecuali yang Rahasia, <b>hanya baca</b>.",
+     "Menu Tugas, Laporan, audit trail di setiap tugas.",
+     "—"),
+]
+
+# Contoh lengkap langkah demi langkah (menjawab: Kepala Unit memberi tugas, apakah Direktur bisa memantau?)
+CONTOH_ALUR = [
+    ("Kepala IGD", "Membuka <b>Beranda → Beri tugas</b>, mengisi judul, alasan, PIC (staf IGD), tenggat, dan kriteria "
+                   "selesai, lalu menerbitkannya. Ia otomatis menjadi <b>pemeriksa</b>."),
+    ("Staf IGD", "Mendapat notifikasi <i>Tugas baru</i>. Di Beranda tertulis <i>\"Dari dr. … · Kepala Instalasi Gawat "
+                 "Darurat\"</i>. Menekan <b>Lihat &amp; terima</b> → <b>Terima tugas</b>."),
+    ("Direktur", "<b>Tidak</b> mendapat notifikasi (agar tidak kebanjiran), tetapi tugas langsung terlihat di menu "
+                 "<b>Tugas</b> (\"dari Kepala IGD\"), di <b>Ringkasan tugas</b>, dan di <b>Laporan</b> unit IGD."),
+    ("Staf IGD", "Melapor progres. Bila ada kendala: status <b>Terhambat</b> + hambatan, dan bila perlu mengisi "
+                 "<i>Keputusan yang dibutuhkan</i>."),
+    ("Kepala IGD &amp; Direktur", "Permintaan keputusan muncul di Beranda Kepala IGD <b>dan</b> Direktur "
+                                  "(<i>Menunggu keputusan Anda</i> → <b>Beri arahan</b>). Tugas terhambat muncul di "
+                                  "<i>Perlu dikejar</i>."),
+    ("Sistem", "Mengirim pengingat {hari_pengingat} ke staf. Bila tenggat lewat: tugas ditandai <b>Terlambat</b> dan "
+               "muncul di <i>Perlu dikejar</i> Direktur dan Kepala IGD (tombol <b>Minta kabar</b>). Bila terlambat "
+               "≥ {hari_eskalasi} hari: eskalasi ke atasan langsung staf (Kepala IGD)."),
+    ("Staf IGD", "Mengunggah bukti, lalu <b>Kirim untuk verifikasi</b>."),
+    ("Kepala IGD", "Memeriksa bukti (<b>Lihat</b> tanpa unduh), lalu <b>Setujui &amp; tutup</b> atau <b>Kembalikan "
+                   "untuk perbaikan</b>. Direktur dapat melihat hasilnya, tetapi yang menutup adalah pemberi tugas."),
+]
+
+# Hal yang sering disalahpahami
+CATATAN_ALUR = [
+    "<b>Pemeriksa = pemberi tugas.</b> Direktur hanya memverifikasi tugas yang ia berikan sendiri (atau instruksi "
+    "atas namanya). Tugas dari Kepala Unit diperiksa Kepala Unit. Direktur tetap bisa <b>Minta kabar</b>, "
+    "<b>Beri arahan</b>, mengubah penanggung jawab/tenggat, atau membatalkan, dan semuanya tercatat di audit trail.",
+    "<b>Direktur tidak dinotifikasi</b> untuk setiap tugas yang dibuat Kepala Unit/Wakil Direktur. Pantau lewat "
+    "Beranda (<i>Perlu dikejar</i>), menu Tugas, dan Laporan.",
+    "<b>Eskalasi keterlambatan</b> dikirim ke <b>atasan langsung</b> PIC (diatur di menu Pengguna), bukan otomatis ke "
+    "Direktur. Direktur menerima eskalasi bila ia atasan langsung PIC (mis. PIC-nya Kepala Unit/Wakil Direktur).",
+    "<b>Nama pemberi tugas</b> selalu tampil: di Beranda, di bawah judul tugas (<i>Diberikan oleh</i>), dan di daftar "
+    "tugas. Untuk instruksi yang dicatat sekretaris, yang tampil adalah pimpinan yang memberi instruksi.",
+    "<b>Kebijakan penerima tugas:</b> berikan tugas kepada bawahan di unit/bidang Anda. Untuk pekerjaan lintas unit, "
+    "jadikan orang unit lain sebagai <b>kolaborator</b> atau minta melalui atasan bersama. (Formulir saat ini "
+    "menampilkan semua pegawai aktif; disiplin ini dijaga oleh kebijakan rumah sakit.)",
+    "Tugas berklasifikasi <b>Rahasia</b> hanya terlihat oleh pihak yang terlibat dan Direktur, tidak oleh atasan unit "
+    "maupun Auditor.",
+]
+
+
 # --------------------------------------------------------------------------- tugas umum (dipakai beberapa peran)
 # Setiap tugas: judul, url (nama URL atau None), dan langkah-langkah.
 T_NOTIF = {
@@ -394,8 +526,9 @@ T_LAPORAN = {
 PERAN = [
     {
         "kode": Role.DIREKTUR, "ikon": "bi-person-badge",
-        "ringkas": "Memberi arahan (instruksi & disposisi), memverifikasi hasil, dan memantau seluruh pekerjaan "
-                   "rumah sakit dari dashboard.",
+        "ringkas": "Memberi arahan (instruksi, disposisi, tugas langsung), memverifikasi hasil pekerjaan yang "
+                   "diberikannya, dan memantau seluruh pekerjaan rumah sakit (termasuk tugas dari Kepala Unit ke "
+                   "stafnya) dari Beranda, menu Tugas, dan Laporan.",
         "lingkup": "Melihat <b>semua</b> data, termasuk yang berklasifikasi Rahasia.",
         "tugas": [T_MONITOR, T_INSTRUKSI, T_DISPOSISI, T_VERIFIKASI, T_KENDALI, T_AGENDA, T_NOTULEN_SETUJUI,
                   T_TINDAKLANJUT, T_LAPORAN, T_ARSIP_MUSNAH, T_LANGSUNG, T_NOTIF],
@@ -468,6 +601,19 @@ PERAN = [
 ]
 
 FAQ = [
+    ("Siapa yang memberi saya tugas ini?",
+     "Lihat tulisan <i>Dari …</i> di Beranda atau <b>Diberikan oleh</b> di bawah judul tugas: nama, jabatan, dan "
+     "tanggal. Untuk instruksi yang dicatat sekretaris, yang tertulis adalah pimpinan pemberi instruksi."),
+    ("Apakah tugas hanya dari Direktur, atau juga dari Kepala Unit?",
+     "Keduanya. Direktur memberi lewat instruksi, disposisi, atau tugas langsung; Wakil Direktur dan Kepala Unit juga "
+     "dapat memberi tugas langsung dan meneruskan disposisi ke bawahannya. Lihat bagian <i>Alur tugas</i>."),
+    ("Bila Kepala Unit memberi tugas ke stafnya, apakah Direktur bisa memantau?",
+     "Ya. Direktur melihat semua tugas: di menu Tugas, Ringkasan tugas, Laporan, dan otomatis di <i>Perlu dikejar</i> "
+     "bila terlambat atau terhambat. Direktur tidak mendapat notifikasi untuk setiap tugas baru, dan yang memeriksa "
+     "hasilnya tetap Kepala Unit."),
+    ("Tugas saya terlambat. Siapa yang diberi tahu?",
+     "Anda (saat tenggat lewat), lalu atasan langsung Anda bila terlambat ≥ {hari_eskalasi} hari. Tugas terlambat juga "
+     "tampil di Beranda pemberi tugas dan Direktur."),
     ("Mengapa saya tidak melihat tugas tertentu?",
      "Daftar dan dashboard hanya menampilkan data dalam lingkup akses Anda (lihat bagian <i>Yang dapat Anda lihat</i> "
      "pada peran Anda). Membuka alamat tugas di luar lingkup akan menampilkan \"tidak ditemukan\"."),

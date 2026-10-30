@@ -22,6 +22,8 @@
     </div>
   </section>
 
+  {% include "panduan/_alur_tugas.html" %}
+
   <section id="modul" class="card mb-4"><div class="card-header"><i class="bi bi-grid-3x3-gap me-2" aria-hidden="true"></i>Panduan per modul (12 modul)</div>
     <div class="card-body"><div class="row g-3">
       <div class="col-md-4 col-lg-3">
@@ -115,9 +117,12 @@
 
   <section id="tampilan" class="card mb-4"><div class="card-header"><i class="bi bi-window me-2" aria-hidden="true"></i>Mengenal tampilan</div>
     <div class="card-body"><ul class="mb-0">
-      <li class="mb-1"><b>Sidebar kiri</b>: arahkan mouse untuk melebarkan; tombol <i class="bi bi-list" aria-hidden="true"></i> di kiri atas menyematkannya agar tetap lebar. Di ponsel, tombol yang sama membuka menu.</li>
+      <li class="mb-1"><b>Menu kiri</b>: selalu terbuka (ikon + tulisan) dan hanya berisi menu yang dipakai peran Anda. Tombol <i class="bi bi-list" aria-hidden="true"></i> di kiri atas merampingkannya (pilihan tersimpan). Di ponsel, tombol yang sama membuka menu.</li>
+      <li class="mb-1"><b>Beranda</b>: pimpinan melihat <i>1 Menunggu keputusan Anda</i>, <i>2 Perlu dikejar</i>, dan <i>3 Kondisi</i>; staf melihat <i>Perlu Anda kerjakan</i>. Setiap butir punya satu tombol tindakan.</li>
+      <li class="mb-1"><b>Halaman tugas</b>: garis langkah (Diberikan → Diterima → Dikerjakan → Diperiksa → Selesai), kotak <i>Yang perlu dilakukan</i>, nama pemberi tugas, dan tombol aksi bernomor.</li>
+      <li class="mb-1"><b>Berkas</b>: tombol <b>Lihat</b> membuka PDF/foto di browser tanpa mengunduh; <b>Unduh</b> untuk menyimpan.</li>
       <li class="mb-1"><b>Kotak cari</b> (atau tekan <kbd>Ctrl</kbd>+<kbd>K</kbd>): mencari tugas berdasarkan judul/deskripsi.</li>
-      <li class="mb-1"><b>Lonceng</b>: jumlah notifikasi belum dibaca. <b>Nama Anda</b> di kanan atas: peran, unit, dan tombol <b>Keluar</b>.</li>
+      <li class="mb-1"><b>Lonceng</b>: notifikasi belum dibaca. <b>Nama Anda</b> di kanan atas: peran, unit, Panduan, dan tombol <b>Keluar</b>.</li>
       <li class="mb-1">Aksi penting (terbitkan, kirim hasil, batalkan) meminta konfirmasi sebelum dijalankan.</li>
       <li>Pesan hijau = berhasil, merah = ditolak beserta alasannya (mis. kolom wajib belum diisi).</li>
     </ul></div>
@@ -148,6 +153,11 @@
   <nav class="card panduan-toc" aria-label="Daftar isi"><div class="card-header">Daftar isi</div>
     <div class="list-group list-group-flush">
       <a class="list-group-item list-group-item-action" href="#alur">Alur besar</a>
+      <a class="list-group-item list-group-item-action" href="#alur-tugas">Alur tugas: memberi &amp; memantau</a>
+      <a class="list-group-item list-group-item-action ps-4 small" href="#alur-tugas-jalur">Empat jalur pekerjaan</a>
+      <a class="list-group-item list-group-item-action ps-4 small" href="#alur-tugas-wewenang">Wewenang per peran</a>
+      <a class="list-group-item list-group-item-action ps-4 small" href="#alur-tugas-pantau">Siapa memantau apa</a>
+      <a class="list-group-item list-group-item-action ps-4 small" href="#alur-tugas-contoh">Contoh lengkap</a>
       <a class="list-group-item list-group-item-action" href="#modul">Panduan per modul</a>
       <a class="list-group-item list-group-item-action" href="#peran">Panduan per peran</a>
       <a class="list-group-item list-group-item-action" href="#status">Status &amp; penanda</a>
