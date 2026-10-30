@@ -15,5 +15,6 @@ urlpatterns = [
     path("<int:pk>/ubah-penugasan/", views.task_reassign, name="reassign"),
     path("<int:pk>/batal/", views.task_cancel, name="cancel"),
     path("<int:pk>/minta-pembaruan/", views.task_request_update, name="request_update"),
+    path("<int:pk>/arahan/", views.task_direction, name="direction"),
     path("bukti/<int:pk>/unduh/", views.evidence_download, name="evidence_download"),
 ]

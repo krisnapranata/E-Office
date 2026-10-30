@@ -1,0 +1,15 @@
+<div class="card mb-4"><ul class="list-group list-group-flush">
+  {% for t in tugas_saya %}
+  <li class="list-group-item tugas-baris">
+    <div class="d-flex justify-content-between gap-2">
+      <a class="fw-semibold" href="{% url 'workflow:detail' t.pk %}">{{ t.title }}</a>
+      {% include "_status.html" with s=t.status label=t.get_status_display %}
+    </div>
+    <div class="d-flex align-items-center gap-2 mt-1">
+      <div class="progress flex-grow-1" role="progressbar" aria-label="Progres" aria-valuenow="{{ t.progress }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:{{ t.progress }}%"></div></div>
+      <span class="small text-muted text-nowrap">{{ t.progress }}% · tenggat {{ t.due_date|date:"d M"|default:"–" }}{% if t.is_overdue %} <span class="text-danger fw-semibold">terlambat</span>{% endif %}</span>
+    </div>
+  </li>
+  {% empty %}<li class="list-group-item text-muted">Anda belum punya tugas yang berjalan.</li>{% endfor %}
+  {% if jumlah_tugas_saya > tugas_saya|length %}<li class="list-group-item"><a href="{% url 'workflow:list' %}?pic={{ user.pk }}&amp;flag=open">Lihat semua {{ jumlah_tugas_saya }} tugas saya</a></li>{% endif %}
+</ul></div>

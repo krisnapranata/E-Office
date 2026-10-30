@@ -1,0 +1,42 @@
+{% load l10n %}{% with g=rep.grafik r=rep.ringkas %}
+<div class="row g-3 mb-4 stat-laporan">
+  <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="stat-angka">{% if r.pct_tepat_waktu is not None %}{{ r.pct_tepat_waktu }}%{% else %}–{% endif %}</div><div class="stat-ket">selesai <b>tepat waktu</b> (dari tugas selesai yang bertenggat)</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="stat-angka">{% if r.pct_selesai is not None %}{{ r.pct_selesai }}%{% else %}–{% endif %}</div><div class="stat-ket">tugas sudah <b>selesai</b> ({{ r.selesai }} dari {{ r.total }})</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="stat-angka text-danger">{{ r.terlambat_terbuka }}</div><div class="stat-ket"><b>terlambat</b> dan belum selesai</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="stat-angka">{{ r.rata_hari|default_if_none:"–" }}</div><div class="stat-ket">rata-rata <b>hari</b> sampai tugas selesai</div></div></div></div>
+</div>
+
+{% localize off %}{# koordinat SVG wajib bertitik desimal (format id-ID memakai koma) #}
+{% if g.unit %}
+<div class="card mb-4 grafik"><div class="card-header">Kondisi pekerjaan per unit</div><div class="card-body">
+  <p class="small text-muted mb-2">Satu batang = semua tugas satu unit. Makin banyak <b>merah</b>, makin banyak pekerjaan terlambat yang belum selesai. Arahkan kursor ke batang untuk angkanya.</p>
+  <ul class="legenda">{% for label, warna in g.unit.legenda %}<li><span class="legenda-kotak" style="background:{{ warna }}"></span>{{ label }}</li>{% endfor %}</ul>
+  <div class="grafik-gulir"><svg class="svg-grafik grafik-unit" viewBox="0 0 1000 {{ g.unit.tinggi }}" role="img" aria-label="Grafik batang bertumpuk status pekerjaan per unit; angka lengkap ada di tabel Evaluasi per unit">
+    {% for x in g.unit.garis %}<line x1="{{ x.x }}" x2="{{ x.x }}" y1="14" y2="{{ g.unit.tinggi|add:'-8' }}" class="grid"/><text x="{{ x.x }}" y="10" class="sumbu" text-anchor="middle">{{ x.label }}</text>{% endfor %}
+    {% for row in g.unit.rows %}<g><title>{{ row.kode }} {{ row.nama }}: {{ row.total }} tugas</title>
+      <text x="{{ g.unit.kiri|add:'-8' }}" y="{{ row.ty }}" class="label" text-anchor="end">{{ row.kode|truncatechars:16 }}</text>
+      {% for s in row.seg %}<rect x="{{ s.x }}" y="{{ row.y }}" width="{{ s.w }}" height="{{ row.tebal }}" rx="3" fill="{{ s.warna }}"><title>{{ s.judul }}</title></rect>{% endfor %}
+      <text x="{{ row.x_total }}" y="{{ row.ty }}" class="nilai">{{ row.total }}</text></g>{% endfor %}
+  </svg></div>
+  {% if g.unit.dipotong %}<p class="small text-muted mb-0">Ditampilkan 12 unit dengan tugas terbanyak dari {{ g.unit.jumlah_unit }} unit; semua unit ada di tabel <b>Evaluasi per unit</b>.</p>{% endif %}
+</div></div>
+{% endif %}
+
+<div class="row g-4 mb-2">
+  {% if g.tren %}<div class="col-lg-7"><div class="card mb-4 grafik"><div class="card-header">Tugas baru vs tugas selesai per minggu</div><div class="card-body">
+    <p class="small text-muted mb-2">Bila garis <b>oranye</b> (selesai) terus di bawah garis <b>biru</b> (tugas baru), pekerjaan menumpuk.</p>
+    <ul class="legenda">{% for s in g.tren.seri %}<li><span class="legenda-garis" style="background:{{ s.warna }}"></span>{{ s.label }}</li>{% endfor %}</ul>
+    <div class="grafik-gulir"><svg class="svg-grafik grafik-tren" viewBox="0 0 640 200" role="img" aria-label="Grafik garis tugas baru dan tugas selesai per minggu">
+      {% for gy in g.tren.garis %}<line x1="{{ g.tren.kiri }}" x2="{{ g.tren.kanan }}" y1="{{ gy.y }}" y2="{{ gy.y }}" class="grid"/><text x="{{ g.tren.kiri|add:'-6' }}" y="{{ gy.y }}" dy="4" class="sumbu" text-anchor="end">{{ gy.label }}</text>{% endfor %}
+      {% for sx in g.tren.sumbu_x %}<text x="{{ sx.x }}" y="194" class="sumbu" text-anchor="middle">{{ sx.label }}</text>{% endfor %}
+      {% for s in g.tren.seri %}<polyline points="{{ s.poly }}" fill="none" stroke="{{ s.warna }}" stroke-width="2" stroke-linejoin="round"/>
+        {% for t in s.titik %}<circle cx="{{ t.x }}" cy="{{ t.y }}" r="4.5" fill="{{ s.warna }}" stroke="#fff" stroke-width="2"><title>{{ t.judul }}</title></circle>{% endfor %}
+        <text x="{{ s.akhir.x|add:'8' }}" y="{{ s.label_y }}" class="nilai">{{ s.akhir.n }}</text>{% endfor %}
+    </svg></div>
+  </div></div></div>{% endif %}
+  {% endlocalize %}
+  {% if g.status %}<div class="col-lg-5"><div class="card mb-4 grafik"><div class="card-header">Tugas menurut status</div><div class="card-body">
+    {% for b in g.status %}<div class="batang-status"><span class="batang-label">{{ b.label }}</span><span class="batang-jalur"><span class="batang-isi" style="width:{{ b.pct }}%"></span></span><span class="batang-n">{{ b.n }}</span></div>{% endfor %}
+  </div></div></div>{% endif %}
+</div>
+{% endwith %}

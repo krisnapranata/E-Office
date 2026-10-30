@@ -86,3 +86,30 @@ def _(u):
     # tugas tertutup: aksi pengendalian ditolak dengan pesan, bukan error
     u.post(url("workflow:reassign", t.pk), {"due_date": hari(20), "reason": "x"}, harap=200, follow=True,
            ada=["sudah ditutup"])
+
+
+@skenario("tugas", "PIC minta keputusan → muncul di Beranda Direktur → Beri arahan → PIC dinotifikasi; bukti PDF dilihat di browser",
+          crud=True, role="ka_igd", menu=["dashboard:home", "workflow:direction", "workflow:evidence_download"])
+def _(u):
+    t = _langsung(u, f"{JUDUL_QA} Ganti kompresor")
+    u.sebagai("staf_igd")
+    u.post(url("workflow:accept", t.pk), harap=302)
+    u.post(url("workflow:progress", t.pk), {"progress": 20, "status": "TERHAMBAT", "obstacle": "Kompresor rusak",
+                                            "decision_needed": "Setujui pembelian kompresor QA"}, harap=302)
+    u.post(url("workflow:evidence", t.pk), {"file": berkas("foto-kompresor.pdf")}, harap=302)
+    u.sebagai("direktur")
+    u.get("/", ada=["Menunggu keputusan Anda", "Setujui pembelian kompresor QA", "Beri arahan"])
+    u.get(url("workflow:detail", t.pk), ada=["Penanggung jawab meminta keputusan", "Kirim arahan"])
+    u.post(url("workflow:direction", t.pk), {"note": ""}, harap=200, follow=True, ada=["alert-danger"])
+    u.post(url("workflow:direction", t.pk), {"note": "Setuju, pakai anggaran pemeliharaan"}, harap=302)
+    u.harap(t.updates.filter(note="Arahan pimpinan: Setuju, pakai anggaran pemeliharaan").exists(), "arahan tidak tercatat")
+    u.get("/", tidak_ada=["Setujui pembelian kompresor QA"])
+    u.harap(AuditLog.objects.filter(action="task.direction", object_id=str(t.pk)).exists(), "arahan tidak diaudit")
+    ev = t.evidences.get()
+    r = u.get(url("workflow:evidence_download", ev.pk) + "?lihat=1")
+    u.harap(r["Content-Type"] == "application/pdf" and r["Content-Disposition"].startswith("inline"),
+            f"PDF tidak tampil di browser: {r['Content-Type']} {r['Content-Disposition']}")
+    u.sebagai("staf_igd")
+    u.get(url("notifications:list"), ada=["Arahan pimpinan"])
+    u.sebagai("staf_farmasi")
+    u.post(url("workflow:direction", t.pk), {"note": "x"}, harap=404)

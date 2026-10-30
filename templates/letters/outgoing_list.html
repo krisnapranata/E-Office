@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% load berkas %}
 {% block title %}Surat keluar{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3"><div><h1 class="h3 mb-1">Surat Keluar</h1><p class="page-ket">Surat yang dikirim rumah sakit, dengan nomor surat otomatis.</p></div>
 {% if can_create %}<a class="btn btn-primary" href="{% url 'letters:outgoing_create' %}">+ Catat surat keluar</a>{% endif %}</div>
 <div class="table-responsive"><table class="table bg-white"><thead><tr><th>Nomor</th><th>Tanggal</th><th>Penerima</th><th>Perihal</th><th>Klasifikasi</th><th>Lampiran</th></tr></thead><tbody>
-{% for l in page %}<tr><td>{{ l.letter_number }}</td><td>{{ l.letter_date|date:"d-m-Y" }}</td><td>{{ l.recipient }}</td><td>{{ l.subject }}</td><td>{{ l.get_classification_display }}</td><td>{% if l.attachment %}<a href="{% url 'letters:attachment' 'keluar' l.pk %}">Unduh</a>{% endif %}</td></tr>
+{% for l in page %}<tr><td>{{ l.letter_number }}</td><td>{{ l.letter_date|date:"d-m-Y" }}</td><td>{{ l.recipient }}</td><td>{{ l.subject }}</td><td>{{ l.get_classification_display }}</td><td class="text-nowrap">{% if l.attachment %}{% url 'letters:attachment' 'keluar' l.pk as u %}{% tombol_berkas u l.attachment.name "Lampiran" %}{% endif %}</td></tr>
 {% empty %}<tr><td colspan="6" class="text-muted">Belum ada.</td></tr>{% endfor %}
 </tbody></table></div>
 {% include "_pagination.html" %}

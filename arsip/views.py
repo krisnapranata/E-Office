@@ -3,12 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import FileResponse, Http404
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from accounts.files import buka_berkas
+from accounts.files import respons_berkas
 from accounts.models import Role
 from accounts.permissions import require
 from audit import services as audit
@@ -155,5 +155,6 @@ def version_download(request, pk):
         raise Http404
     if v.document.status == ArchiveDocument.Status.DIMUSNAHKAN:
         raise Http404
-    audit.log(request.user, "archive.download", v.document, version=v.version)
-    return FileResponse(buka_berkas(v.file), as_attachment=True, filename=v.original_name)
+    r, lihat = respons_berkas(request, v.file, v.original_name)
+    audit.log(request.user, "archive.view" if lihat else "archive.download", v.document, version=v.version)
+    return r

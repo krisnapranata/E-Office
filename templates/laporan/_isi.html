@@ -1,5 +1,7 @@
 <p class="small text-muted mb-3">Dibuat {{ rep.dibuat|date:"d-m-Y H:i" }} · {% for k, v in rep.parameter.items %}{{ k }}: <b>{{ v }}</b>{% if not forloop.last %} · {% endif %}{% endfor %}<br>
 Periode = tugas yang dibuat dalam rentang tanggal. "Selesai" = sudah ditutup; tugas yang masih menunggu verifikasi belum dihitung selesai.</p>
+{% include "laporan/_grafik.html" %}
+<h2 class="judul-bagian">Tabel angka</h2>
 <div class="row g-4">
   <div class="col-lg-5"><div class="card mb-4"><div class="card-header">Ringkasan tugas</div><table class="table table-sm mb-0"><tbody>
     {% for k, lbl in rep.label.items %}<tr><td>{{ lbl }}</td><td class="text-end fw-semibold">{% for kk, v in rep.ringkas.items %}{% if kk == k %}{{ v|default_if_none:"–" }}{% endif %}{% endfor %}</td></tr>{% endfor %}

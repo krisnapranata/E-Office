@@ -49,3 +49,29 @@ def buka_berkas(fieldfile):
         return fieldfile.open("rb")
     except FileNotFoundError:
         raise Http404("Berkas tidak ditemukan di penyimpanan.")
+
+
+# Berkas yang boleh DITAMPILKAN di browser (bukan diunduh). Hanya PDF dan gambar raster: Word/Excel tidak bisa
+# ditampilkan browser, dan tipe lain (HTML/SVG) bisa menjalankan skrip. Content-Type ditetapkan dari ekstensi dan
+# SecurityMiddleware mengirim X-Content-Type-Options: nosniff, sehingga berkas palsu (mis. HTML berekstensi .pdf)
+# tidak pernah dibaca sebagai HTML.
+TIPE_PRATINJAU = {"pdf": "application/pdf", "jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png"}
+
+
+def bisa_dilihat(nama):
+    return os.path.splitext(nama or "")[1].lower().lstrip(".") in TIPE_PRATINJAU
+
+
+def respons_berkas(request, fieldfile, nama):
+    """FileResponse unduhan; `?lihat=1` pada PDF/gambar = tampil di browser (boleh di-iframe dari halaman sendiri).
+    -> (response, dilihat) — `dilihat` dipakai untuk mencatat audit (lihat vs unduh)."""
+    from django.http import FileResponse
+
+    lihat = request.GET.get("lihat") == "1" and bisa_dilihat(nama)
+    if not lihat:
+        return FileResponse(buka_berkas(fieldfile), as_attachment=True, filename=nama), False
+    ext = os.path.splitext(nama)[1].lower().lstrip(".")
+    r = FileResponse(buka_berkas(fieldfile), as_attachment=False, filename=nama, content_type=TIPE_PRATINJAU[ext])
+    r["X-Frame-Options"] = "SAMEORIGIN"           # bawaan proyek DENY; pratinjau ditanam di halaman detail sendiri
+    r["Cache-Control"] = "private, no-store"
+    return r, True

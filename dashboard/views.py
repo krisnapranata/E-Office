@@ -7,7 +7,7 @@ from accounts.permissions import can_assign_task, can_issue_instruction, can_reg
 from agenda.services import can_create_event
 from audit.models import AuditLog
 
-from .services import beranda, summary
+from .services import beranda, meja_pimpinan, summary
 
 
 @login_required
@@ -25,6 +25,11 @@ def home(request):
     ) if a[0]]
     # Pantauan (kinerja unit, tren, terlambat) hanya untuk yang mengawasi orang lain.
     ctx["pantau"] = is_executive(user) or user.role in (Role.WADIR, Role.KEPALA_UNIT)
+    if ctx["pantau"] and user.role != Role.AUDITOR:      # auditor hanya membaca, tidak memutuskan
+        ctx.update(meja_pimpinan(user, ctx["today"]))
+        ctx["keputusan"] = sorted(ctx["keputusan_pimpinan"] + [k for k in ctx["kabar"] if k["keputusan"]],
+                                  key=lambda k: k["urut"])
+        ctx["kabar"] = [k for k in ctx["kabar"] if not k["keputusan"]]
     if is_executive(user):
         ctx["recent_activity"] = AuditLog.objects.select_related("user")[:10]
     return render(request, "dashboard/home.html", ctx)

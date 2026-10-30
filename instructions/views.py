@@ -2,11 +2,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.http import FileResponse, Http404
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from accounts.files import buka_berkas
+from accounts.files import respons_berkas
 from accounts.permissions import can_issue_instruction, require
 from arsip import services as arsip_services
 from audit import services as audit
@@ -129,7 +129,8 @@ def attachment_download(request, pk):
     ins = _get(request, pk)
     if not ins.attachment:
         raise Http404
-    audit.log(request.user, "instruction.download", ins)
-    return FileResponse(buka_berkas(ins.attachment), as_attachment=True,
-                        filename=f"{ins.code.replace('/', '-')}-lampiran"
-                                 f"{'.' + ins.attachment.name.rsplit('.', 1)[-1] if '.' in ins.attachment.name else ''}")
+    nama = (f"{ins.code.replace('/', '-')}-lampiran"
+            f"{'.' + ins.attachment.name.rsplit('.', 1)[-1] if '.' in ins.attachment.name else ''}")
+    r, lihat = respons_berkas(request, ins.attachment, nama)
+    audit.log(request.user, "instruction.view" if lihat else "instruction.download", ins)
+    return r

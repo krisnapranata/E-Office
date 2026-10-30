@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load berkas %}
 {% block title %}Arsip {{ doc.number|default:doc.pk }}{% endblock %}
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
@@ -18,8 +19,9 @@
     {% if doc.disposal_note %}<dt class="col-sm-4">Catatan pemusnahan</dt><dd class="col-sm-8">{{ doc.disposal_note|linebreaksbr }}</dd>{% endif %}
   </dl></div></div>
   <div class="card mb-4"><div class="card-header">Versi berkas</div><ul class="list-group list-group-flush">
-    {% for v in versi %}<li class="list-group-item">v{{ v.version }} · {% if doc.status == 'DIMUSNAHKAN' %}{{ v.original_name }} <span class="text-muted">(dimusnahkan)</span>{% else %}<a href="{% url 'arsip:download' v.pk %}">{{ v.original_name }}</a>{% endif %}
-      <span class="small text-muted">{{ v.note }} · {{ v.uploaded_by }} · {{ v.uploaded_at|date:"d-m-Y H:i" }}</span></li>{% endfor %}</ul></div>
+    {% for v in versi %}<li class="list-group-item">v{{ v.version }} · {% if doc.status == 'DIMUSNAHKAN' %}{{ v.original_name }} <span class="text-muted">(dimusnahkan)</span>{% else %}{% url 'arsip:download' v.pk as u %}{% tombol_berkas u v.original_name %}{% endif %}
+      <span class="small text-muted d-block">{{ v.note }} · {{ v.uploaded_by }} · {{ v.uploaded_at|date:"d-m-Y H:i" }}</span></li>{% endfor %}</ul></div>
+  {% if doc.status != 'DIMUSNAHKAN' %}{% with v=versi.0 %}{% if v %}<div class="card mb-4"><div class="card-header">Isi dokumen (versi terbaru)</div><div class="card-body p-2">{% url 'arsip:download' v.pk as u %}{% pratinjau_berkas u v.original_name %}</div></div>{% endif %}{% endwith %}{% endif %}
   <div class="card mb-4"><div class="card-header">Aktivitas</div><ul class="list-group list-group-flush small">
     {% for a in audit %}<li class="list-group-item">{{ a.created_at|date:"d-m-Y H:i" }} · {{ a.user|default:"sistem" }} · {{ a.action }}</li>{% empty %}<li class="list-group-item text-muted">–</li>{% endfor %}</ul></div>
 </div>

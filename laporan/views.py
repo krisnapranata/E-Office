@@ -23,6 +23,10 @@ def _laporan(request, data):
 def index(request):
     form, rep = _laporan(request, request.GET)
     params = request.GET.copy()
+    if rep:
+        from . import grafik
+        rep["grafik"] = {"unit": grafik.per_unit(rep["per_unit"]), "tren": grafik.tren(rep["mingguan"]),
+                         "status": grafik.status(rep["per_status"], rep["status_label"])}
     return render(request, "laporan/index.html" if not request.GET.get("cetak") else "laporan/cetak.html",
                   {"form": form, "rep": rep, "querystring": params.urlencode()})
 

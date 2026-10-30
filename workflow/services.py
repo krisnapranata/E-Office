@@ -223,6 +223,43 @@ def reassign(task, user, *, pic=None, due_date=None, reason):
     return task
 
 
+@transaction.atomic
+def give_direction(task, user, note):
+    """Pimpinan menjawab hambatan/keputusan yang dibutuhkan PIC (PRD 6.5: hambatan & keputusan yang dibutuhkan).
+    Dicatat di riwayat tugas sebagai pembaruan dari pimpinan; PIC dinotifikasi."""
+    if not can_manage_task(user, task):
+        raise PermissionDenied
+    if task.is_closed:
+        raise TransitionError("Tugas sudah ditutup.")
+    if not note.strip():
+        raise ValidationError({"note": "Tuliskan arahan Anda."})
+    upd = TaskUpdate.objects.create(task=task, author=user, note=f"Arahan pimpinan: {note.strip()}")
+    audit.log(user, "task.direction", task, note=note.strip())
+    notify.direction_given(task, user)
+    return upd
+
+
+def menunggu_arahan(task_qs):
+    """Tugas terbuka yang PIC-nya meminta keputusan dan belum dijawab pimpinan.
+    Jawaban = pembaruan SESUDAHNYA oleh orang yang bukan PIC/kolaborator (lihat give_direction).
+    -> [(task, update_permintaan)]"""
+    terbuka = task_qs.exclude(status__in=[S.SELESAI, S.DIBATALKAN, S.DRAF])
+    minta = (TaskUpdate.objects.filter(task__in=terbuka).exclude(decision_needed="")
+             .select_related("task", "task__pic", "task__unit", "author").order_by("task_id", "-created_at", "-id"))
+    hasil, dilihat = [], set()
+    for u in minta:
+        if u.task_id in dilihat:
+            continue
+        dilihat.add(u.task_id)
+        pelaksana = {u.task.pic_id, *u.task.collaborators.values_list("pk", flat=True)}
+        dijawab = (TaskUpdate.objects.filter(task_id=u.task_id, created_at__gte=u.created_at).exclude(pk=u.pk)
+                   .exclude(author_id__in=pelaksana).exists())
+        if not dijawab:
+            hasil.append((u.task, u))
+    hasil.sort(key=lambda x: x[1].created_at)
+    return hasil
+
+
 def request_update(task, user):
     if not can_manage_task(user, task):
         raise PermissionDenied

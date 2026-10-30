@@ -3,10 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import FileResponse, Http404
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
-from accounts.files import buka_berkas
+from accounts.files import respons_berkas
 from accounts.permissions import can_dispose, can_register_letter, require
 from audit import services as audit
 
@@ -135,6 +135,6 @@ def attachment_download(request, kind, pk):
         raise Http404
     if not letter.attachment:
         raise Http404
-    audit.log(request.user, "letter.download", letter)
-    return FileResponse(buka_berkas(letter.attachment), as_attachment=True,
-                        filename=f"{letter.pk}-{letter.attachment.name.rsplit('/', 1)[-1]}")
+    r, lihat = respons_berkas(request, letter.attachment, f"{letter.pk}-{letter.attachment.name.rsplit('/', 1)[-1]}")
+    audit.log(request.user, "letter.view" if lihat else "letter.download", letter)
+    return r

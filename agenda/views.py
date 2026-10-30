@@ -5,12 +5,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.http import FileResponse, Http404
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from accounts.files import buka_berkas
+from accounts.files import respons_berkas
 from accounts.permissions import require
 from audit import services as audit
 
@@ -162,5 +162,7 @@ def material_download(request, pk):
     m = get_object_or_404(AgendaMaterial.objects.select_related("event"), pk=pk)
     if not services.can_view_event(request.user, m.event):
         raise Http404
-    audit.log(request.user, "agenda.material.download", m.event, file=m.original_name)
-    return FileResponse(buka_berkas(m.file), as_attachment=True, filename=m.original_name)
+    r, lihat = respons_berkas(request, m.file, m.original_name)
+    audit.log(request.user, "agenda.material.view" if lihat else "agenda.material.download", m.event,
+              file=m.original_name)
+    return r

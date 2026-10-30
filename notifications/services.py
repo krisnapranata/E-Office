@@ -59,6 +59,11 @@ def update_requested(task, requester):
          f"{requester} meminta pembaruan progres.", _task_url(task))
 
 
+def direction_given(task, by):
+    send(task.pic, "task.direction", f"Arahan pimpinan: {_task_label(task)}",
+         f"{by} memberi arahan atas keputusan yang Anda minta.", _task_url(task))
+
+
 def instruction_issued(instruction, user):
     label = instruction.code if instruction.classification == Classification.RAHASIA else (
         f"{instruction.code} {instruction.title}")

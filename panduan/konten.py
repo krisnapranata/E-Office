@@ -105,7 +105,7 @@ T_VERIFIKASI = {
     "langkah": [
         "Anda menerima notifikasi <i>Menunggu verifikasi</i>, atau buka <b>Tugas</b> dengan filter "
         "<b>Status: Menunggu verifikasi</b>.",
-        "Buka tugas, periksa <b>Bukti pelaksanaan</b> (klik nama berkas untuk mengunduh) dan riwayat progres.",
+        "Buka tugas, periksa <b>Bukti pelaksanaan</b> (tombol <b>Lihat</b> membuka PDF/foto langsung di browser tanpa mengunduh; <b>Unduh</b> untuk menyimpan) dan riwayat progres.",
         "Di kartu <b>Verifikasi hasil</b> pilih <b>Setujui &amp; tutup</b> atau <b>Kembalikan untuk perbaikan</b>. "
         "Pengembalian wajib disertai alasan; PIC langsung dinotifikasi.",
         "Pemeriksa sebuah tugas adalah pemberi tugas: penerbit instruksi (atau pihak \"atas nama\"), pemberi "
@@ -117,9 +117,13 @@ T_KENDALI = {
     "judul": "Mengendalikan tugas (minta pembaruan, ubah PIC/tenggat, batalkan)",
     "url": "workflow:list",
     "langkah": [
-        "Buka tugas. Kartu <b>Pengendalian</b> muncul bila Anda Direktur, pembuat tugas, pemeriksanya, atau atasan "
-        "unit tugas tersebut (dan bukan PIC-nya).",
-        "<b>Minta pembaruan ke PIC</b>: mengirim notifikasi ke PIC agar melaporkan progres.",
+        "Buka tugas. Kartu <b>Pengendalian</b> (klik judulnya untuk membuka) muncul bila Anda Direktur, pembuat tugas, "
+        "pemeriksanya, atau atasan unit tugas tersebut (dan bukan PIC-nya).",
+        "<b>Minta kabar terbaru ke penanggung jawab</b>: mengirim notifikasi ke PIC agar melaporkan progres. Untuk tugas "
+        "terlambat, tombol <b>Minta kabar</b> juga ada langsung di Beranda (bagian <i>Perlu dikejar</i>).",
+        "<b>Beri arahan</b>: bila PIC mengisi <i>Keputusan yang dibutuhkan</i> saat melapor, kartu kuning "
+        "<b>Penanggung jawab meminta keputusan</b> muncul di tugas dan butirnya muncul di Beranda Anda. Tulis arahan lalu "
+        "<b>Kirim arahan</b>: arahan tercatat di riwayat tugas, diaudit, dan PIC dinotifikasi.",
         "<b>Ubah PIC/tenggat</b>: pilih PIC baru dan/atau tenggat baru, isi <b>Alasan perubahan</b> (wajib). "
         "Perubahan tercatat di audit trail dan PIC baru dinotifikasi. Pengingat dijadwalkan ulang mengikuti tenggat baru.",
         "<b>Batalkan tugas</b>: isi alasan (wajib). Tugas yang sudah Selesai/Dibatalkan tidak dapat diubah lagi.",
@@ -176,15 +180,20 @@ T_MONITOR = {
     "judul": "Memakai Beranda",
     "url": "dashboard:home",
     "langkah": [
-        "Bagian <b>Perlu Anda kerjakan</b> berisi hal yang menunggu Anda: tugas baru, hasil yang harus diperbaiki, "
-        "tenggat yang dekat, hasil kerja yang harus Anda periksa, disposisi, dan instruksi baru. Tekan tombol di "
-        "kanan setiap kabar (mis. <b>Lihat &amp; terima</b>, <b>Periksa hasil</b>).",
-        "<b>Tugas saya yang sedang berjalan</b> menampilkan tugas Anda beserta progres dan tenggatnya.",
-        "Kolom kanan: <b>Agenda hari ini</b> dan <b>Ringkasan tugas</b> (Belum dimulai, Berjalan, Tenggat ≤ H-2, "
-        "Terlambat, Terhambat, Menunggu verifikasi, Perlu perbaikan, Selesai). <b>Klik angka</b> untuk membuka daftarnya.",
-        "Pimpinan (Direktur, Wakil Direktur, Kepala Unit, Auditor) juga melihat <b>Pantauan</b>: instruksi aktif, "
-        "disposisi belum selesai, <b>Tugas terlambat</b>, tugas terhambat, serta <b>Kinerja per unit &amp; tren "
-        "penyelesaian</b> (klik judulnya untuk membuka).",
+        "<b>Pimpinan</b> (Direktur, Wakil Direktur, Kepala Unit) melihat Beranda dalam 3 bagian, dari yang paling "
+        "mendesak: <b>1 Menunggu keputusan Anda</b>, <b>2 Perlu dikejar</b>, <b>3 Kondisi rumah sakit/unit</b> (dilipat).",
+        "<b>1 Menunggu keputusan Anda</b>: hal yang hanya bisa diselesaikan Anda, masing-masing dengan satu tombol: "
+        "PIC meminta keputusan (<b>Beri arahan</b>), hasil kerja menunggu diperiksa (<b>Periksa hasil</b>), surat masuk "
+        "belum didisposisi (<b>Baca &amp; disposisikan</b>), disposisi untuk Anda, notulen menunggu persetujuan, dan "
+        "(Direktur) usulan pemusnahan arsip.",
+        "<b>2 Perlu dikejar</b>: pekerjaan orang lain yang <b>terlambat</b> (berapa hari, siapa PIC-nya; tombol "
+        "<b>Minta kabar</b>), yang <b>terhambat</b> beserta hambatannya, dan instruksi Anda yang belum dibaca penerima.",
+        "<b>3 Kondisi</b>: instruksi aktif, disposisi belum selesai, kinerja per unit, dan tren penyelesaian. Grafik "
+        "lengkap ada di menu <b>Laporan</b>. Kolom kanan: agenda hari ini, angka <b>Bulan ini</b>, dan "
+        "<b>Ringkasan tugas</b> (klik angka untuk membuka daftarnya).",
+        "<b>Pelaksana</b> (staf) melihat <b>Perlu Anda kerjakan</b>: tugas baru (<b>Lihat &amp; terima</b>), hasil yang "
+        "dikembalikan (<b>Perbaiki</b>), tenggat dekat/terlambat (<b>Laporkan progres</b>), dan instruksi baru; lalu "
+        "<b>Tugas saya yang sedang berjalan</b>.",
         "Angka selalu dihitung sesuai lingkup akses Anda.",
     ],
 }
@@ -369,6 +378,11 @@ T_LAPORAN = {
         "terhambat, terlambat, tingkat penyelesaian, <b>persentase tepat waktu</b>, rata-rata hari penyelesaian), "
         "instruksi &amp; disposisi per status, tindak lanjut rapat, serta tabel <b>per unit</b>, <b>per jenis</b>, "
         "<b>per PIC</b>, dan daftar tugas terlambat.",
+        "Bagian atas berisi <b>4 angka utama</b> (tepat waktu, tingkat selesai, terlambat, rata-rata hari) dan "
+        "<b>grafik</b>: <i>Kondisi pekerjaan per unit</i> (hijau = selesai tepat waktu, biru = masih berjalan, kuning = "
+        "selesai terlambat, merah = terlambat dan belum selesai), <i>Tugas baru vs tugas selesai per minggu</i>, dan "
+        "<i>Tugas menurut status</i>. Arahkan kursor ke batang/titik untuk melihat angkanya; angka lengkap ada di "
+        "<b>Tabel angka</b> di bawahnya.",
         "Waktu pembuatan dan parameter filter tercetak di laporan. Angka mengikuti lingkup akses Anda.",
         "<b>Excel</b> mengunduh berkas .xlsx; <b>Cetak/PDF</b> membuka versi cetak (pilih <i>Simpan sebagai PDF</i> di "
         "dialog cetak); <b>Simpan ke arsip</b> menyimpan Excel-nya ke E-Arsip.",
@@ -469,8 +483,10 @@ FAQ = [
      "Laporkan sebagai <b>Terhambat</b> dengan penjelasan, atau minta pemberi tugas mengubah tenggat. Perubahan "
      "tenggat wajib beralasan dan tercatat."),
     ("Berkas apa saja yang boleh diunggah?",
-     "{jenis_berkas}, maksimal {ukuran_berkas} MB per berkas. Berkas disimpan terlindungi dan hanya dapat diunduh "
-     "oleh pengguna yang berhak; setiap unduhan tercatat."),
+     "{jenis_berkas}, maksimal {ukuran_berkas} MB per berkas. Berkas disimpan terlindungi dan hanya dapat dibuka "
+     "oleh pengguna yang berhak; setiap kali dilihat atau diunduh tercatat. PDF dan foto (JPG/PNG) bisa langsung "
+     "<b>Dilihat</b> di browser (surat masuk, lampiran instruksi, dan arsip juga tampil langsung di halamannya); "
+     "Word/Excel harus diunduh."),
     ("Mengapa notifikasi menulis \"(rahasia)\"?",
      "Untuk dokumen berklasifikasi Rahasia, judul tidak ditampilkan di notifikasi. Buka notifikasinya untuk melihat isi."),
     ("Siapa yang boleh menerbitkan instruksi?",

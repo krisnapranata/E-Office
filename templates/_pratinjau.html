@@ -1,0 +1,3 @@
+{% if jenis == 'pdf' %}<iframe class="pratinjau" src="{{ url }}?lihat=1" title="Pratinjau {{ nama }}" loading="lazy"></iframe>
+{% elif jenis == 'gambar' %}<img class="pratinjau-gambar" src="{{ url }}?lihat=1" alt="Pratinjau {{ nama }}" loading="lazy">
+{% else %}<p class="small text-muted mb-0"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>Berkas Word/Excel tidak bisa ditampilkan di browser. Tekan <b>Unduh</b> untuk membukanya.</p>{% endif %}

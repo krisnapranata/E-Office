@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load tugas %}
+{% load tugas berkas %}
 {% block title %}{{ task }}{% endblock %}
 {% block content %}
 <div class="judul-halaman">
@@ -39,6 +39,17 @@
   {% endif %}
   {% endif %}
 
+  {% if minta_arahan %}
+  <div class="card mb-3 kartu-aksi border-warning" id="arahan"><div class="card-header"><i class="bi bi-question-diamond me-1" aria-hidden="true"></i>Penanggung jawab meminta keputusan</div><div class="card-body">
+    <blockquote class="mb-2">“{{ minta_arahan.decision_needed }}”</blockquote>
+    <p class="small text-muted">{{ minta_arahan.author }} · {{ minta_arahan.created_at|date:"d-m-Y H:i" }}{% if minta_arahan.obstacle %} · hambatan: {{ minta_arahan.obstacle }}{% endif %}</p>
+    {% if can_manage %}<form method="post" action="{% url 'workflow:direction' task.pk %}">{% csrf_token %}
+      <label class="form-label" for="arahan-isi">Arahan Anda *</label>
+      <textarea id="arahan-isi" name="note" class="form-control mb-2" rows="3" required placeholder="Mis. Setuju, gunakan anggaran pemeliharaan; koordinasikan dengan Bagian Keuangan."></textarea>
+      <button class="btn btn-warning">Kirim arahan</button></form>{% endif %}
+  </div></div>
+  {% endif %}
+
   {% if can_verify %}
   <div class="card mb-3 kartu-aksi border-info"><div class="card-header">Verifikasi hasil</div><div class="card-body">
     <form method="post" action="{% url 'workflow:verify' task.pk %}">{% csrf_token %}{% with form=verify_form %}{% include "_form.html" %}{% endwith %}<button class="btn btn-info">Simpan keputusan</button></form>
@@ -74,7 +85,7 @@
 
   <div class="card mb-4"><div class="card-header">Bukti pelaksanaan {% if task.requires_evidence %}<span class="badge text-bg-secondary">wajib</span>{% endif %}</div>
     <ul class="list-group list-group-flush">
-    {% for e in evidences %}<li class="list-group-item"><i class="bi bi-paperclip me-1" aria-hidden="true"></i><a href="{% url 'workflow:evidence_download' e.pk %}">{{ e.original_name }}</a> <span class="text-muted small">{{ e.description }} · {{ e.uploaded_by }} · {{ e.uploaded_at|date:"d-m-Y H:i" }}</span></li>
+    {% for e in evidences %}<li class="list-group-item">{% url 'workflow:evidence_download' e.pk as u %}{% tombol_berkas u e.original_name %} <span class="text-muted small d-block">{{ e.description }} · {{ e.uploaded_by }} · {{ e.uploaded_at|date:"d-m-Y H:i" }}</span></li>
     {% empty %}<li class="list-group-item text-muted">Belum ada bukti.</li>{% endfor %}</ul>
   </div>
 

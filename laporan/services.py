@@ -88,9 +88,9 @@ def build(user, *, dari, sampai, unit=None, pic=None, sumber="", status="", toda
     return {
         "ringkas": _ringkas_tugas(qs, today), "label": LABEL,
         "per_unit": per_unit, "per_sumber": per_sumber, "per_pic": per_pic,
-        "instruksi": dict(ins.values_list("status").annotate(n=Count("id"))),
+        "instruksi": dict(ins.order_by().values_list("status").annotate(n=Count("id", distinct=True))),
         "instruksi_label": dict(Instruction.Status.choices),
-        "disposisi": dict(disp.values_list("status").annotate(n=Count("id"))),
+        "disposisi": dict(disp.order_by().values_list("status").annotate(n=Count("id", distinct=True))),
         "disposisi_label": dict(Disposition.Status.choices),
         "tindak_lanjut": qs.filter(source_type=TaskSource.KEPUTUSAN_RAPAT).aggregate(
             total=Count("id"), selesai=Count("id", filter=Q(status=S.SELESAI))),
@@ -101,7 +101,36 @@ def build(user, *, dari, sampai, unit=None, pic=None, sumber="", status="", toda
                                   ("Status", dict(TaskStatus.choices).get(status, "Semua")),
                                   ("Lingkup data", f"sesuai hak akses {user} ({user.get_role_display()})")]),
         "tugas_terlambat": qs.overdue(today).select_related("pic", "unit").order_by("due_date")[:50],
+        "per_status": [(k, n) for k, n in _per_status(qs)],
+        "status_label": dict(TaskStatus.choices),
+        "mingguan": _mingguan(qs, dari, sampai),
     }
+
+
+def _per_status(qs):
+    jumlah = dict(qs.order_by().values_list("status").annotate(n=Count("id", distinct=True)))
+    return [(k, jumlah.get(k, 0)) for k in TaskStatus.values if k != S.DRAF]
+
+
+def _mingguan(qs, dari, sampai, maks=26):
+    """Per minggu (Senin) dalam periode: tugas dibuat & tugas yang ditutup selesai. Periode panjang = 26 minggu terakhir."""
+    from datetime import timedelta
+
+    awal = dari - timedelta(days=dari.weekday())
+    minggu = []
+    while awal <= sampai:
+        minggu.append(awal)
+        awal += timedelta(days=7)
+    minggu = minggu[-maks:]
+    dibuat = [timezone.localtime(t).date() for t in qs.values_list("created_at", flat=True)]
+    selesai = [timezone.localtime(t).date() for t in qs.filter(status=S.SELESAI, closed_at__isnull=False)
+               .values_list("closed_at", flat=True)]
+    hasil = []
+    for m in minggu:
+        akhir = m + timedelta(days=7)
+        hasil.append({"mulai": m, "dibuat": sum(1 for d in dibuat if m <= d < akhir),
+                      "selesai": sum(1 for d in selesai if m <= d < akhir)})
+    return hasil
 
 
 def xlsx(rep):

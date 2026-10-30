@@ -16,7 +16,8 @@ def summary(user, today=None):
     today = today or timezone.localdate()
     tasks = visible_tasks(user)
     S = TaskStatus
-    by_status = dict(tasks.values_list("status").annotate(n=Count("id", distinct=True)))
+    # order_by(): pada queryset distinct() kolom ordering bawaan ikut ke GROUP BY -> tiap status terhitung 1
+    by_status = dict(tasks.order_by().values_list("status").annotate(n=Count("id", distinct=True)))
     instructions = visible_instructions(user)
     return {
         "today": today,
@@ -112,9 +113,9 @@ def beranda(user, today=None):
     S = TaskStatus
     kabar = []
 
-    def tambah(urut, ikon, warna, judul, teks, ket, url, tombol):
+    def tambah(urut, ikon, warna, judul, teks, ket, url, tombol, keputusan=False):
         kabar.append({"urut": urut, "ikon": ikon, "warna": warna, "judul": judul, "teks": teks, "ket": ket,
-                      "url": url, "tombol": tombol})
+                      "url": url, "tombol": tombol, "keputusan": keputusan})
 
     milik = Task.objects.filter(pic=user).select_related("unit", "created_by")
     for t in milik.filter(status=S.MENUNGGU_PENERIMAAN).order_by("due_date")[:10]:
@@ -134,11 +135,11 @@ def beranda(user, today=None):
     periksa = Task.objects.filter(verifier=user, status=S.MENUNGGU_VERIFIKASI).select_related("pic")
     for t in periksa.order_by("submitted_at")[:10]:
         tambah(1, "bi-clipboard-check", "info", "Hasil kerja menunggu Anda periksa", t.title,
-               f"Dikirim oleh {t.pic}", reverse("workflow:detail", args=[t.pk]), "Periksa hasil")
+               f"Dikirim oleh {t.pic}", reverse("workflow:detail", args=[t.pk]), "Periksa hasil", True)
     for d in (Disposition.objects.filter(to_user=user, status__in=[Disposition.Status.TERKIRIM, Disposition.Status.DIBACA])
               .select_related("letter", "from_user").order_by("-id")[:10]):
         tambah(2, "bi-signpost-split", "primary", "Disposisi surat untuk Anda", d.letter.subject,
-               f"Dari {d.from_user}", reverse("letters:disposition_detail", args=[d.pk]), "Buka disposisi")
+               f"Dari {d.from_user}", reverse("letters:disposition_detail", args=[d.pk]), "Buka disposisi", True)
     for it in (InstructionTarget.objects.filter(pic=user, read_at=None, instruction__status=Instruction.Status.DITERBITKAN)
                .select_related("instruction", "instruction__created_by").order_by("-id")[:10]):
         i = it.instruction
@@ -148,7 +149,7 @@ def beranda(user, today=None):
         for s in IncomingLetter.objects.filter(dispositions__isnull=True).order_by("-received_date")[:10]:
             tambah(2, "bi-envelope-exclamation", "warning", "Surat masuk belum didisposisi", s.subject,
                    f"Dari {s.sender} · diterima {_tgl(s.received_date)}",
-                   reverse("letters:incoming_detail", args=[s.pk]), "Disposisikan")
+                   reverse("letters:incoming_detail", args=[s.pk]), "Baca & disposisikan", True)
     kabar.sort(key=lambda k: k["urut"])
 
     aktif = milik.exclude(status__in=[*CLOSED_STATUSES, S.DRAF]).order_by(F("due_date").asc(nulls_last=True))
@@ -157,3 +158,62 @@ def beranda(user, today=None):
 
 def _tgl(d):
     return d.strftime("%d-%m-%Y") if d else "–"
+
+
+def meja_pimpinan(user, today=None):
+    """Untuk yang mengawasi orang lain (Direktur, Wadir, Kepala Unit), disusun 'exception first':
+    1) keputusan yang HANYA bisa diselesaikan pengguna ini, 2) pekerjaan orang lain yang perlu dikejar.
+    Setiap butir punya penanggung jawab dan satu langkah berikutnya."""
+    from django.urls import reverse
+
+    from accounts.models import Role
+    from arsip.models import ArchiveDocument
+    from instructions.models import InstructionTarget
+    from notulen.models import MeetingMinutes
+    from workflow.access import can_manage_task
+    from workflow.services import menunggu_arahan
+
+    today = today or timezone.localdate()
+    lingkup = visible_tasks(user).exclude(pic=user)
+    keputusan = []
+    for t, u in menunggu_arahan(lingkup):
+        if can_manage_task(user, t):
+            keputusan.append({"urut": 1, "ikon": "bi-question-diamond", "warna": "warning", "keputusan": True,
+                              "judul": f"{t.pic} meminta keputusan Anda", "teks": u.decision_needed,
+                              "ket": f"Tugas: {t.title} · {t.unit.code}", "tombol": "Beri arahan",
+                              "url": reverse("workflow:detail", args=[t.pk]) + "#arahan"})
+    for m in MeetingMinutes.objects.filter(event__organizer=user, status=MeetingMinutes.Status.DIAJUKAN).select_related("event", "created_by"):
+        keputusan.append({"urut": 2, "ikon": "bi-journal-check", "warna": "primary", "keputusan": True,
+                          "judul": "Notulen menunggu persetujuan Anda", "teks": m.event.title,
+                          "ket": f"Notulis {m.created_by} · setelah disetujui, keputusan rapat menjadi tugas",
+                          "tombol": "Periksa notulen", "url": reverse("notulen:detail", args=[m.pk])})
+    if user.role == Role.DIREKTUR:
+        for d in ArchiveDocument.objects.filter(status=ArchiveDocument.Status.DIUSULKAN)[:10]:
+            keputusan.append({"urut": 3, "ikon": "bi-archive", "warna": "secondary", "keputusan": True,
+                              "judul": "Usulan pemusnahan arsip", "teks": d.title,
+                              "ket": "Petugas arsip mengusulkan pemusnahan; butuh persetujuan Direktur",
+                              "tombol": "Tinjau usulan", "url": reverse("arsip:detail", args=[d.pk])})
+
+    terlambat = lingkup.overdue(today).select_related("pic", "unit").order_by("due_date")
+    terhambat = lingkup.filter(status=TaskStatus.TERHAMBAT).select_related("pic", "unit").order_by("due_date")
+    kejar_terlambat = [{"t": t, "hari": (today - t.due_date).days, "boleh": can_manage_task(user, t)} for t in terlambat[:5]]
+    kejar_terhambat = []
+    for t in terhambat[:5]:
+        u = t.updates.exclude(obstacle="").first()
+        kejar_terhambat.append({"t": t, "hambatan": u.obstacle if u else "", "boleh": can_manage_task(user, t)})
+    instruksi_saya = Q(instruction__created_by=user, instruction__on_behalf_of=None) | Q(instruction__on_behalf_of=user)
+    belum_baca = (InstructionTarget.objects.filter(instruksi_saya, read_at=None, instruction__status=Instruction.Status.DITERBITKAN,
+                                                  instruction__issued_at__date__lt=today)
+                  .select_related("instruction", "pic", "unit").order_by("instruction__issued_at")[:5])
+    awal_bulan = today.replace(day=1)
+    bulan = visible_tasks(user).filter(created_at__date__gte=awal_bulan)
+    selesai = bulan.filter(status=TaskStatus.SELESAI, due_date__isnull=False)
+    tepat = sum(1 for t in selesai.only("status", "due_date", "submitted_at", "closed_at") if t.finished_on_time())
+    return {
+        "keputusan_pimpinan": keputusan,
+        "kejar_terlambat": kejar_terlambat, "jumlah_terlambat": terlambat.count(),
+        "kejar_terhambat": kejar_terhambat, "jumlah_terhambat": terhambat.count(),
+        "belum_baca": belum_baca,
+        "bulan_ini": {"dibuat": bulan.count(), "selesai": bulan.filter(status=TaskStatus.SELESAI).count(),
+                      "pct_tepat": round(100 * tepat / selesai.count()) if selesai.count() else None},
+    }

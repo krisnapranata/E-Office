@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load berkas %}
 {% block title %}{{ ev.title }}{% endblock %}
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
@@ -18,7 +19,7 @@
     {% if ev.cancelled_reason %}<dt class="col-sm-4">Alasan batal</dt><dd class="col-sm-8">{{ ev.cancelled_reason }}</dd>{% endif %}
   </dl></div></div>
   <div class="card mb-4"><div class="card-header">Bahan rapat/kegiatan</div><ul class="list-group list-group-flush">
-    {% for b in bahan %}<li class="list-group-item"><a href="{% url 'agenda:material_download' b.pk %}">{{ b.original_name }}</a> <span class="small text-muted">{{ b.description }} · {{ b.uploaded_by }}</span></li>
+    {% for b in bahan %}<li class="list-group-item">{% url 'agenda:material_download' b.pk as u %}{% tombol_berkas u b.original_name %} <span class="small text-muted">{{ b.description }} · {{ b.uploaded_by }}</span></li>
     {% empty %}<li class="list-group-item text-muted">Belum ada bahan.</li>{% endfor %}</ul></div>
   {% if ev.is_meeting %}
   <div class="card mb-4"><div class="card-header">Notulen &amp; keputusan</div><div class="card-body">

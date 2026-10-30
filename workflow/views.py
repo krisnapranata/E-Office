@@ -3,11 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import FileResponse, Http404
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
-from accounts.files import buka_berkas
+from accounts.files import respons_berkas
 from accounts.permissions import can_assign_task, require
 from audit.models import AuditLog
 from audit import services as audit
@@ -130,6 +131,8 @@ def task_detail(request, pk):
         "reason_form": ReasonForm(),
         "statuses": TaskStatus,
     }
+    minta = services.menunggu_arahan(Task.objects.filter(pk=task.pk))
+    ctx["minta_arahan"] = minta[0][1] if minta else None
     ctx["langkah"] = _langkah(task)
     ctx["petunjuk"] = _petunjuk(task, ctx)
     return render(request, "workflow/detail.html", ctx)
@@ -160,6 +163,8 @@ def _petunjuk(task, ctx):
             return "Hasil sudah Anda kirim. Tunggu pemeriksaan."
         return ("Kerjakan tugas, laporkan progres secara berkala, unggah bukti, lalu tekan Kirim "
                 + ("untuk diperiksa." if task.requires_verification else "untuk menyelesaikan tugas."))
+    if ctx["minta_arahan"] and ctx["can_manage"]:
+        return "Penanggung jawab meminta keputusan Anda. Baca permintaannya, lalu tulis jawaban di Beri arahan."
     if ctx["can_verify"]:
         return "Hasil sudah dikirim. Periksa bukti di bawah, lalu setujui atau kembalikan untuk perbaikan."
     if ctx["can_report"]:
@@ -176,6 +181,10 @@ def _action(request, pk, fn):
             messages.error(request, msg)
     except PermissionDenied:
         raise
+    kembali = request.POST.get("next", "")
+    if kembali and url_has_allowed_host_and_scheme(kembali, allowed_hosts={request.get_host()},
+                                                   require_https=request.is_secure()):
+        return redirect(kembali)                 # mis. tombol "Minta kabar" langsung dari Beranda
     return redirect("workflow:detail", task.pk)
 
 
@@ -266,9 +275,19 @@ def task_request_update(request, pk):
 
 
 @login_required
+@require_POST
+def task_direction(request, pk):
+    def run(task):
+        services.give_direction(task, request.user, request.POST.get("note", ""))
+        messages.success(request, "Arahan dikirim ke penanggung jawab.")
+    return _action(request, pk, run)
+
+
+@login_required
 def evidence_download(request, pk):
     ev = get_object_or_404(TaskEvidence.objects.select_related("task"), pk=pk)
     if not can_view_task(request.user, ev.task):
         raise Http404
-    audit.log(request.user, "task.evidence.download", ev.task, file=ev.original_name)
-    return FileResponse(buka_berkas(ev.file), as_attachment=True, filename=ev.original_name)
+    r, lihat = respons_berkas(request, ev.file, ev.original_name)
+    audit.log(request.user, "task.evidence.view" if lihat else "task.evidence.download", ev.task, file=ev.original_name)
+    return r

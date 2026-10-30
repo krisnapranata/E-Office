@@ -140,3 +140,34 @@ details.lipat:not([open]) > summary { border-bottom: 0; }
 .langkah li { min-width: 0; }
 @media (max-width: 575.98px) { .langkah-nama { font-size: .7rem; } .langkah-bulat { width: 30px; height: 30px; } .langkah li + li::before { top: 14px; } }
 .info-tugas dt { color: var(--mc-text-muted); font-weight: 600; }
+
+/* Berkas: Lihat (di browser) + Unduh; pratinjau tertanam */
+.berkas { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .15rem; }
+.berkas-nama { overflow-wrap: anywhere; }
+.pratinjau { width: 100%; height: 75vh; min-height: 420px; border: 1px solid var(--mc-border); border-radius: 8px; background: #fff; }
+.pratinjau-gambar { max-width: 100%; height: auto; border: 1px solid var(--mc-border); border-radius: 8px; }
+.tempel-atas { top: 84px; z-index: 1; }
+.nomor-bagian { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; margin-right: .45rem;
+  background: var(--mc-forest); color: #fff !important; font-size: .8rem; font-weight: 700; vertical-align: 1px; }
+.kejar { display: flex; justify-content: space-between; align-items: center; gap: .75rem; }
+blockquote { border-left: 3px solid var(--mc-warning); padding-left: .75rem; font-size: 1.02rem; }
+
+/* Grafik Laporan (SVG server-side). Teks memakai warna teks, bukan warna seri. */
+.svg-grafik { width: 100%; height: auto; display: block; overflow: visible; }
+.svg-grafik .grid { stroke: #E3E9F1; stroke-width: 1; }
+.svg-grafik .sumbu { font-size: 11px; fill: var(--mc-text-muted); }
+.svg-grafik .label { font-size: 12px; fill: var(--mc-text); }
+.svg-grafik .nilai { font-size: 12px; font-weight: 700; fill: var(--mc-text); }
+.svg-grafik rect:hover, .svg-grafik circle:hover { opacity: .8; }
+.legenda { list-style: none; display: flex; flex-wrap: wrap; gap: .25rem 1rem; padding: 0; margin: 0 0 .5rem; font-size: .82rem; color: var(--mc-text); }
+.legenda-kotak { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: .35rem; vertical-align: -1px; }
+.legenda-garis { display: inline-block; width: 16px; height: 3px; border-radius: 2px; margin-right: .35rem; vertical-align: 3px; }
+.stat-laporan .stat-angka { font-size: 1.9rem; font-weight: 700; color: var(--mc-forest); line-height: 1.1; }
+.stat-laporan .stat-ket { font-size: .85rem; color: var(--mc-text-muted); }
+.batang-status { display: grid; grid-template-columns: 9.5rem 1fr 2.2rem; align-items: center; gap: .5rem; margin-bottom: .45rem; font-size: .85rem; }
+.batang-jalur { background: var(--mc-sage); border-radius: 4px; height: 12px; overflow: hidden; }
+.batang-isi { display: block; height: 100%; background: #2a78d6; border-radius: 0 4px 4px 0; }
+.batang-n { text-align: right; font-weight: 700; }
+@media print { .svg-grafik rect:hover { opacity: 1; } .grafik { break-inside: avoid; } }
+.grafik-gulir { overflow-x: auto; }
+@media (max-width: 767.98px) { .grafik-unit { min-width: 680px; } .grafik-tren { min-width: 520px; } }

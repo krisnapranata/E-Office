@@ -2,11 +2,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.http import FileResponse, Http404
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from accounts.files import buka_berkas
+from accounts.files import respons_berkas
 from accounts.permissions import require
 from agenda.models import AgendaEvent
 from agenda.services import can_view_event
@@ -165,9 +165,10 @@ def minutes_attachment(request, pk):
     m = _get(request, pk)
     if not m.attachment:
         raise Http404
-    audit.log(request.user, "minutes.download", m)
-    return FileResponse(buka_berkas(m.attachment), as_attachment=True,
-                        filename=f"notulen-{m.pk}{'.' + m.attachment.name.rsplit('.', 1)[-1] if '.' in m.attachment.name else ''}")
+    nama = f"notulen-{m.pk}{'.' + m.attachment.name.rsplit('.', 1)[-1] if '.' in m.attachment.name else ''}"
+    r, lihat = respons_berkas(request, m.attachment, nama)
+    audit.log(request.user, "minutes.view" if lihat else "minutes.download", m)
+    return r
 
 
 

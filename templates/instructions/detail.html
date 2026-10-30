@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load berkas %}
 {% block title %}{{ ins.code }}{% endblock %}
 {% block content %}
 <h1 class="h3">{{ ins.code }} — {{ ins.title }} <span class="badge text-bg-secondary">{{ ins.get_status_display }}</span></h1>
@@ -11,9 +12,10 @@
   <dt class="col-sm-4">Uraian</dt><dd class="col-sm-8">{{ ins.description|linebreaksbr }}</dd>
   <dt class="col-sm-4">Kriteria selesai</dt><dd class="col-sm-8">{{ ins.completion_criteria|linebreaksbr|default:"–" }}</dd>
   <dt class="col-sm-4">Bukti / verifikasi</dt><dd class="col-sm-8">{{ ins.requires_evidence|yesno:"Wajib,Tidak wajib" }} / {{ ins.requires_verification|yesno:"Wajib,Tidak wajib" }}</dd>
-  <dt class="col-sm-4">Lampiran</dt><dd class="col-sm-8">{% if ins.attachment %}<a href="{% url 'instructions:attachment' ins.pk %}">Unduh</a>{% else %}–{% endif %}</dd>
+  <dt class="col-sm-4">Lampiran</dt><dd class="col-sm-8">{% if ins.attachment %}{% url 'instructions:attachment' ins.pk as u %}{% tombol_berkas u ins.attachment.name "Lampiran instruksi" %}{% else %}–{% endif %}</dd>
   {% if ins.cancelled_reason %}<dt class="col-sm-4">Alasan batal</dt><dd class="col-sm-8">{{ ins.cancelled_reason }}</dd>{% endif %}
 </dl></div></div>
+{% if ins.attachment %}<div class="card mb-4"><div class="card-header">Isi lampiran</div><div class="card-body p-2">{% url 'instructions:attachment' ins.pk as u %}{% pratinjau_berkas u ins.attachment.name %}</div></div>{% endif %}
 <div class="card mb-4"><div class="card-header">Penerima</div><table class="table table-sm mb-0"><thead><tr><th>Unit</th><th>PIC</th><th>Dibaca</th><th></th></tr></thead><tbody>
 {% for t in targets %}<tr><td>{{ t.unit }}</td><td>{{ t.pic }}</td><td>{{ t.read_at|date:"d-m-Y H:i"|default:"Belum" }}</td>
 <td>{% if editable %}<form method="post" action="{% url 'instructions:target_remove' ins.pk t.pk %}">{% csrf_token %}<button class="btn btn-sm btn-link text-danger">hapus</button></form>{% endif %}</td></tr>
