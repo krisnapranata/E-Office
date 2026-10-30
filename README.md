@@ -106,9 +106,10 @@ Peran container ditentukan argumen entrypoint: `web` (migrate + data demo bila M
 `worker`, `beat`. Hanya `eoffice_nginx` yang dibuka ke host dan tergabung di network NPM; ia memanggil
 backend dengan nama container unik `eoffice_web` (bukan "web") agar tidak tertukar dengan aplikasi lain.
 
-> Celery memakai DB Redis dan antrean khusus (`redis://localhost:6379/5`, antrean `eoffice`).
-> Jangan arahkan ke DB/antrean yang dipakai aplikasi lain: worker akan mengonsumsi dan membuang
-> task yang tidak dikenalnya.
+> Redis: di server, E-Office memakai container sendiri (`eoffice_redis`, `redis://redis:6379/0`).
+> Di mesin pengembang (`docker-compose.lokal.yml`) Redis host dipakai bersama aplikasi lain, jadi
+> wajib DB dan antrean khusus (`redis://localhost:6379/5`, antrean `eoffice`): worker akan
+> mengonsumsi dan membuang task yang tidak dikenalnya.
 
 ### Deploy ke server (clone pertama) dan Mode Demo
 
