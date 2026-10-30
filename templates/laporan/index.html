@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Laporan{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3"><h1 class="h3 mb-0">Laporan Pelaksanaan &amp; Evaluasi Unit</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3"><div><h1 class="h3 mb-1">Laporan</h1><p class="page-ket">Rekap pelaksanaan tugas per unit. Bisa dicetak atau diunduh ke Excel.</p></div>
   {% if rep %}<div class="d-flex flex-wrap gap-2">
     <a class="btn btn-outline-success" href="{% url 'laporan:xlsx' %}?{{ querystring }}"><i class="bi bi-file-earmark-excel me-1" aria-hidden="true"></i>Excel</a>
     <a class="btn btn-outline-secondary" href="?{{ querystring }}&cetak=1"><i class="bi bi-printer me-1" aria-hidden="true"></i>Cetak/PDF</a>

@@ -1,26 +1,36 @@
 {% extends "base.html" %}
-{% block title %}Tugas & Monitoring{% endblock %}
+{% block title %}Tugas{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h3 mb-0">Tugas &amp; Monitoring</h1>
-  {% if can_create %}<a class="btn btn-primary" href="{% url 'workflow:create' %}">+ Penugasan langsung</a>{% endif %}
+<div class="judul-halaman">
+  <div><h1 class="h3 mb-1">Tugas</h1><p class="page-ket">Semua pekerjaan yang diberikan, dikerjakan, dan diperiksa. Klik judul tugas untuk membukanya.</p></div>
+  {% if can_create %}<a class="btn btn-primary" href="{% url 'workflow:create' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Beri tugas baru</a>{% endif %}
 </div>
-<form class="row g-2 mb-3 form-compact" method="get">
+<nav class="tab-pil mb-3" aria-label="Pilih kelompok tugas">
+  {% for label, qs, aktif in tab %}<a class="btn btn-sm {% if aktif %}btn-primary{% else %}btn-outline-secondary{% endif %}" href="?{{ qs }}"{% if aktif %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}
+</nav>
+<form class="cari-baris mb-3" method="get" role="search">
+  <input type="search" name="q" value="{{ form.q.value|default:'' }}" class="form-control" placeholder="Cari judul atau isi tugas…" aria-label="Cari tugas">
+  <button class="btn btn-outline-primary"><i class="bi bi-search" aria-hidden="true"></i> Cari</button>
+</form>
+<details class="mb-3 lipat-filter"{% if filter_lanjutan %} open{% endif %}><summary>Filter lainnya (unit, penanggung jawab, prioritas, tanggal)</summary>
+<form class="row g-2 mt-1 form-compact" method="get">
   {% for f in form %}<div class="col-6 col-md-2">{{ f.label_tag }}{{ f }}</div>{% endfor %}
   <div class="col-12 col-md-2 d-flex align-items-end gap-2"><button class="btn btn-outline-primary">Terapkan</button><a class="btn btn-link" href="{% url 'workflow:list' %}">Reset</a></div>
 </form>
+</details>
 <p class="text-muted small">{{ page.paginator.count }} tugas</p>
-<div class="table-responsive"><table class="table table-hover bg-white">
-<thead><tr><th>Tugas</th><th>Sumber</th><th>Unit</th><th>PIC</th><th>Prioritas</th><th>Tenggat</th><th>Progres</th><th>Status</th></tr></thead><tbody>
+<div class="table-responsive"><table class="table table-hover bg-white tabel-tugas">
+<thead><tr><th>Tugas</th><th>Penanggung jawab</th><th>Tenggat</th><th>Status</th></tr></thead><tbody>
 {% for t in page %}
 <tr>
-  <td><a href="{% url 'workflow:detail' t.pk %}">{{ t }}</a></td>
-  <td>{{ t.get_source_type_display }}</td><td>{{ t.unit.code }}</td><td>{{ t.pic }}</td><td>{{ t.get_priority_display }}</td>
-  <td>{{ t.due_date|date:"d-m-Y"|default:"–" }}{% if t.is_overdue %} <span class="badge text-bg-danger">Terlambat</span>{% endif %}</td>
-  <td>{{ t.progress }}%</td>
-  <td>{% include "_status.html" with s=t.status label=t.get_status_display %}</td>
+  <td><a class="fw-semibold" href="{% url 'workflow:detail' t.pk %}">{{ t }}</a>
+    <div class="small text-muted">{{ t.get_source_type_display }} · {{ t.unit.code }}{% if t.priority == 'TINGGI' or t.priority == 'MENDESAK' %} · <span class="text-danger">prioritas {{ t.get_priority_display|lower }}</span>{% endif %}</div></td>
+  <td>{{ t.pic }}</td>
+  <td class="text-nowrap">{{ t.due_date|date:"d-m-Y"|default:"–" }}{% if t.is_overdue %} <span class="badge text-bg-danger">Terlambat</span>{% endif %}</td>
+  <td>{% include "_status.html" with s=t.status label=t.get_status_display %}
+    <div class="progress progress-tipis mt-1" role="progressbar" aria-label="Progres {{ t.progress }}%" aria-valuenow="{{ t.progress }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:{{ t.progress }}%"></div></div></td>
 </tr>
-{% empty %}<tr><td colspan="8" class="text-muted">Tidak ada tugas sesuai filter.</td></tr>{% endfor %}
+{% empty %}<tr><td colspan="4" class="text-muted">Tidak ada tugas di kelompok ini.</td></tr>{% endfor %}
 </tbody></table></div>
 {% include "_pagination.html" %}
 {% endblock %}

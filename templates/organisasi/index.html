@@ -2,7 +2,7 @@
 {% block title %}Master Organisasi{% endblock %}
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <div><h1 class="h3 mb-0">Master Organisasi</h1>
+  <div><h1 class="h3 mb-1">Struktur Organisasi</h1><p class="page-ket">Bagan unit RSI Yatofa beserta kepala dan jumlah anggotanya.</p>
     <span class="text-muted small">{{ jumlah.aktif }} unit aktif{% if jumlah.nonaktif %} · {{ jumlah.nonaktif }} nonaktif{% endif %} · {{ jumlah.relasi }} hubungan koordinasi/pengawasan</span></div>
   <div class="d-flex flex-wrap gap-2">
     {% if nonaktif %}<a class="btn btn-outline-secondary" href="?">Sembunyikan nonaktif</a>{% else %}<a class="btn btn-outline-secondary" href="?nonaktif=1">Tampilkan nonaktif</a>{% endif %}

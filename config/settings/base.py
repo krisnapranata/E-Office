@@ -92,6 +92,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "notifications.context_processors.unread_notifications",
                 "pengaturan.context_processors.mode_aplikasi",
+                "dashboard.context_processors.menu",
             ],
         },
     },

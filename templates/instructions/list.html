@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Instruksi{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h3 mb-0">Instruksi</h1>
+<div class="d-flex justify-content-between align-items-center mb-3"><div><h1 class="h3 mb-1">Instruksi</h1><p class="page-ket">Perintah resmi dari pimpinan ke unit. Setiap penerima otomatis mendapat tugas.</p></div>
 {% if can_create %}<a class="btn btn-primary" href="{% url 'instructions:create' %}">+ Instruksi baru</a>{% endif %}</div>
-<p>{% for s in statuses %}<a href="?status={{ s.value }}">{{ s.label }}</a> · {% endfor %}<a href="?">Semua</a></p>
-<div class="table-responsive"><table class="table table-hover bg-white"><thead><tr><th>Kode</th><th>Judul</th><th>Prioritas</th><th>Tenggat</th><th>Status</th><th>Dibaca</th></tr></thead><tbody>
+<nav class="tab-pil mb-3" aria-label="Saring status">{% with aktif=request.GET.status|default:"" %}<a class="btn btn-sm {% if not aktif %}btn-primary{% else %}btn-outline-secondary{% endif %}" href="?">Semua</a>{% for s in statuses %}<a class="btn btn-sm {% if aktif == s.value %}btn-primary{% else %}btn-outline-secondary{% endif %}" href="?status={{ s.value }}">{{ s.label }}</a>{% endfor %}{% endwith %}</nav>
+<div class="table-responsive"><table class="table table-hover bg-white"><thead><tr><th>Kode</th><th>Judul</th><th>Prioritas</th><th>Tenggat</th><th>Status</th><th>Sudah dibaca</th></tr></thead><tbody>
 {% for i in page %}<tr><td><a href="{% url 'instructions:detail' i.pk %}">{{ i.code }}</a></td><td>{{ i.title }}</td><td>{{ i.get_priority_display }}</td><td>{{ i.due_date|date:"d-m-Y"|default:"–" }}</td><td>{{ i.get_status_display }}</td>
 <td>{% with ts=i.targets.all %}{% for t in ts %}{% if t.read_at %}✓{% else %}·{% endif %}{% endfor %}{% endwith %}</td></tr>
 {% empty %}<tr><td colspan="6" class="text-muted">Belum ada instruksi.</td></tr>{% endfor %}

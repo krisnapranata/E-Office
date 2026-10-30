@@ -6,7 +6,7 @@
 // Yang diuji:
 //  1. Setiap menu sidebar (aside#sidebar a.sidebar-link) DIKLIK: URL berubah, link menu jadi .active,
 //     #workspace terisi, tanpa console error / pageerror / respons >=500 / dialihkan ke login / CSS/JS 404.
-//  2. Sidebar melebar saat di-hover, pin (#sidebarToggle) tersimpan setelah muat ulang.
+//  2. Menu terbuka bawaan; mode ramping (#sidebarToggle) tersimpan setelah muat ulang dan melebar saat di-hover.
 //  3. --hp: setiap menu dibuka di lebar 390 px -> tanpa scroll samping, tombol menu offcanvas berfungsi.
 // AMAN: semua permintaan selain GET/HEAD dari browser DIBATALKAN (runserver tidak bisa di-rollback);
 // alur simpan/ubah/hapus diuji di lapis 1 (tools/e2e/jalankan.py) dan lapis 2b (test_alur.py).
@@ -96,19 +96,23 @@ function catat(nama, ok, pesan) {
   // ---------------------------------------------------------------- 2. sidebar hover & pin
   if (!HANYA) {
     try {
+      // Bawaan: menu terbuka (ikon + tulisan). Tombol #sidebarToggle merampingkannya; pilihan tersimpan.
+      await p.evaluate(() => localStorage.removeItem("eoffice-sidebar-pinned"));
       await p.goto(BASE + "/", { waitUntil: "networkidle" });
+      const bawaan = await p.evaluate(() => document.body.classList.contains("sidebar-pinned"));
+      catat("Menu terbuka secara bawaan", bawaan, "");
+      await p.click("#sidebarToggle");          // ramping
+      await p.reload({ waitUntil: "networkidle" });
       await p.mouse.move(900, 500);
       await p.waitForTimeout(400);
       const ramping = await p.$eval("aside#sidebar", e => e.getBoundingClientRect().width);
+      const tersimpan = await p.evaluate(() => !document.body.classList.contains("sidebar-pinned"));
+      catat("Pilihan menu ramping tersimpan setelah muat ulang", tersimpan, "");
       await p.hover("aside#sidebar");
       await p.waitForTimeout(500);
       const lebar = await p.$eval("aside#sidebar", e => e.getBoundingClientRect().width);
-      catat("Sidebar melebar saat hover", lebar > ramping + 100, `${Math.round(ramping)}px -> ${Math.round(lebar)}px`);
-      await p.click("#sidebarToggle");
-      await p.reload({ waitUntil: "networkidle" });
-      const pin = await p.evaluate(() => document.body.classList.contains("sidebar-pinned"));
-      await p.click("#sidebarToggle");          // kembalikan
-      catat("Pin sidebar tersimpan setelah muat ulang", pin, "");
+      catat("Menu ramping melebar saat hover", lebar > ramping + 100, `${Math.round(ramping)}px -> ${Math.round(lebar)}px`);
+      await p.click("#sidebarToggle");          // kembalikan ke terbuka
     } catch (e) { catat("Sidebar hover/pin", false, String(e).split("\n")[0]); }
   }
 

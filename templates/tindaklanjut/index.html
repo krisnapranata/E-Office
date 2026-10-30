@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Tindak lanjut{% endblock %}
 {% block content %}
-<h1 class="h3 mb-3">Tindak Lanjut Keputusan Rapat</h1>
+<h1 class="h3 mb-1">Tindak Lanjut Rapat</h1><p class="page-ket mb-3">Pantau apakah keputusan rapat sudah dikerjakan, per rapat dan per penanggung jawab.</p>
 <form class="row g-2 mb-3 form-compact" method="get">
   <div class="col-6 col-md-2"><label for="f-status">Status</label><select id="f-status" name="status">
     <option value="">Semua</option><option value="terbuka"{% if f.status == 'terbuka' %} selected{% endif %}>Belum selesai</option>

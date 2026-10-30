@@ -50,10 +50,30 @@ def task_list(request):
     page = Paginator(qs, 25).get_page(request.GET.get("page"))
     params = request.GET.copy()
     params.pop("page", None)
+    pic_saya = f"pic={request.user.pk}&"
+    tab = [(label, qs) for label, qs in TAB_TUGAS]
+    tab.insert(1, ("Tugas saya", pic_saya + "flag=open"))
+    sekarang = params.urlencode()
+    lanjutan = any(params.get(f) for f in ("source_type", "priority", "unit", "due_from", "due_to")) or (
+        params.get("pic") and sekarang not in {qs for _, qs in tab})
     return render(request, "workflow/list.html", {
-        "form": form, "page": page, "querystring": params.urlencode(),
+        "form": form, "page": page, "querystring": sekarang,
         "can_create": can_assign_task(request.user),
+        "tab": [(label, qs, qs == sekarang) for label, qs in tab], "filter_lanjutan": lanjutan,
     })
+
+
+# Tab di atas daftar tugas: bahasa sehari-hari, satu klik = satu filter.
+TAB_TUGAS = [
+    ("Semua", ""),
+    ("Perlu diterima", "status=MENUNGGU_PENERIMAAN"),
+    ("Sedang dikerjakan", "status=BERJALAN"),
+    ("Terhambat", "status=TERHAMBAT"),
+    ("Menunggu diperiksa", "status=MENUNGGU_VERIFIKASI"),
+    ("Perlu perbaikan", "status=PERLU_PERBAIKAN"),
+    ("Terlambat", "flag=overdue"),
+    ("Selesai", "status=SELESAI"),
+]
 
 
 @login_required
@@ -110,7 +130,41 @@ def task_detail(request, pk):
         "reason_form": ReasonForm(),
         "statuses": TaskStatus,
     }
+    ctx["langkah"] = _langkah(task)
+    ctx["petunjuk"] = _petunjuk(task, ctx)
     return render(request, "workflow/detail.html", ctx)
+
+
+def _langkah(task):
+    """Tahapan tugas untuk ditampilkan sebagai garis langkah: [(label, 'selesai'|'sekarang'|'nanti')]."""
+    S = TaskStatus
+    label = ["Diberikan", "Diterima", "Dikerjakan"] + (["Diperiksa"] if task.requires_verification else []) + ["Selesai"]
+    posisi = {S.DRAF: 0, S.MENUNGGU_PENERIMAAN: 1, S.BELUM_DIMULAI: 2, S.BERJALAN: 2, S.TERHAMBAT: 2,
+              S.PERLU_PERBAIKAN: 2, S.MENUNGGU_VERIFIKASI: 3, S.SELESAI: len(label)}.get(task.status, 0)
+    return [(nama, "selesai" if i < posisi else "sekarang" if i == posisi else "nanti") for i, nama in enumerate(label)]
+
+
+def _petunjuk(task, ctx):
+    """Satu kalimat: apa yang harus dilakukan pengguna ini sekarang."""
+    S = TaskStatus
+    if task.status == S.SELESAI:
+        return "Tugas ini sudah selesai."
+    if task.status == S.DIBATALKAN:
+        return "Tugas ini dibatalkan."
+    if ctx["is_pic"]:
+        if task.status == S.MENUNGGU_PENERIMAAN:
+            return "Tugas ini untuk Anda. Tekan tombol Terima tugas untuk mulai mengerjakan."
+        if task.status == S.PERLU_PERBAIKAN:
+            return "Hasil Anda dikembalikan. Baca catatan pemeriksa di Riwayat, perbaiki, lalu kirim lagi."
+        if task.status == S.MENUNGGU_VERIFIKASI:
+            return "Hasil sudah Anda kirim. Tunggu pemeriksaan."
+        return ("Kerjakan tugas, laporkan progres secara berkala, unggah bukti, lalu tekan Kirim "
+                + ("untuk diperiksa." if task.requires_verification else "untuk menyelesaikan tugas."))
+    if ctx["can_verify"]:
+        return "Hasil sudah dikirim. Periksa bukti di bawah, lalu setujui atau kembalikan untuk perbaikan."
+    if ctx["can_report"]:
+        return "Anda ikut mengerjakan tugas ini. Laporkan progres dan unggah bukti bila ada."
+    return "Anda dapat memantau perkembangan tugas ini."
 
 
 def _action(request, pk, fn):

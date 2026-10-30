@@ -58,7 +58,7 @@ T_NOTIF = {
     "url": "notifications:list",
     "langkah": [
         "Ikon lonceng di kanan atas menampilkan jumlah notifikasi yang belum dibaca (diperbarui tiap menit).",
-        "Buka menu <b>Notifikasi</b>, lalu tekan <b>Buka</b> pada notifikasi: notifikasi ditandai dibaca dan Anda "
+        "Klik ikon <b>lonceng</b> di kanan atas, lalu tekan <b>Buka</b> pada notifikasi: notifikasi ditandai dibaca dan Anda "
         "langsung diarahkan ke tugas/instruksi/disposisi terkait.",
         "Tekan <b>Tandai semua dibaca</b> untuk membersihkan daftar.",
     ],
@@ -67,7 +67,7 @@ T_KERJAKAN = {
     "judul": "Mengerjakan tugas sebagai PIC",
     "url": "workflow:list",
     "langkah": [
-        "Buka <b>Tugas &amp; Monitoring</b>. Daftar hanya berisi tugas yang boleh Anda lihat. Pakai filter "
+        "Buka <b>Tugas</b>. Daftar hanya berisi tugas yang boleh Anda lihat. Pakai filter "
         "<b>Penanda: Terlambat</b> atau <b>Tenggat ≤ H-2</b> untuk memprioritaskan.",
         "Klik judul tugas. Baca <b>Sumber</b> (instruksi/disposisi asal dapat diklik), <b>Kriteria selesai</b>, "
         "dan tenggat.",
@@ -103,7 +103,7 @@ T_VERIFIKASI = {
     "judul": "Memverifikasi hasil",
     "url": "workflow:list",
     "langkah": [
-        "Anda menerima notifikasi <i>Menunggu verifikasi</i>, atau buka <b>Tugas &amp; Monitoring</b> dengan filter "
+        "Anda menerima notifikasi <i>Menunggu verifikasi</i>, atau buka <b>Tugas</b> dengan filter "
         "<b>Status: Menunggu verifikasi</b>.",
         "Buka tugas, periksa <b>Bukti pelaksanaan</b> (klik nama berkas untuk mengunduh) dan riwayat progres.",
         "Di kartu <b>Verifikasi hasil</b> pilih <b>Setujui &amp; tutup</b> atau <b>Kembalikan untuk perbaikan</b>. "
@@ -129,7 +129,7 @@ T_LANGSUNG = {
     "judul": "Membuat penugasan langsung",
     "url": "workflow:create",
     "langkah": [
-        "Buka <b>Tugas &amp; Monitoring</b> → <b>+ Penugasan langsung</b>.",
+        "Buka <b>Tugas</b> → <b>+ Beri tugas baru</b> (atau tombol <b>Beri tugas</b> di Beranda).",
         "Isi judul, <b>Alasan/sumber lain</b> (wajib, mis. \"temuan ronde mutu\"), unit, <b>PIC</b>, kolaborator "
         "(opsional), prioritas, klasifikasi, tanggal mulai, <b>tenggat</b> (wajib), dan kriteria selesai.",
         "Centang <b>Wajib bukti</b> / <b>Wajib verifikasi</b> sesuai kebutuhan, lalu <b>Simpan &amp; terbitkan</b>.",
@@ -173,14 +173,18 @@ T_TERUSKAN = {
     ],
 }
 T_MONITOR = {
-    "judul": "Memantau lewat dashboard",
+    "judul": "Memakai Beranda",
     "url": "dashboard:home",
     "langkah": [
-        "Kartu atas: <b>Instruksi aktif</b>, <b>Instruksi belum dibaca penerima</b>, <b>Disposisi menunggu tindak lanjut</b>.",
-        "Kartu <b>Status tugas</b>: Belum dimulai, Berjalan, Tenggat ≤ H-2, Terlambat, Terhambat, Menunggu verifikasi, "
-        "Perlu perbaikan, Selesai. <b>Klik angka</b> untuk membuka daftar tugas dengan filter yang sama.",
-        "Tabel <b>Tugas terlambat</b>, <b>Kinerja unit</b> (total, selesai, terlambat, persentase tepat waktu), "
-        "<b>Tren penyelesaian</b> per minggu, dan daftar <b>Terhambat — butuh perhatian</b>.",
+        "Bagian <b>Perlu Anda kerjakan</b> berisi hal yang menunggu Anda: tugas baru, hasil yang harus diperbaiki, "
+        "tenggat yang dekat, hasil kerja yang harus Anda periksa, disposisi, dan instruksi baru. Tekan tombol di "
+        "kanan setiap kabar (mis. <b>Lihat &amp; terima</b>, <b>Periksa hasil</b>).",
+        "<b>Tugas saya yang sedang berjalan</b> menampilkan tugas Anda beserta progres dan tenggatnya.",
+        "Kolom kanan: <b>Agenda hari ini</b> dan <b>Ringkasan tugas</b> (Belum dimulai, Berjalan, Tenggat ≤ H-2, "
+        "Terlambat, Terhambat, Menunggu verifikasi, Perlu perbaikan, Selesai). <b>Klik angka</b> untuk membuka daftarnya.",
+        "Pimpinan (Direktur, Wakil Direktur, Kepala Unit, Auditor) juga melihat <b>Pantauan</b>: instruksi aktif, "
+        "disposisi belum selesai, <b>Tugas terlambat</b>, tugas terhambat, serta <b>Kinerja per unit &amp; tren "
+        "penyelesaian</b> (klik judulnya untuk membuka).",
         "Angka selalu dihitung sesuai lingkup akses Anda.",
     ],
 }
@@ -227,12 +231,12 @@ T_ADMIN = {
     "judul": "Mengelola akun, unit, dan atasan",
     "url": "pengguna:index",
     "langkah": [
-        "<b>Master Organisasi</b> (menu sidebar): pohon unit RSI Yatofa. Tambah sub-unit (ikon +), ubah kode/nama/jenis/"
+        "<b>Struktur Organisasi</b> (menu kiri, bagian Kelola): pohon unit RSI Yatofa. Tambah sub-unit (ikon +), ubah kode/nama/jenis/"
         "<b>induk struktural</b>/urutan/kepala unit, kelola <b>hubungan koordinasi/pengawasan</b> (mis. komite → Direktur), "
         "dan <b>nonaktifkan</b> unit (alasan wajib; tidak bisa selama masih punya sub-unit aktif). Sistem menolak induk "
         "yang membuat hubungan melingkar. Unit tidak pernah dihapus.",
         "Induk struktural menentukan lingkup akses atasan dan eskalasi; hubungan koordinasi/pengawasan hanya informasi.",
-        "<b>Pengguna</b> (menu sidebar, khusus Administrator): klik ikon <b>tambah pengguna</b> pada unit/bidang di "
+        "<b>Pengguna</b> (menu kiri, bagian Kelola, khusus Administrator): klik ikon <b>tambah pengguna</b> pada unit/bidang di "
         "Master Organisasi, atau <b>+ Tambah pengguna</b> lalu pilih unit dari daftar bertingkat. Isi nama, login, dan "
         "kata sandi; centang <b>Kepala/pimpinan unit ini</b> bila orang tersebut kepalanya. <b>Jabatan</b>, <b>peran</b>, "
         "dan <b>atasan langsung</b> terisi otomatis dari struktur (tetap bisa diubah). Tombol <b>Simpan &amp; tambah lagi "
@@ -313,7 +317,7 @@ T_TINDAKLANJUT = {
         "Saring dengan <b>Status</b> (Belum selesai, Terlambat, atau status tertentu), <b>Unit</b>, dan rentang tanggal rapat.",
         "Klik <b>rincian</b> pada sebuah rapat untuk melihat per keputusan: PIC, progres, status, dan catatan terakhir.",
         "Untuk rapat evaluasi berikutnya: <b>Cetak daftar belum selesai</b>.",
-        "Tindak lanjut adalah tugas biasa: PIC mengerjakannya di <b>Tugas &amp; Monitoring</b> dan pimpinan rapat "
+        "Tindak lanjut adalah tugas biasa: PIC mengerjakannya di <b>Tugas</b> dan pimpinan rapat "
         "memverifikasinya. Gunakan <b>Minta pembaruan ke PIC</b> atau kembalikan hasil untuk klarifikasi/revisi.",
     ],
 }
@@ -321,7 +325,7 @@ T_ARSIP_CARI = {
     "judul": "Mencari dan membuka arsip",
     "url": "arsip:list",
     "langkah": [
-        "Buka <b>E-Arsip</b>. Saring dengan <b>Cari</b> (judul, nomor, kata kunci), <b>Jenis</b>, <b>Unit</b>, <b>Tahun</b>, "
+        "Buka menu <b>Arsip Dokumen</b>. Saring dengan <b>Cari</b> (judul, nomor, kata kunci), <b>Jenis</b>, <b>Unit</b>, <b>Tahun</b>, "
         "dan <b>Status</b>.",
         "Halaman dokumen menampilkan metadata, tautan ke <b>objek asal</b> (surat/instruksi/tugas/rapat), semua "
         "<b>versi berkas</b>, dan aktivitas. Setiap unduhan tercatat.",
@@ -334,7 +338,7 @@ T_ARSIP_KELOLA = {
     "langkah": [
         "Arsip <b>otomatis</b>: lampiran surat masuk/keluar, lampiran instruksi, bahan agenda, notulen yang disetujui, "
         "dan bukti tugas langsung tercatat tanpa perlu diunggah ulang.",
-        "Arsip <b>manual</b>: <b>E-Arsip</b> → <b>+ Arsipkan dokumen</b>; isi jenis, nomor, tanggal dokumen, judul, unit, "
+        "Arsip <b>manual</b>: <b>Arsip Dokumen</b> → <b>+ Arsipkan dokumen</b>; isi jenis, nomor, tanggal dokumen, judul, unit, "
         "klasifikasi, kata kunci, dan berkas → <b>Simpan ke arsip</b>.",
         "Revisi dokumen manual: kartu <b>Unggah versi baru</b> dengan <b>catatan versi</b> (wajib). Versi lama tetap tersimpan. "
         "Versi dokumen otomatis mengikuti objek asalnya.",
@@ -546,7 +550,7 @@ MODUL = [
                 "Notulen yang disetujui terkunci, dapat dicetak, dan masuk E-Arsip bila berlampiran."]},
     {"no": 9, "nama": "E-Follow Up", "ikon": "bi-arrow-repeat", "url": "tindaklanjut:index",
      "fungsi": "Mengelola tindak lanjut keputusan rapat: ringkasan per rapat/unit/periode dan daftar yang belum selesai.",
-     "siapa": "Pimpinan rapat dan atasan memantau; PIC mengerjakan lewat Tugas &amp; Monitoring.",
+     "siapa": "Pimpinan rapat dan atasan memantau; PIC mengerjakan lewat Tugas.",
      "tugas": [T_TINDAKLANJUT],
      "aturan": ["Tindak lanjut adalah tugas yang sama (tidak dicatat terpisah), tertaut ke keputusan dan rapat asalnya.",
                 "Pengingat, eskalasi, bukti, dan verifikasi berlaku seperti tugas lain."]},
@@ -559,14 +563,14 @@ MODUL = [
                 "Setiap unduhan dan perubahan metadata tercatat."]},
     {"no": 11, "nama": "E-Reporting", "ikon": "bi-bar-chart-line", "url": "laporan:index",
      "fungsi": "Laporan pelaksanaan dan evaluasi unit per periode, unit, PIC, jenis pekerjaan, dan status; ekspor Excel/PDF.",
-     "siapa": "Semua pengguna, dengan angka sesuai lingkup akses masing-masing.",
+     "siapa": "Pimpinan, sekretaris, petugas arsip, dan auditor (menu Laporan); angka sesuai lingkup akses masing-masing.",
      "tugas": [T_LAPORAN],
      "aturan": ["Membedakan pekerjaan yang sudah ditutup dari yang masih menunggu verifikasi.",
                 "Persentase tepat waktu = selesai sebelum/pada tenggat dibagi tugas selesai yang bertenggat.",
                 "Laporan dapat disimpan ke E-Arsip sebagai dokumen jenis Laporan."]},
     {"no": 12, "nama": "Executive Dashboard", "ikon": "bi-speedometer2", "url": "dashboard:home",
-     "fungsi": "Ringkasan kendali Direktur: instruksi, disposisi, status tugas, agenda, tindak lanjut rapat, kinerja unit, tren.",
-     "siapa": "Semua pengguna (halaman awal); isi mengikuti lingkup akses.",
+     "fungsi": "Beranda: daftar hal yang perlu Anda kerjakan, tugas Anda, agenda, ringkasan tugas; pimpinan juga melihat pantauan unit.",
+     "siapa": "Semua pengguna (halaman awal, menu Beranda); isi mengikuti lingkup akses.",
      "tugas": [T_MONITOR],
      "aturan": ["Setiap angka dapat diklik dan membuka daftar dengan filter yang sama.",
                 "Agenda hari ini dan 7 hari ke depan; tindak lanjut rapat yang belum selesai dan terlambat."]},

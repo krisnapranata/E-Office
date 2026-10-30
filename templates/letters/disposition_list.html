@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Disposisi{% endblock %}
 {% block content %}
-<h1 class="h3">Disposisi</h1>
+<h1 class="h3 mb-1">Disposisi</h1><p class="page-ket mb-3">Arahan pimpinan atas surat masuk. Setiap disposisi menjadi tugas bagi penerimanya.</p>
 <p><a href="?pending=1">Belum selesai</a> · <a href="?">Semua</a></p>
 <div class="table-responsive"><table class="table table-hover bg-white"><thead><tr><th>#</th><th>Surat</th><th>Dari</th><th>Kepada</th><th>Tenggat</th><th>Status</th></tr></thead><tbody>
 {% for d in page %}<tr><td><a href="{% url 'letters:disposition_detail' d.pk %}">#{{ d.pk }}</a></td><td>{{ d.letter.agenda_number }}</td><td>{{ d.from_user }}</td><td>{{ d.to_user }}</td><td>{{ d.due_date|date:"d-m-Y"|default:"–" }}</td><td>{{ d.get_status_display }}</td></tr>

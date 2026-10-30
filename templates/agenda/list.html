@@ -2,7 +2,7 @@
 {% block title %}Agenda{% endblock %}
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h3 mb-0">Agenda</h1>
+  <div><h1 class="h3 mb-1">Agenda</h1><p class="page-ket">Jadwal rapat dan kegiatan. Klik agenda untuk melihat peserta dan bahan rapat.</p></div>
   <div class="d-flex gap-2">
     <a class="btn btn-outline-primary" href="{% url 'agenda:calendar' %}"><i class="bi bi-calendar3 me-1" aria-hidden="true"></i>Kalender</a>
     {% if can_create %}<a class="btn btn-primary" href="{% url 'agenda:create' %}">+ Agenda baru</a>{% endif %}

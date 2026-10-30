@@ -1,58 +1,107 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}Beranda{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h3 mb-0">Executive Dashboard</h1>
-  <span class="text-muted">Data per {{ today|date:"d M Y" }} · sesuai hak akses Anda</span>
-</div>
-<div class="row g-3 mb-4">
-  <div class="col-md-4"><a class="text-decoration-none" href="{% url 'instructions:list' %}?status=DITERBITKAN"><div class="card"><div class="card-body"><div class="text-muted small">Instruksi aktif</div><div class="fs-2 fw-bold">{{ active_instructions }}</div></div></div></a></div>
-  <div class="col-md-4"><a class="text-decoration-none" href="{% url 'instructions:list' %}?status=DITERBITKAN&unread=1"><div class="card"><div class="card-body"><div class="text-muted small">Instruksi belum dibaca penerima</div><div class="fs-2 fw-bold">{{ unread_instructions }}</div></div></div></a></div>
-  <div class="col-md-4"><a class="text-decoration-none" href="{% url 'letters:disposition_list' %}?pending=1"><div class="card"><div class="card-body"><div class="text-muted small">Disposisi menunggu tindak lanjut</div><div class="fs-2 fw-bold">{{ pending_dispositions }}</div></div></div></a></div>
-</div>
-<h2 class="h5">Status tugas</h2>
-<div class="row g-3 mb-4">
-  {% for label, n, qs, color in cards %}
-  <div class="col-6 col-md-3 col-xl"><a class="text-decoration-none" href="{% url 'workflow:list' %}?{{ qs }}">
-    <div class="card border-{{ color }}"><div class="card-body"><div class="text-muted small">{{ label }}</div><div class="fs-3 fw-bold text-{{ color }}">{{ n }}</div></div></div></a></div>
+<div class="row g-4 beranda">
+<div class="col-lg-8">
+
+  <section class="card sapa mb-4"><div class="card-body">
+    <h1 class="h4 mb-1">{{ salam }}, {{ user.first_name|default:user.get_full_name|default:user.username }}</h1>
+    <p class="text-muted mb-0">{% if kabar %}Ada <b>{{ kabar|length }}</b> hal yang menunggu Anda hari ini.{% else %}Tidak ada yang menunggu Anda. Semua beres.{% endif %}</p>
+    {% if aksi %}<div class="aksi-cepat mt-3">
+      {% for _, nama, ikon, label in aksi %}<a class="btn btn-outline-primary" href="{% url nama %}"><i class="bi {{ ikon }} me-1" aria-hidden="true"></i>{{ label }}</a>{% endfor %}
+    </div>{% endif %}
+  </div></section>
+
+  <h2 class="judul-bagian">Perlu Anda kerjakan</h2>
+  {% for k in kabar %}
+  <article class="card kabar mb-3"><div class="card-body d-flex gap-3 align-items-start">
+    <div class="kabar-ikon text-bg-{{ k.warna }}" aria-hidden="true"><i class="bi {{ k.ikon }}"></i></div>
+    <div class="flex-grow-1 min-w-0">
+      <div class="kabar-judul">{{ k.judul }}</div>
+      <div class="kabar-teks">{{ k.teks }}</div>
+      <div class="small text-muted">{{ k.ket }}</div>
+    </div>
+    <a class="btn btn-primary kabar-tombol" href="{{ k.url }}">{{ k.tombol }}</a>
+  </div></article>
+  {% empty %}
+  <div class="card kabar-kosong mb-3"><div class="card-body text-center py-4">
+    <i class="bi bi-check-circle text-success fs-1" aria-hidden="true"></i>
+    <p class="mb-0 mt-2">Tidak ada pekerjaan yang menunggu. Terima kasih!</p>
+  </div></div>
   {% endfor %}
-</div>
-<div class="row g-4">
-  <div class="col-lg-7">
-    <div class="card mb-4"><div class="card-header">Tugas terlambat</div>
-      <table class="table table-sm mb-0"><thead><tr><th>Tugas</th><th>Unit</th><th>PIC</th><th>Tenggat</th></tr></thead><tbody>
-      {% for t in overdue %}<tr><td><a href="{% url 'workflow:detail' t.pk %}">{{ t }}</a></td><td>{{ t.unit.code }}</td><td>{{ t.pic }}</td><td class="text-danger">{{ t.due_date|date:"d-m-Y" }}</td></tr>
-      {% empty %}<tr><td colspan="4" class="text-muted">Tidak ada.</td></tr>{% endfor %}
-      </tbody></table></div>
-    <div class="card mb-4"><div class="card-header">Kinerja unit</div>
-      <table class="table table-sm mb-0"><thead><tr><th>Unit</th><th>Total</th><th>Selesai</th><th>Terlambat</th><th>Tepat waktu</th></tr></thead><tbody>
-      {% for u in units %}<tr><td><a href="{% url 'workflow:list' %}?unit={{ u.unit_id }}">{{ u.unit__code }}</a> <span class="text-muted small">{{ u.unit__name }}</span></td><td>{{ u.total }}</td><td>{{ u.done }}</td><td><a href="{% url 'workflow:list' %}?unit={{ u.unit_id }}&flag=overdue">{{ u.overdue }}</a></td><td>{% if u.on_time_pct is not None %}{{ u.on_time_pct }}%{% else %}–{% endif %}</td></tr>
-      {% empty %}<tr><td colspan="5" class="text-muted">Belum ada data.</td></tr>{% endfor %}
-      </tbody></table></div>
+
+  <h2 class="judul-bagian mt-4">Tugas saya yang sedang berjalan</h2>
+  <div class="card mb-4"><ul class="list-group list-group-flush">
+    {% for t in tugas_saya %}
+    <li class="list-group-item tugas-baris">
+      <div class="d-flex justify-content-between gap-2">
+        <a class="fw-semibold" href="{% url 'workflow:detail' t.pk %}">{{ t.title }}</a>
+        {% include "_status.html" with s=t.status label=t.get_status_display %}
+      </div>
+      <div class="d-flex align-items-center gap-2 mt-1">
+        <div class="progress flex-grow-1" role="progressbar" aria-label="Progres" aria-valuenow="{{ t.progress }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:{{ t.progress }}%"></div></div>
+        <span class="small text-muted text-nowrap">{{ t.progress }}% · tenggat {{ t.due_date|date:"d M"|default:"–" }}{% if t.is_overdue %} <span class="text-danger fw-semibold">terlambat</span>{% endif %}</span>
+      </div>
+    </li>
+    {% empty %}<li class="list-group-item text-muted">Anda belum punya tugas yang berjalan.</li>{% endfor %}
+    {% if jumlah_tugas_saya > tugas_saya|length %}<li class="list-group-item"><a href="{% url 'workflow:list' %}?pic={{ user.pk }}&amp;flag=open">Lihat semua {{ jumlah_tugas_saya }} tugas saya</a></li>{% endif %}
+  </ul></div>
+
+  {% if pantau %}
+  <h2 class="judul-bagian mt-4">Pantauan {% if user.role == 'KEPALA_UNIT' or user.role == 'WADIR' %}unit Anda{% else %}rumah sakit{% endif %}</h2>
+  <div class="row g-3 mb-4">
+    <div class="col-sm-4"><a class="stat-link" href="{% url 'instructions:list' %}?status=DITERBITKAN"><div class="card"><div class="card-body"><div class="text-muted small">Instruksi aktif</div><div class="fs-3 fw-bold">{{ active_instructions }}</div></div></div></a></div>
+    <div class="col-sm-4"><a class="stat-link" href="{% url 'instructions:list' %}?status=DITERBITKAN&unread=1"><div class="card"><div class="card-body"><div class="text-muted small">Instruksi belum dibaca</div><div class="fs-3 fw-bold">{{ unread_instructions }}</div></div></div></a></div>
+    <div class="col-sm-4"><a class="stat-link" href="{% url 'letters:disposition_list' %}?pending=1"><div class="card"><div class="card-body"><div class="text-muted small">Disposisi belum selesai</div><div class="fs-3 fw-bold">{{ pending_dispositions }}</div></div></div></a></div>
   </div>
-  <div class="col-lg-5">
-    <div class="card mb-4"><div class="card-header">Tren penyelesaian (per minggu)</div><div class="card-body">
+  <div class="card mb-4"><div class="card-header">Tugas terlambat</div>
+    <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Tugas</th><th>Unit</th><th>Penanggung jawab</th><th>Tenggat</th></tr></thead><tbody>
+    {% for t in overdue %}<tr><td><a href="{% url 'workflow:detail' t.pk %}">{{ t }}</a></td><td>{{ t.unit.code }}</td><td>{{ t.pic }}</td><td class="text-danger">{{ t.due_date|date:"d-m-Y" }}</td></tr>
+    {% empty %}<tr><td colspan="4" class="text-muted">Tidak ada. Bagus!</td></tr>{% endfor %}
+    </tbody></table></div></div>
+  {% if blocked %}<div class="card mb-4"><div class="card-header">Terhambat, butuh bantuan</div><ul class="list-group list-group-flush">
+    {% for t in blocked %}<li class="list-group-item"><a href="{% url 'workflow:detail' t.pk %}">{{ t }}</a> <span class="text-muted small">{{ t.unit.code }} · {{ t.pic }}</span></li>{% endfor %}</ul></div>{% endif %}
+  <details class="card mb-4 lipat"><summary class="card-header">Kinerja per unit &amp; tren penyelesaian</summary>
+    <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Unit</th><th>Total</th><th>Selesai</th><th>Terlambat</th><th>Tepat waktu</th></tr></thead><tbody>
+    {% for u in units %}<tr><td><a href="{% url 'workflow:list' %}?unit={{ u.unit_id }}">{{ u.unit__code }}</a> <span class="text-muted small">{{ u.unit__name }}</span></td><td>{{ u.total }}</td><td>{{ u.done }}</td><td><a href="{% url 'workflow:list' %}?unit={{ u.unit_id }}&flag=overdue">{{ u.overdue }}</a></td><td>{% if u.on_time_pct is not None %}{{ u.on_time_pct }}%{% else %}–{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="5" class="text-muted">Belum ada data.</td></tr>{% endfor %}
+    </tbody></table></div>
+    <div class="card-body"><div class="small text-muted mb-2">Tugas selesai per minggu</div>
       {% for r in trend %}<div class="d-flex align-items-center mb-1"><span class="small text-muted trend-label">{{ r.week|date:"d M" }}</span>
-        <div class="progress flex-grow-1" style="height:1rem"><div class="progress-bar" style="width:{{ r.pct }}%"></div></div><span class="ms-2 small trend-value">{{ r.done }}</span></div>{% endfor %}
-    </div></div>
-    <div class="card mb-4"><div class="card-header">Terhambat — butuh perhatian</div><ul class="list-group list-group-flush">
-      {% for t in blocked %}<li class="list-group-item"><a href="{% url 'workflow:detail' t.pk %}">{{ t }}</a> <span class="text-muted small">{{ t.unit.code }} · {{ t.pic }}</span></li>
-      {% empty %}<li class="list-group-item text-muted">Tidak ada.</li>{% endfor %}</ul></div>
-    <div class="card mb-4"><div class="card-header d-flex justify-content-between"><span>Agenda hari ini</span><a class="small" href="{% url 'agenda:calendar' %}">kalender</a></div>
-      <ul class="list-group list-group-flush">
-      {% for ev in agenda_hari_ini %}<li class="list-group-item"><b>{{ ev.start|time:"H:i" }}</b> <a href="{% url 'agenda:detail' ev.pk %}">{{ ev.title }}</a> <span class="small text-muted">{{ ev.location }}{% if ev.status == 'SELESAI' %} · selesai{% endif %}</span></li>
-      {% empty %}<li class="list-group-item text-muted small">Tidak ada agenda hari ini.</li>{% endfor %}
-      {% if agenda_mendatang %}<li class="list-group-item small text-muted fw-semibold">7 hari ke depan</li>
-      {% for ev in agenda_mendatang %}<li class="list-group-item small">{{ ev.start|date:"D d M H:i" }} · <a href="{% url 'agenda:detail' ev.pk %}">{{ ev.title }}</a></li>{% endfor %}{% endif %}
-      </ul></div>
-    <div class="card mb-4"><div class="card-header">Tindak lanjut keputusan rapat</div><div class="card-body d-flex gap-4">
-      <a class="text-decoration-none" href="{% url 'tindaklanjut:index' %}?status=terbuka"><div class="text-muted small">Belum selesai</div><div class="fs-3 fw-bold">{{ tl_terbuka }}</div></a>
-      <a class="text-decoration-none" href="{% url 'tindaklanjut:index' %}?status=terlambat"><div class="text-muted small">Terlambat</div><div class="fs-3 fw-bold text-danger">{{ tl_terlambat }}</div></a>
-    </div></div>
-    {% if recent_activity %}
-    <div class="card mb-4"><div class="card-header">Aktivitas terbaru</div><ul class="list-group list-group-flush small">
-      {% for a in recent_activity %}<li class="list-group-item">{{ a.created_at|date:"d-m H:i" }} · {{ a.user|default:"sistem" }} · {{ a.action }} · {{ a.object_repr }}</li>{% endfor %}</ul></div>
-    {% endif %}
-  </div>
+        <div class="progress flex-grow-1"><div class="progress-bar" style="width:{{ r.pct }}%"></div></div><span class="ms-2 small trend-value">{{ r.done }}</span></div>{% endfor %}
+    </div>
+  </details>
+  {% if recent_activity %}
+  <details class="card mb-4 lipat"><summary class="card-header">Aktivitas terbaru di sistem</summary><ul class="list-group list-group-flush small">
+    {% for a in recent_activity %}<li class="list-group-item">{{ a.created_at|date:"d-m H:i" }} · {{ a.user|default:"sistem" }} · {{ a.action }} · {{ a.object_repr }}</li>{% endfor %}</ul></details>
+  {% endif %}
+  {% endif %}
+</div>
+
+<aside class="col-lg-4">
+  <div class="card mb-4"><div class="card-header d-flex justify-content-between"><span><i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Agenda hari ini</span><a class="small" href="{% url 'agenda:calendar' %}">kalender</a></div>
+    <ul class="list-group list-group-flush">
+    {% for ev in agenda_hari_ini %}<li class="list-group-item"><b>{{ ev.start|time:"H:i" }}</b> <a href="{% url 'agenda:detail' ev.pk %}">{{ ev.title }}</a> <span class="small text-muted">{{ ev.location }}{% if ev.status == 'SELESAI' %} · selesai{% endif %}</span></li>
+    {% empty %}<li class="list-group-item text-muted small">Tidak ada agenda hari ini.</li>{% endfor %}
+    {% if agenda_mendatang %}<li class="list-group-item small text-muted fw-semibold">7 hari ke depan</li>
+    {% for ev in agenda_mendatang %}<li class="list-group-item small">{{ ev.start|date:"D d M H:i" }} · <a href="{% url 'agenda:detail' ev.pk %}">{{ ev.title }}</a></li>{% endfor %}{% endif %}
+    </ul></div>
+
+  <div class="card mb-4"><div class="card-header"><i class="bi bi-list-check me-1" aria-hidden="true"></i>Ringkasan tugas</div><div class="card-body">
+    <p class="small text-muted mb-2">Klik angka untuk melihat daftarnya.</p>
+    <div class="ringkasan-grid">
+    {% for label, n, qs, color in cards %}<a class="text-decoration-none" href="{% url 'workflow:list' %}?{{ qs }}">
+      <div class="card ringkas border-{{ color }}"><div class="card-body"><div class="text-muted small">{{ label }}</div><div class="fs-3 fw-bold text-{{ color }}">{{ n }}</div></div></div></a>
+    {% endfor %}
+    </div>
+  </div></div>
+
+  {% if pantau %}
+  <div class="card mb-4"><div class="card-header">Tindak lanjut rapat</div><div class="card-body d-flex gap-4">
+    <a class="text-decoration-none" href="{% url 'tindaklanjut:index' %}?status=terbuka"><div class="text-muted small">Belum selesai</div><div class="fs-3 fw-bold">{{ tl_terbuka }}</div></a>
+    <a class="text-decoration-none" href="{% url 'tindaklanjut:index' %}?status=terlambat"><div class="text-muted small">Terlambat</div><div class="fs-3 fw-bold text-danger">{{ tl_terlambat }}</div></a>
+  </div></div>
+  {% endif %}
+</aside>
 </div>
 {% endblock %}

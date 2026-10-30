@@ -1,10 +1,10 @@
 <nav class="navbar custom-navbar topbar" aria-label="Bilah atas">
   <div class="topbar-left">
-    <button class="topbar-btn glass d-none d-lg-grid" type="button" id="sidebarToggle" aria-label="Sematkan menu" aria-pressed="false"><i class="bi bi-list" aria-hidden="true"></i></button>
+    <button class="topbar-btn glass d-none d-lg-grid" type="button" id="sidebarToggle" aria-label="Perkecil atau perbesar menu" aria-pressed="false"><i class="bi bi-list" aria-hidden="true"></i></button>
     <button class="topbar-btn glass d-lg-none menu-toggle-topbar" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar" aria-label="Buka menu"><i class="bi bi-list" aria-hidden="true"></i></button>
     <form class="search-box glass d-none d-md-flex" method="get" action="{% url 'workflow:list' %}" role="search">
       <i class="bi bi-search" aria-hidden="true"></i>
-      <input type="search" id="topbarSearch" name="q" class="form-control" placeholder="Cari tugas..." aria-label="Cari tugas" autocomplete="off">
+      <input type="search" id="topbarSearch" name="q" class="form-control" placeholder="Cari tugas…" aria-label="Cari tugas" autocomplete="off">
       <kbd class="search-kbd">Ctrl K</kbd>
     </form>
   </div>
@@ -21,6 +21,8 @@
       </a>
       <ul class="dropdown-menu dropdown-menu-end">
         <li><span class="dropdown-item-text small text-muted">{{ user.get_role_display }}{% if user.unit %} · {{ user.unit.code }}{% endif %}</span></li>
+        <li><a class="dropdown-item" href="{% url 'panduan:index' %}"><i class="bi bi-question-circle me-2" aria-hidden="true"></i>Panduan</a></li>
+        {% if user.is_staff %}<li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-gear me-2" aria-hidden="true"></i>Administrasi sistem</a></li>{% endif %}
         <li><hr class="dropdown-divider"></li>
         <li><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="dropdown-item text-danger" type="submit"><i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Keluar</button></form></li>
       </ul>

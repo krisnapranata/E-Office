@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}E-Arsip{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h3 mb-0">E-Arsip</h1>
+<div class="d-flex justify-content-between align-items-center mb-3"><div><h1 class="h3 mb-1">Arsip Dokumen</h1><p class="page-ket">Semua dokumen yang tersimpan: surat, notulen, bukti kerja, dan laporan. Gunakan kotak cari.</p></div>
   {% if can_create %}<a class="btn btn-primary" href="{% url 'arsip:create' %}">+ Arsipkan dokumen</a>{% endif %}</div>
 <form class="row g-2 mb-3 form-compact" method="get">
   {% for f in form %}<div class="col-6 col-md">{{ f.label_tag }}{{ f }}</div>{% endfor %}

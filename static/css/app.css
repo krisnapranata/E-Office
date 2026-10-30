@@ -84,3 +84,59 @@ a.org-orang:hover { color: var(--mc-primary); }
 .org-unit { --org-warna: #6D28D9; }
 .daftar-gulir { max-height: 26rem; overflow-y: auto; }
 .topbar-demo { align-self: center; letter-spacing: .04em; }
+
+/* ===== Tampilan sederhana (gaya "kabar"): huruf sedikit lebih besar, satu tombol jelas per hal ===== */
+body.page-dense #workspace { font-size: 15px; }
+.judul-halaman { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: .75rem; margin-bottom: 1rem; }
+.page-ket { color: var(--mc-text-muted); margin: 0; font-size: .92rem; }
+.judul-bagian { font-size: 1.05rem; font-weight: 700; color: var(--mc-forest); margin-bottom: .75rem; }
+.min-w-0 { min-width: 0; }
+
+/* Beranda */
+.sapa h1 { color: var(--mc-forest); font-weight: 700; }
+.aksi-cepat { display: flex; flex-wrap: wrap; gap: .5rem; }
+.kabar .card-body { padding: .9rem 1rem; }
+.kabar-ikon { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 1.2rem; }
+.kabar-judul { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--mc-text-muted); }
+.kabar-teks { font-size: 1.02rem; font-weight: 600; color: var(--mc-text); overflow-wrap: anywhere; }
+.kabar-tombol { align-self: center; white-space: nowrap; }
+.tugas-baris .progress { height: .5rem; }
+.ringkasan-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
+.ringkas .card-body { padding: .55rem .7rem; }
+.ringkas .fs-3 { font-size: 1.35rem !important; line-height: 1.2; }
+@media (max-width: 575.98px) {
+  .kabar .card-body { display: grid !important; grid-template-columns: auto minmax(0, 1fr); }
+  .kabar-tombol { grid-column: 1 / -1; width: 100%; }
+}
+.tugas-baris .badge { align-self: flex-start; white-space: nowrap; }
+
+/* Bagian yang bisa dilipat (detail tambahan, tidak mengganggu pengguna biasa) */
+details.lipat > summary { cursor: pointer; list-style: none; }
+details.lipat > summary::-webkit-details-marker { display: none; }
+details.lipat > summary::after { content: "\25BE"; float: right; color: var(--mc-text-muted); }
+details.lipat:not([open]) > summary { border-bottom: 0; }
+.lipat-filter > summary { cursor: pointer; color: var(--mc-primary); font-size: .9rem; }
+
+/* Daftar tugas */
+.tab-pil { display: flex; flex-wrap: wrap; gap: .4rem; }
+.cari-baris { display: flex; gap: .5rem; max-width: 34rem; }
+.cari-baris .btn { display: inline-flex; align-items: center; gap: .35rem; white-space: nowrap; }
+.progress-tipis { height: .3rem; max-width: 9rem; }
+
+/* Detail tugas: garis langkah + petunjuk */
+.langkah { display: flex; list-style: none; padding: 0; margin: 0; counter-reset: none; overflow-x: auto; }
+.langkah li { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; position: relative; text-align: center; }
+.langkah li + li::before { content: ""; position: absolute; top: 17px; right: 50%; width: 100%; height: 3px; background: var(--mc-border); z-index: 0; }
+.langkah li.langkah-selesai + li::before, .langkah li.langkah-selesai::before { background: var(--mc-success); }
+.langkah-bulat { position: relative; z-index: 1; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+  font-weight: 700; background: #fff; border: 3px solid var(--mc-border); color: var(--mc-text-muted); }
+.langkah-selesai .langkah-bulat { background: var(--mc-success); border-color: var(--mc-success); color: #fff; }
+.langkah-sekarang .langkah-bulat { background: var(--mc-primary); border-color: var(--mc-primary); color: #fff; box-shadow: 0 0 0 4px var(--accent-soft); }
+.langkah-nama { font-size: .82rem; margin-top: .3rem; color: var(--mc-text-muted); }
+.langkah-sekarang .langkah-nama { color: var(--mc-forest); font-weight: 700; }
+.petunjuk { font-size: .98rem; }
+.nomor-aksi { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; margin-right: .35rem;
+  background: var(--mc-primary); color: #fff !important; font-size: .75rem; font-weight: 700; }
+.langkah li { min-width: 0; }
+@media (max-width: 575.98px) { .langkah-nama { font-size: .7rem; } .langkah-bulat { width: 30px; height: 30px; } .langkah li + li::before { top: 14px; } }
+.info-tugas dt { color: var(--mc-text-muted); font-weight: 600; }

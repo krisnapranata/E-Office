@@ -41,7 +41,7 @@ class EvidenceForm(forms.Form):
 
 
 class VerifyForm(forms.Form):
-    decision = forms.ChoiceField(choices=[("approve", "Setujui & tutup"),
+    decision = forms.ChoiceField(label="Keputusan", choices=[("approve", "Setujui & tutup"),
                                           ("revise", "Kembalikan untuk perbaikan")])
     note = forms.CharField(label="Catatan/alasan", widget=forms.Textarea(attrs={"rows": 2}),
                            required=False)

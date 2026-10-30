@@ -97,3 +97,63 @@ def agenda_dan_tindak_lanjut(user, tasks, today):
         "tl_terbuka": tl.open().count(),
         "tl_terlambat": tl.overdue(today).count(),
     }
+
+
+def beranda(user, today=None):
+    """Beranda bergaya 'kabar': hal yang menunggu TINDAKAN pengguna ini, masing-masing dengan satu tombol jelas.
+    -> {"kabar": [...], "tugas_saya": [...], "jumlah_tugas_saya": n}"""
+    from django.urls import reverse
+
+    from instructions.models import InstructionTarget
+    from letters.models import IncomingLetter
+    from workflow.models import Task
+
+    today = today or timezone.localdate()
+    S = TaskStatus
+    kabar = []
+
+    def tambah(urut, ikon, warna, judul, teks, ket, url, tombol):
+        kabar.append({"urut": urut, "ikon": ikon, "warna": warna, "judul": judul, "teks": teks, "ket": ket,
+                      "url": url, "tombol": tombol})
+
+    milik = Task.objects.filter(pic=user).select_related("unit", "created_by")
+    for t in milik.filter(status=S.MENUNGGU_PENERIMAAN).order_by("due_date")[:10]:
+        tambah(1, "bi-inbox", "primary", "Tugas baru untuk Anda", t.title,
+               f"Dari {t.created_by} · tenggat {_tgl(t.due_date)}", reverse("workflow:detail", args=[t.pk]),
+               "Lihat & terima")
+    for t in milik.filter(status=S.PERLU_PERBAIKAN).order_by("due_date")[:10]:
+        tambah(2, "bi-arrow-counterclockwise", "warning", "Hasil Anda perlu diperbaiki", t.title,
+               f"Tenggat {_tgl(t.due_date)}", reverse("workflow:detail", args=[t.pk]), "Perbaiki")
+    dekat = milik.filter(status__in=[S.BELUM_DIMULAI, S.BERJALAN, S.TERHAMBAT], due_date__lte=today + timedelta(days=2))
+    for t in dekat.order_by("due_date")[:10]:
+        telat = t.due_date < today
+        tambah(3, "bi-alarm", "danger" if telat else "warning",
+               "Tugas Anda terlambat" if telat else "Tenggat tugas sudah dekat", t.title,
+               f"Tenggat {_tgl(t.due_date)} · progres {t.progress}%", reverse("workflow:detail", args=[t.pk]),
+               "Laporkan progres")
+    periksa = Task.objects.filter(verifier=user, status=S.MENUNGGU_VERIFIKASI).select_related("pic")
+    for t in periksa.order_by("submitted_at")[:10]:
+        tambah(1, "bi-clipboard-check", "info", "Hasil kerja menunggu Anda periksa", t.title,
+               f"Dikirim oleh {t.pic}", reverse("workflow:detail", args=[t.pk]), "Periksa hasil")
+    for d in (Disposition.objects.filter(to_user=user, status__in=[Disposition.Status.TERKIRIM, Disposition.Status.DIBACA])
+              .select_related("letter", "from_user").order_by("-id")[:10]):
+        tambah(2, "bi-signpost-split", "primary", "Disposisi surat untuk Anda", d.letter.subject,
+               f"Dari {d.from_user}", reverse("letters:disposition_detail", args=[d.pk]), "Buka disposisi")
+    for it in (InstructionTarget.objects.filter(pic=user, read_at=None, instruction__status=Instruction.Status.DITERBITKAN)
+               .select_related("instruction", "instruction__created_by").order_by("-id")[:10]):
+        i = it.instruction
+        tambah(2, "bi-megaphone", "primary", "Instruksi baru untuk Anda", i.title, f"Dari {i.created_by}",
+               reverse("instructions:detail", args=[i.pk]), "Baca instruksi")
+    if user.role == "DIREKTUR":
+        for s in IncomingLetter.objects.filter(dispositions__isnull=True).order_by("-received_date")[:10]:
+            tambah(2, "bi-envelope-exclamation", "warning", "Surat masuk belum didisposisi", s.subject,
+                   f"Dari {s.sender} · diterima {_tgl(s.received_date)}",
+                   reverse("letters:incoming_detail", args=[s.pk]), "Disposisikan")
+    kabar.sort(key=lambda k: k["urut"])
+
+    aktif = milik.exclude(status__in=[*CLOSED_STATUSES, S.DRAF]).order_by(F("due_date").asc(nulls_last=True))
+    return {"kabar": kabar, "tugas_saya": aktif[:6], "jumlah_tugas_saya": aktif.count()}
+
+
+def _tgl(d):
+    return d.strftime("%d-%m-%Y") if d else "–"
