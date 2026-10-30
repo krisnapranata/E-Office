@@ -59,6 +59,8 @@ def validate_task(task):
         errors["source_note"] = "Penugasan langsung wajib mencantumkan alasan."
     if task.source_type == "INSTRUKSI" and not task.instruction_id:
         errors["instruction"] = "Tugas dari instruksi wajib tertaut ke instruksi."
+    if task.source_type == "KEPUTUSAN_RAPAT" and not task.decision_id:
+        errors["decision"] = "Tugas dari keputusan rapat wajib tertaut ke keputusan."
     if task.source_type == "DISPOSISI" and not task.disposition_id:
         errors["disposition"] = "Tugas dari disposisi wajib tertaut ke disposisi."
     if task.due_date and task.start_date and task.due_date < task.start_date:
@@ -134,6 +136,9 @@ def add_evidence(task, user, uploaded_file, description=""):
     ev.full_clean()
     ev.save()
     audit.log(user, "task.evidence", task, file=ev.original_name)
+    from arsip.services import arsipkan_bukti
+
+    arsipkan_bukti(ev)
     return ev
 
 

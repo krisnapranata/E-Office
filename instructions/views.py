@@ -6,7 +6,9 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from accounts.files import buka_berkas
 from accounts.permissions import can_issue_instruction, require
+from arsip import services as arsip_services
 from audit import services as audit
 
 from . import services
@@ -54,6 +56,7 @@ def instruction_edit(request, pk):
     if request.method == "POST" and form.is_valid():
         form.save()
         audit.log(request.user, "instruction.edit_draft", ins)
+        arsip_services.arsipkan_instruksi(ins)      # lampiran baru = versi arsip baru
         return redirect("instructions:detail", ins.pk)
     return render(request, "instructions/form.html", {"form": form, "title": f"Ubah {ins.code}"})
 
@@ -127,6 +130,6 @@ def attachment_download(request, pk):
     if not ins.attachment:
         raise Http404
     audit.log(request.user, "instruction.download", ins)
-    return FileResponse(ins.attachment.open("rb"), as_attachment=True,
+    return FileResponse(buka_berkas(ins.attachment), as_attachment=True,
                         filename=f"{ins.code.replace('/', '-')}-lampiran"
                                  f"{'.' + ins.attachment.name.rsplit('.', 1)[-1] if '.' in ins.attachment.name else ''}")

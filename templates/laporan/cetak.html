@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Cetak laporan{% endblock %}
+{% block content %}
+<div class="d-flex gap-2 mb-3 d-print-none"><button type="button" class="btn btn-primary" data-print>Cetak / simpan PDF</button>
+  <a class="btn btn-outline-secondary" href="{% url 'laporan:index' %}">Kembali</a></div>
+<article class="paper">
+  <h2 class="h5 text-center mb-3">LAPORAN PELAKSANAAN PEKERJAAN &amp; EVALUASI UNIT</h2>
+  {% if rep %}{% include "laporan/_isi.html" %}{% endif %}
+</article>
+{% endblock %}

@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from accounts.models import Role
 from accounts.permissions import Classification, can_dispose, can_register_letter
+from arsip import services as arsip
 from audit import services as audit
 from config.numbering import next_number
 from notifications import services as notify
@@ -46,6 +47,7 @@ def register_incoming(user, **fields):
     letter.agenda_number = next_number(IncomingLetter, "agenda_number", "SM")
     letter.save()
     audit.log(user, "letter.incoming.create", letter, classification=letter.classification)
+    arsip.arsipkan_surat_masuk(letter)
     return letter
 
 
@@ -57,6 +59,7 @@ def register_outgoing(user, **fields):
     letter.letter_number = next_number(OutgoingLetter, "letter_number", "SK")
     letter.save()
     audit.log(user, "letter.outgoing.create", letter, classification=letter.classification)
+    arsip.arsipkan_surat_keluar(letter)
     return letter
 
 

@@ -15,9 +15,24 @@ Struktur link WAJIB: span.sidebar-icon (lebar tetap) + span.label (disembunyikan
   <li class="nav-item"><a class="nav-link sidebar-link{% if ns == 'letters' and 'incoming' in vn %} active{% endif %}" href="{% url 'letters:incoming_list' %}" aria-label="Surat masuk"><span class="sidebar-icon" aria-hidden="true"><i class="bi bi-envelope-arrow-down"></i></span><span class="label">Surat Masuk</span></a></li>
   <li class="nav-item"><a class="nav-link sidebar-link{% if ns == 'letters' and 'outgoing' in vn %} active{% endif %}" href="{% url 'letters:outgoing_list' %}" aria-label="Surat keluar"><span class="sidebar-icon" aria-hidden="true"><i class="bi bi-envelope-arrow-up"></i></span><span class="label">Surat Keluar</span></a></li>
 </ul>
+<div class="sidebar-group-title">RAPAT</div>
+<ul class="nav flex-column nav-pills sidebar-menu">
+  <li class="nav-item"><a class="nav-link sidebar-link{% if ns == 'agenda' %} active{% endif %}" href="{% url 'agenda:list' %}" aria-label="Agenda"><span class="sidebar-icon" aria-hidden="true"><i class="bi bi-calendar-event"></i></span><span class="label">Agenda</span></a></li>
+  <li class="nav-item"><a class="nav-link sidebar-link{% if ns == 'notulen' %} active{% endif %}" href="{% url 'notulen:list' %}" aria-label="Notulen dan Keputusan"><span class="sidebar-icon" aria-hidden="true"><i class="bi bi-journal-check"></i></span><span class="label">Notulen &amp; Keputusan</span></a></li>
+  <li class="nav-item"><a class="nav-link sidebar-link{% if ns == 'tindaklanjut' %} active{% endif %}" href="{% url 'tindaklanjut:index' %}" aria-label="Tindak lanjut"><span class="sidebar-icon" aria-hidden="true"><i class="bi bi-arrow-repeat"></i></span><span class="label">Tindak Lanjut</span></a></li>
+</ul>
+<div class="sidebar-group-title">DOKUMEN &amp; LAPORAN</div>
+<ul class="nav flex-column nav-pills sidebar-menu">
+  <li class="nav-item"><a class="nav-link sidebar-link{% if ns == 'arsip' %} active{% endif %}" href="{% url 'arsip:list' %}" aria-label="E-Arsip"><span class="sidebar-icon" aria-hidden="true"><i class="bi bi-archive"></i></span><span class="label">E-Arsip</span></a></li>
+  <li class="nav-item"><a class="nav-link sidebar-link{% if ns == 'laporan' %} active{% endif %}" href="{% url 'laporan:index' %}" aria-label="Laporan"><span class="sidebar-icon" aria-hidden="true"><i class="bi bi-bar-chart-line"></i></span><span class="label">Laporan</span></a></li>
+</ul>
 <div class="sidebar-group-title">LAINNYA</div>
 <ul class="nav flex-column nav-pills sidebar-menu">
   <li class="nav-item"><a class="nav-link sidebar-link{% if ns == 'notifications' %} active{% endif %}" href="{% url 'notifications:list' %}" aria-label="Notifikasi"><span class="sidebar-icon" aria-hidden="true"><i class="bi bi-bell"></i></span><span class="label">Notifikasi</span></a></li>
+  <li class="nav-item"><a class="nav-link sidebar-link{% if ns == 'organisasi' %} active{% endif %}" href="{% url 'organisasi:index' %}" aria-label="Master Organisasi"><span class="sidebar-icon" aria-hidden="true"><i class="bi bi-diagram-3"></i></span><span class="label">Master Organisasi</span></a></li>
+  {% if user.role == 'ADMIN' or user.is_superuser %}<li class="nav-item"><a class="nav-link sidebar-link{% if ns == 'pengguna' %} active{% endif %}" href="{% url 'pengguna:index' %}" aria-label="Pengguna"><span class="sidebar-icon" aria-hidden="true"><i class="bi bi-people"></i></span><span class="label">Pengguna</span></a></li>{% endif %}
+  {% if user.role == 'ADMIN' or user.is_superuser %}<li class="nav-item"><a class="nav-link sidebar-link{% if ns == 'pengaturan' %} active{% endif %}" href="{% url 'pengaturan:index' %}" aria-label="Pengaturan Aplikasi"><span class="sidebar-icon" aria-hidden="true"><i class="bi bi-sliders"></i></span><span class="label">Pengaturan Aplikasi</span></a></li>{% endif %}
+  <li class="nav-item"><a class="nav-link sidebar-link{% if ns == 'panduan' %} active{% endif %}" href="{% url 'panduan:index' %}" aria-label="Panduan"><span class="sidebar-icon" aria-hidden="true"><i class="bi bi-book"></i></span><span class="label">Panduan</span></a></li>
   {% if user.is_staff %}<li class="nav-item"><a class="nav-link sidebar-link" href="{% url 'admin:index' %}" aria-label="Administrasi"><span class="sidebar-icon" aria-hidden="true"><i class="bi bi-gear"></i></span><span class="label">Administrasi</span></a></li>{% endif %}
 </ul>
 {% endwith %}

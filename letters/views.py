@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
+from accounts.files import buka_berkas
 from accounts.permissions import can_dispose, can_register_letter, require
 from audit import services as audit
 
@@ -135,5 +136,5 @@ def attachment_download(request, kind, pk):
     if not letter.attachment:
         raise Http404
     audit.log(request.user, "letter.download", letter)
-    return FileResponse(letter.attachment.open("rb"), as_attachment=True,
+    return FileResponse(buka_berkas(letter.attachment), as_attachment=True,
                         filename=f"{letter.pk}-{letter.attachment.name.rsplit('/', 1)[-1]}")

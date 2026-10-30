@@ -15,6 +15,8 @@ DIREKTUR, WADIR, KEPALA_UNIT, STAF, SEKRETARIS, ARSIP, ADMIN, AUDITOR. Unit kerj
 | `accounts/permissions.py` | peran → kemampuan (`can_issue_instruction`, `can_dispose`, `can_assign_task`, ...), `require()` |
 | `workflow/access.py` | `visible_tasks`, `can_view_task`, `can_report_progress`, `can_manage_task`, `can_verify` |
 | `letters/services.py`, `instructions/services.py` | `visible_letters`, `visible_dispositions`, `visible_instructions`, ... |
+| `agenda/services.py`, `notulen/services.py` | `visible_events`, `can_manage_event`, `can_write_minutes`, `can_approve` (pimpinan rapat) |
+| `arsip/services.py` | `visible_archives` + `can_view_archive` (dokumen bersumber = hak lihat objek asal) |
 
 ## Aturan
 - Periksa izin **di server**; menyembunyikan tombol bukan kontrol keamanan.

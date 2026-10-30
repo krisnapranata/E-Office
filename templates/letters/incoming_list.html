@@ -4,9 +4,9 @@
 <div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h3 mb-0">Surat masuk</h1>
 {% if can_create %}<a class="btn btn-primary" href="{% url 'letters:incoming_create' %}">+ Catat surat masuk</a>{% endif %}</div>
 <form class="row g-2 mb-3 form-compact" method="get">{% for f in form %}<div class="col-md-3">{{ f.label_tag }}{{ f }}</div>{% endfor %}<div class="col-md-2 d-flex align-items-end"><button class="btn btn-outline-primary">Cari</button></div></form>
-<table class="table table-hover bg-white"><thead><tr><th>No. agenda</th><th>No. surat</th><th>Diterima</th><th>Pengirim</th><th>Perihal</th><th>Klasifikasi</th></tr></thead><tbody>
+<div class="table-responsive"><table class="table table-hover bg-white"><thead><tr><th>No. agenda</th><th>No. surat</th><th>Diterima</th><th>Pengirim</th><th>Perihal</th><th>Klasifikasi</th></tr></thead><tbody>
 {% for l in page %}<tr><td><a href="{% url 'letters:incoming_detail' l.pk %}">{{ l.agenda_number }}</a></td><td>{{ l.letter_number }}</td><td>{{ l.received_date|date:"d-m-Y" }}</td><td>{{ l.sender }}</td><td>{{ l.subject }}</td><td>{{ l.get_classification_display }}</td></tr>
 {% empty %}<tr><td colspan="6" class="text-muted">Belum ada surat.</td></tr>{% endfor %}
-</tbody></table>
+</tbody></table></div>
 {% include "_pagination.html" %}
 {% endblock %}

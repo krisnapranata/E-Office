@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Pengaturan Aplikasi{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div><h1 class="h3 mb-1">Pengaturan Aplikasi</h1>
+    <span class="text-muted small">Mode tersimpan di database: tidak berubah saat aplikasi diperbarui atau dibangun ulang.</span></div>
+  <span class="badge fs-6 {% if p.is_demo %}text-bg-warning{% else %}text-bg-success{% endif %}">{{ p.get_mode_display }}</span>
+</div>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <section class="card mb-4"><div class="card-header"><i class="bi bi-database me-2" aria-hidden="true"></i>Data demo saat ini</div>
+      <div class="table-responsive"><table class="table table-sm mb-0">
+        <tbody>{% for k, v in ringkasan.items %}<tr><th class="fw-normal text-capitalize">{{ k }}</th><td class="text-end fw-semibold">{{ v }}</td></tr>{% endfor %}</tbody>
+      </table></div>
+      <div class="card-body small text-muted border-top">Data demo = akun berawalan <code>demo_</code> (dan akun demo lama di unit demo lama) beserta surat, disposisi, instruksi, tugas, agenda, notulen, dan arsip yang terkait. Master Organisasi RSI Yatofa adalah data asli dan tidak ikut direset.</div>
+    </section>
+
+    <section class="card mb-4"><div class="card-header"><i class="bi bi-easel me-2" aria-hidden="true"></i>Mode Demo</div><div class="card-body">
+      <p class="small">Memuat pegawai contoh di setiap unit dan contoh isian semua alur (untuk pelatihan dan presentasi). Aman diulang: data yang sudah ada tidak digandakan.
+        {% if not p.is_demo %}<b>Mengaktifkan kembali Mode Demo akan memuat data contoh lagi.</b>{% endif %}</p>
+      <form method="post" action="{% url 'pengaturan:demo' %}" class="form-compact">{% csrf_token %}
+        <div class="mb-3"><label class="form-label" for="id_password">Kata sandi akun demo (opsional)</label>
+          <input type="password" name="password" id="id_password" autocomplete="new-password">
+          <div class="form-text">Kosongkan untuk memakai kata sandi dari pengaturan server (<code>EOFFICE_DEMO_PASSWORD</code>).</div></div>
+        <button class="btn btn-warning" data-confirm="Muat data demo ke aplikasi ini?">{% if p.is_demo %}Muat/lengkapi data demo{% else %}Aktifkan Mode Demo{% endif %}</button>
+      </form>
+    </div></section>
+
+    <section class="card mb-4 border-danger"><div class="card-header text-danger"><i class="bi bi-arrow-counterclockwise me-2" aria-hidden="true"></i>Reset data demo (siap launching)</div><div class="card-body">
+      <ul class="small">
+        <li>Menghapus <b>semua data demo</b> beserta berkasnya, lalu mengaktifkan <b>Mode Produksi</b>.</li>
+        <li>Setelah itu, update/build ulang <b>tidak akan memuat data demo</b> secara otomatis.</li>
+        <li>Akun dan data asli tidak dihapus. Bila masih ada data asli yang merujuk data demo, reset dibatalkan seluruhnya.</li>
+      </ul>
+      {% if akun_demo_saya %}
+      <div class="alert alert-warning small mb-0">Anda login dengan <b>akun demo</b>, yang ikut terhapus saat reset. Login dengan akun administrator asli, misalnya yang dibuat dengan <code>python manage.py createsuperuser</code>.</div>
+      {% else %}
+      <form method="post" action="{% url 'pengaturan:reset' %}" class="form-compact">{% csrf_token %}
+        <div class="mb-3"><label class="form-label" for="id_frasa">Ketik <code>{{ frasa }}</code> untuk konfirmasi</label>
+          <input name="frasa" id="id_frasa" autocomplete="off" required></div>
+        <button class="btn btn-danger" data-confirm="Hapus semua data demo dan aktifkan Mode Produksi? Tindakan ini tidak dapat dibatalkan.">Reset data demo</button>
+      </form>
+      {% endif %}
+    </div></section>
+  </div>
+  <div class="col-lg-5">
+    <section class="card mb-4"><div class="card-header">Status</div><div class="card-body">
+      <dl class="row mb-0 small">
+        <dt class="col-5">Mode</dt><dd class="col-7">{{ p.get_mode_display }}</dd>
+        <dt class="col-5">Direset pada</dt><dd class="col-7">{{ p.direset_pada|date:"d-m-Y H:i"|default:"–" }}</dd>
+        <dt class="col-5">Direset oleh</dt><dd class="col-7">{{ p.direset_oleh|default:"–" }}</dd>
+      </dl></div></section>
+    <section class="card mb-4"><div class="card-header">Cara kerja saat build/update</div><div class="card-body small">
+      <ol class="ps-3 mb-0">
+        <li>Container start menjalankan <code>migrate</code> lalu <code>demo_otomatis</code>.</li>
+        <li><b>Mode Demo</b> dan data demo belum ada: data demo dimuat sekali.</li>
+        <li><b>Mode Demo</b> dan data demo sudah ada: dilewati.</li>
+        <li><b>Mode Produksi</b> (setelah reset): tidak memuat apa pun.</li>
+      </ol></div></section>
+    <section class="card mb-4"><div class="card-header">Riwayat</div><ul class="list-group list-group-flush small">
+      {% for a in riwayat %}<li class="list-group-item">{{ a.created_at|date:"d-m-Y H:i" }} · {{ a.user|default:"sistem (otomatis)" }} · {{ a.action }}</li>
+      {% empty %}<li class="list-group-item text-muted">–</li>{% endfor %}</ul></section>
+  </div>
+</div>
+{% endblock %}

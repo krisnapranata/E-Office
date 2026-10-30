@@ -9,6 +9,7 @@
     </form>
   </div>
   <div class="topbar-right">
+    {% if mode_demo %}<span class="badge text-bg-warning topbar-demo" title="Data di aplikasi ini adalah data contoh">MODE DEMO</span>{% endif %}
     <a href="{% url 'notifications:list' %}" class="topbar-btn glass notif" aria-label="Notifikasi">
       <i class="bi bi-bell" aria-hidden="true"></i>
       <span hx-get="{% url 'notifications:badge' %}" hx-trigger="every 60s" hx-swap="innerHTML">{% include "notifications/_badge.html" %}</span>

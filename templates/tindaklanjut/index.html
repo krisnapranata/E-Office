@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Tindak lanjut{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Tindak Lanjut Keputusan Rapat</h1>
+<form class="row g-2 mb-3 form-compact" method="get">
+  <div class="col-6 col-md-2"><label for="f-status">Status</label><select id="f-status" name="status">
+    <option value="">Semua</option><option value="terbuka"{% if f.status == 'terbuka' %} selected{% endif %}>Belum selesai</option>
+    <option value="terlambat"{% if f.status == 'terlambat' %} selected{% endif %}>Terlambat</option>
+    {% for v, l in statuses %}<option value="{{ v }}"{% if f.status == v %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="col-6 col-md-3"><label for="f-unit">Unit</label><select id="f-unit" name="unit"><option value="">Semua unit</option>
+    {% for u in units %}<option value="{{ u.pk }}"{% if f.unit == u.pk|stringformat:'s' %} selected{% endif %}>{{ u }}</option>{% endfor %}</select></div>
+  <div class="col-6 col-md-2"><label for="f-dari">Rapat dari</label><input id="f-dari" type="date" name="dari" value="{{ f.dari }}"></div>
+  <div class="col-6 col-md-2"><label for="f-sampai">s.d.</label><input id="f-sampai" type="date" name="sampai" value="{{ f.sampai }}"></div>
+  <div class="col-12 col-md-3 d-flex align-items-end gap-2"><button class="btn btn-outline-primary">Terapkan</button><a class="btn btn-link" href="{% url 'tindaklanjut:index' %}">Reset</a></div>
+</form>
+<div class="row g-4 mb-4">
+  <div class="col-lg-7"><div class="card"><div class="card-header">Ringkasan per rapat</div><div class="table-responsive"><table class="table table-sm mb-0">
+    <thead><tr><th>Rapat</th><th>Total</th><th>Selesai</th><th>Belum</th><th>Terlambat</th><th></th></tr></thead><tbody>
+    {% for r in rapat %}<tr><td>{{ r.decision__minutes__event__start|date:"d-m-Y" }} · {{ r.decision__minutes__event__title }}</td><td>{{ r.total }}</td><td>{{ r.selesai }}</td><td>{{ r.terbuka }}</td>
+      <td class="{% if r.terlambat %}text-danger fw-semibold{% endif %}">{{ r.terlambat }}</td>
+      <td><a href="{% url 'tindaklanjut:meeting' r.decision__minutes__event_id %}">rincian</a></td></tr>
+    {% empty %}<tr><td colspan="6" class="text-muted">Belum ada tindak lanjut.</td></tr>{% endfor %}</tbody></table></div></div></div>
+  <div class="col-lg-5"><div class="card"><div class="card-header">Ringkasan per unit</div><div class="table-responsive"><table class="table table-sm mb-0">
+    <thead><tr><th>Unit</th><th>Total</th><th>Selesai</th><th>Terlambat</th></tr></thead><tbody>
+    {% for r in unit %}<tr><td><a href="?unit={{ r.unit_id }}">{{ r.unit__code }}</a></td><td>{{ r.total }}</td><td>{{ r.selesai }}</td><td>{{ r.terlambat }}</td></tr>
+    {% empty %}<tr><td colspan="4" class="text-muted">–</td></tr>{% endfor %}</tbody></table></div></div></div>
+</div>
+<p class="text-muted small">{{ page.paginator.count }} tindak lanjut</p>
+<div class="table-responsive"><table class="table table-hover bg-white">
+<thead><tr><th>Tindak lanjut</th><th>Rapat</th><th>Unit / PIC</th><th>Tenggat</th><th>Progres</th><th>Status</th></tr></thead><tbody>
+{% for t in page %}<tr><td><a href="{% url 'workflow:detail' t.pk %}">T-{{ t.pk }}</a> · Keputusan {{ t.decision.number }}: {{ t.decision.text|truncatechars:80 }}</td>
+  <td class="small">{{ t.decision.minutes.event.title }}</td><td>{{ t.unit.code }} / {{ t.pic }}</td>
+  <td class="text-nowrap">{{ t.due_date|date:"d-m-Y"|default:"–" }}{% if t.is_overdue %} <span class="badge text-bg-danger">Terlambat</span>{% endif %}</td>
+  <td>{{ t.progress }}%</td><td>{% include "_status.html" with s=t.status label=t.get_status_display %}</td></tr>
+{% empty %}<tr><td colspan="6" class="text-muted">Tidak ada tindak lanjut sesuai filter.</td></tr>{% endfor %}
+</tbody></table></div>
+{% include "_pagination.html" %}
+{% endblock %}

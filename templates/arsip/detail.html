@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Arsip {{ doc.number|default:doc.pk }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div><h1 class="h3 mb-1">{{ doc.title }}</h1>
+    <span class="badge text-bg-{% if doc.status == 'AKTIF' %}success{% elif doc.status == 'DIUSULKAN' %}warning{% else %}dark{% endif %}">{{ doc.get_status_display }}</span>
+    <span class="badge text-bg-light border">{{ doc.get_doc_type_display }}</span> <span class="badge text-bg-light border">{{ doc.get_classification_display }}</span></div>
+  <a class="btn btn-outline-secondary" href="{% url 'arsip:list' %}">Kembali</a>
+</div>
+<div class="row g-4"><div class="col-lg-7">
+  <div class="card mb-4"><div class="card-body"><dl class="row mb-0">
+    <dt class="col-sm-4">Nomor</dt><dd class="col-sm-8">{{ doc.number|default:"–" }}</dd>
+    <dt class="col-sm-4">Tanggal dokumen</dt><dd class="col-sm-8">{{ doc.doc_date|date:"d-m-Y" }}</dd>
+    <dt class="col-sm-4">Pemilik / unit</dt><dd class="col-sm-8">{{ doc.owner }} / {{ doc.unit|default:"–" }}</dd>
+    <dt class="col-sm-4">Kata kunci</dt><dd class="col-sm-8">{{ doc.keywords|default:"–" }}</dd>
+    <dt class="col-sm-4">Objek asal</dt><dd class="col-sm-8">{% if sumber %}<a href="{{ sumber }}">buka</a>{% elif doc.source_id %}tercatat{% else %}unggahan langsung{% endif %}</dd>
+    <dt class="col-sm-4">Retensi sampai</dt><dd class="col-sm-8">{{ doc.retention_until|date:"d-m-Y" }}</dd>
+    {% if doc.disposal_note %}<dt class="col-sm-4">Catatan pemusnahan</dt><dd class="col-sm-8">{{ doc.disposal_note|linebreaksbr }}</dd>{% endif %}
+  </dl></div></div>
+  <div class="card mb-4"><div class="card-header">Versi berkas</div><ul class="list-group list-group-flush">
+    {% for v in versi %}<li class="list-group-item">v{{ v.version }} · {% if doc.status == 'DIMUSNAHKAN' %}{{ v.original_name }} <span class="text-muted">(dimusnahkan)</span>{% else %}<a href="{% url 'arsip:download' v.pk %}">{{ v.original_name }}</a>{% endif %}
+      <span class="small text-muted">{{ v.note }} · {{ v.uploaded_by }} · {{ v.uploaded_at|date:"d-m-Y H:i" }}</span></li>{% endfor %}</ul></div>
+  <div class="card mb-4"><div class="card-header">Aktivitas</div><ul class="list-group list-group-flush small">
+    {% for a in audit %}<li class="list-group-item">{{ a.created_at|date:"d-m-Y H:i" }} · {{ a.user|default:"sistem" }} · {{ a.action }}</li>{% empty %}<li class="list-group-item text-muted">–</li>{% endfor %}</ul></div>
+</div>
+<div class="col-lg-5">
+  {% if boleh_versi %}<div class="card mb-3"><div class="card-header">Unggah versi baru</div><div class="card-body">
+    <form method="post" enctype="multipart/form-data" action="{% url 'arsip:version_add' doc.pk %}">{% csrf_token %}{% with form=version_form %}{% include "_form.html" %}{% endwith %}<button class="btn btn-outline-primary">Simpan versi</button></form></div></div>{% endif %}
+  {% if kelola %}<div class="card mb-3"><div class="card-header">Ubah metadata</div><div class="card-body">
+    <form method="post" action="{% url 'arsip:metadata' doc.pk %}">{% csrf_token %}{% with form=metadata_form %}{% include "_form.html" %}{% endwith %}<button class="btn btn-outline-primary">Simpan metadata</button></form></div></div>{% endif %}
+  {% if boleh_usul %}<div class="card mb-3 border-warning"><div class="card-header">Usulkan pemusnahan</div><div class="card-body">
+    <p class="small">Masa retensi telah berakhir. Usulan dikirim ke Direktur untuk disetujui.</p>
+    <form method="post" action="{% url 'arsip:propose' doc.pk %}">{% csrf_token %}<textarea name="note" rows="2" class="mb-2" placeholder="Alasan/usulan" required></textarea>
+      <button class="btn btn-outline-warning btn-sm" data-confirm="Usulkan pemusnahan dokumen ini?">Usulkan pemusnahan</button></form></div></div>{% endif %}
+  {% if boleh_putus %}<div class="card mb-3 border-danger"><div class="card-header">Keputusan pemusnahan</div><div class="card-body">
+    <form method="post" action="{% url 'arsip:decide' doc.pk %}">{% csrf_token %}
+      <select name="decision" class="mb-2"><option value="approve">Setujui pemusnahan</option><option value="reject">Tolak usulan</option></select>
+      <textarea name="note" rows="2" class="mb-2" placeholder="Berita acara / alasan"></textarea>
+      <button class="btn btn-outline-danger btn-sm" data-confirm="Simpan keputusan pemusnahan?">Simpan keputusan</button></form></div></div>{% endif %}
+</div></div>
+{% endblock %}

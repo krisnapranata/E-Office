@@ -61,10 +61,14 @@ Pakai token (`var(--mc-primary)`), jangan menulis hex baru di template/app.css.
 - Halaman di dalam `#workspace` otomatis mendapat: panel timbul, isian cekung (`.form-control/.form-select` + input tanpa kelas),
   tombol timbul (`.btn` kecuali `.btn-link/.btn-close`), tab aktif timbul, item terpilih cekung.
 
+- Elemen `position: sticky` di konten harus memakai `top` ≥ 84px (topbar tema sticky di 16px, tinggi ±44px); contoh `.panduan-toc`.
+
 ## Area kertas — tetap putih
 Dokumen/cetak dibungkus salah satu kelas `.paper`, `.document-page`, `.surat-page` (dll., lihat bagian 9 tema).
 Di dalamnya **tidak** ada isian cekung maupun tombol timbul, dan `color-scheme: light`. Pakai ini untuk pratinjau surat,
-lembar disposisi, atau laporan yang akan dicetak/PDF.
+lembar disposisi, atau laporan yang akan dicetak/PDF. Contoh nyata: `notulen/print.html`, `tindaklanjut/cetak.html`,
+`laporan/cetak.html` (`<article class="paper">` + tombol `data-print`; aturan `@media print` di `css/app.css`
+menyembunyikan sidebar/topbar).
 
 ## Halaman login (sama dengan casemix)
 - `templates/registration/login.html` — halaman mandiri (tidak extend `base.html`), memuat font, ikon, tema (untuk token), lalu `css/login.css`.

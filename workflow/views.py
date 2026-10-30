@@ -7,6 +7,7 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from accounts.files import buka_berkas
 from accounts.permissions import can_assign_task, require
 from audit.models import AuditLog
 from audit import services as audit
@@ -86,6 +87,11 @@ def _get_task(request, pk):
 def task_detail(request, pk):
     task = _get_task(request, pk)
     user = request.user
+    if task.instruction_id and user.pk == task.pic_id:
+        # PIC yang membuka tugasnya telah membaca instruksi sumbernya (status baca di E-Instruksi & dashboard).
+        from instructions.services import mark_read
+
+        mark_read(task.instruction, user)
     ctx = {
         "task": task,
         "updates": task.updates.select_related("author"),
@@ -211,4 +217,4 @@ def evidence_download(request, pk):
     if not can_view_task(request.user, ev.task):
         raise Http404
     audit.log(request.user, "task.evidence.download", ev.task, file=ev.original_name)
-    return FileResponse(ev.file.open("rb"), as_attachment=True, filename=ev.original_name)
+    return FileResponse(buka_berkas(ev.file), as_attachment=True, filename=ev.original_name)

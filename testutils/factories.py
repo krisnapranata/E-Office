@@ -14,13 +14,17 @@ _seq = itertools.count(1)
 
 def unit(code=None, parent=None, head=None):
     n = next(_seq)
+    if code and OrganizationUnit.objects.filter(code=code).exists():
+        code = f"{code}{n}"
     return OrganizationUnit.objects.create(code=code or f"U{n}", name=f"Unit {n}", parent=parent,
                                            head=head)
 
 
 def user(role=Role.STAF, unit=None, supervisor=None, username=None):
     n = next(_seq)
-    return User.objects.create_user(username=username or f"user{n}", password="pass-12345",
+    if not username or User.objects.filter(username=username).exists():
+        username = f"{username or 'user'}{n}"
+    return User.objects.create_user(username=username, password="pass-12345",
                                     role=role, unit=unit, supervisor=supervisor,
                                     first_name=f"User{n}")
 
@@ -42,22 +46,29 @@ def direct_task(creator, pic, due=None, **kw):
 
 
 class World:
-    """Struktur organisasi minimal: Direksi > Yanmed > IGD, dan Farmasi terpisah."""
+    """Struktur organisasi minimal: Direksi > Yanmed > IGD, dan Farmasi terpisah.
 
-    def __init__(self):
-        self.dir_unit = unit("DIR")
-        self.yanmed = unit("YANMED", parent=self.dir_unit)
-        self.igd = unit("IGD", parent=self.yanmed)
-        self.farmasi = unit("FARM", parent=self.dir_unit)
-        self.direktur = user(Role.DIREKTUR, self.dir_unit, username="direktur")
-        self.sekretaris = user(Role.SEKRETARIS, self.dir_unit, self.direktur, "sekretaris")
-        self.wadir = user(Role.WADIR, self.yanmed, self.direktur, "wadir")
-        self.ka_igd = user(Role.KEPALA_UNIT, self.igd, self.wadir, "ka_igd")
-        self.staf_igd = user(Role.STAF, self.igd, self.ka_igd, "staf_igd")
-        self.ka_farmasi = user(Role.KEPALA_UNIT, self.farmasi, self.direktur, "ka_farmasi")
-        self.staf_farmasi = user(Role.STAF, self.farmasi, self.ka_farmasi, "staf_farmasi")
-        self.auditor = user(Role.AUDITOR, self.dir_unit, username="auditor")
+    `prefix` dipakai uji e2e lapis 1 (DB dev) agar kode unit/username tidak bentrok dengan akun demo,
+    mis. World("qa_") -> unit QA_IGD, user qa_staf_igd.
+    """
+
+    def __init__(self, prefix=""):
+        up = prefix.upper()
+        self.dir_unit = unit(f"{up}DIR")
+        self.yanmed = unit(f"{up}YANMED", parent=self.dir_unit)
+        self.igd = unit(f"{up}IGD", parent=self.yanmed)
+        self.farmasi = unit(f"{up}FARM", parent=self.dir_unit)
+        self.direktur = user(Role.DIREKTUR, self.dir_unit, username=f"{prefix}direktur")
+        self.sekretaris = user(Role.SEKRETARIS, self.dir_unit, self.direktur, f"{prefix}sekretaris")
+        self.wadir = user(Role.WADIR, self.yanmed, self.direktur, f"{prefix}wadir")
+        self.ka_igd = user(Role.KEPALA_UNIT, self.igd, self.wadir, f"{prefix}ka_igd")
+        self.staf_igd = user(Role.STAF, self.igd, self.ka_igd, f"{prefix}staf_igd")
+        self.ka_farmasi = user(Role.KEPALA_UNIT, self.farmasi, self.direktur, f"{prefix}ka_farmasi")
+        self.staf_farmasi = user(Role.STAF, self.farmasi, self.ka_farmasi, f"{prefix}staf_farmasi")
+        self.auditor = user(Role.AUDITOR, self.dir_unit, username=f"{prefix}auditor")
+        self.arsip = user(Role.ARSIP, self.dir_unit, self.direktur, f"{prefix}arsip")
         self.igd.head = self.ka_igd
         self.igd.save()
 
-
+    PERAN = ("direktur", "sekretaris", "wadir", "ka_igd", "staf_igd", "ka_farmasi", "staf_farmasi", "auditor",
+             "arsip")

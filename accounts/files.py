@@ -4,6 +4,7 @@ import uuid
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.http import Http404
 
 
 def validate_upload(f):
@@ -40,3 +41,11 @@ def letter_upload_to(instance, filename):
 
 def instruction_upload_to(instance, filename):
     return protected_upload_to("instruksi")(instance, filename)
+
+
+def buka_berkas(fieldfile):
+    """Buka berkas unggahan untuk diunduh; berkas yang hilang dari penyimpanan = 404, bukan galat server."""
+    try:
+        return fieldfile.open("rb")
+    except FileNotFoundError:
+        raise Http404("Berkas tidak ditemukan di penyimpanan.")

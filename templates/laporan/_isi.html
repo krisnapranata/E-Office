@@ -1,0 +1,31 @@
+<p class="small text-muted mb-3">Dibuat {{ rep.dibuat|date:"d-m-Y H:i" }} · {% for k, v in rep.parameter.items %}{{ k }}: <b>{{ v }}</b>{% if not forloop.last %} · {% endif %}{% endfor %}<br>
+Periode = tugas yang dibuat dalam rentang tanggal. "Selesai" = sudah ditutup; tugas yang masih menunggu verifikasi belum dihitung selesai.</p>
+<div class="row g-4">
+  <div class="col-lg-5"><div class="card mb-4"><div class="card-header">Ringkasan tugas</div><table class="table table-sm mb-0"><tbody>
+    {% for k, lbl in rep.label.items %}<tr><td>{{ lbl }}</td><td class="text-end fw-semibold">{% for kk, v in rep.ringkas.items %}{% if kk == k %}{{ v|default_if_none:"–" }}{% endif %}{% endfor %}</td></tr>{% endfor %}
+  </tbody></table></div>
+  <div class="card mb-4"><div class="card-header">Instruksi &amp; disposisi (periode)</div><table class="table table-sm mb-0"><tbody>
+    {% for k, n in rep.instruksi.items %}<tr><td>Instruksi — {% for kk, l in rep.instruksi_label.items %}{% if kk == k %}{{ l }}{% endif %}{% endfor %}</td><td class="text-end">{{ n }}</td></tr>{% endfor %}
+    {% for k, n in rep.disposisi.items %}<tr><td>Disposisi — {% for kk, l in rep.disposisi_label.items %}{% if kk == k %}{{ l }}{% endif %}{% endfor %}</td><td class="text-end">{{ n }}</td></tr>{% endfor %}
+    <tr><td>Tindak lanjut rapat (selesai / total)</td><td class="text-end">{{ rep.tindak_lanjut.selesai }} / {{ rep.tindak_lanjut.total }}</td></tr>
+  </tbody></table></div></div>
+  <div class="col-lg-7">
+    <div class="card mb-4"><div class="card-header">Evaluasi per unit</div><div class="table-responsive"><table class="table table-sm mb-0">
+      <thead><tr><th>Unit</th><th>Total</th><th>Selesai</th><th>Terlambat</th><th>Terhambat</th><th>Tepat waktu</th><th>Rata-rata hari</th></tr></thead><tbody>
+      {% for r in rep.per_unit %}<tr><td>{{ r.kode }}</td><td>{{ r.total }}</td><td>{{ r.selesai }}</td><td>{{ r.terlambat_terbuka }}</td><td>{{ r.terhambat }}</td>
+        <td>{{ r.pct_tepat_waktu|default_if_none:"–" }}{% if r.pct_tepat_waktu is not None %}%{% endif %}</td><td>{{ r.rata_hari|default_if_none:"–" }}</td></tr>
+      {% empty %}<tr><td colspan="7" class="text-muted">Tidak ada data.</td></tr>{% endfor %}</tbody></table></div></div>
+    <div class="card mb-4"><div class="card-header">Per jenis pekerjaan</div><div class="table-responsive"><table class="table table-sm mb-0">
+      <thead><tr><th>Jenis</th><th>Total</th><th>Selesai</th><th>Terlambat</th><th>Tepat waktu</th></tr></thead><tbody>
+      {% for r in rep.per_sumber %}<tr><td>{{ r.nama }}</td><td>{{ r.total }}</td><td>{{ r.selesai }}</td><td>{{ r.terlambat_terbuka }}</td><td>{{ r.pct_tepat_waktu|default_if_none:"–" }}{% if r.pct_tepat_waktu is not None %}%{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="5" class="text-muted">–</td></tr>{% endfor %}</tbody></table></div></div>
+    <div class="card mb-4"><div class="card-header">Per PIC</div><div class="table-responsive"><table class="table table-sm mb-0">
+      <thead><tr><th>PIC</th><th>Total</th><th>Selesai</th><th>Terlambat</th><th>Tepat waktu</th></tr></thead><tbody>
+      {% for r in rep.per_pic %}<tr><td>{{ r.nama }}</td><td>{{ r.total }}</td><td>{{ r.selesai }}</td><td>{{ r.terlambat_terbuka }}</td><td>{{ r.pct_tepat_waktu|default_if_none:"–" }}{% if r.pct_tepat_waktu is not None %}%{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="5" class="text-muted">–</td></tr>{% endfor %}</tbody></table></div></div>
+  </div>
+</div>
+<div class="card mb-4"><div class="card-header">Tugas terlambat (maks. 50)</div><div class="table-responsive"><table class="table table-sm mb-0">
+  <thead><tr><th>Tugas</th><th>Unit</th><th>PIC</th><th>Tenggat</th><th>Status</th></tr></thead><tbody>
+  {% for t in rep.tugas_terlambat %}<tr><td><a href="{% url 'workflow:detail' t.pk %}">{{ t }}</a></td><td>{{ t.unit.code }}</td><td>{{ t.pic }}</td><td>{{ t.due_date|date:"d-m-Y" }}</td><td>{{ t.get_status_display }}</td></tr>
+  {% empty %}<tr><td colspan="5" class="text-muted">Tidak ada.</td></tr>{% endfor %}</tbody></table></div></div>

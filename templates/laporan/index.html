@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Laporan{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3"><h1 class="h3 mb-0">Laporan Pelaksanaan &amp; Evaluasi Unit</h1>
+  {% if rep %}<div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-success" href="{% url 'laporan:xlsx' %}?{{ querystring }}"><i class="bi bi-file-earmark-excel me-1" aria-hidden="true"></i>Excel</a>
+    <a class="btn btn-outline-secondary" href="?{{ querystring }}&cetak=1"><i class="bi bi-printer me-1" aria-hidden="true"></i>Cetak/PDF</a>
+    <form method="post" action="{% url 'laporan:archive' %}">{% csrf_token %}{% for k, v in form.data.items %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+      <button class="btn btn-outline-primary" data-confirm="Simpan laporan ini (Excel) ke E-Arsip?"><i class="bi bi-archive me-1" aria-hidden="true"></i>Simpan ke arsip</button></form>
+  </div>{% endif %}</div>
+<form class="row g-2 mb-3 form-compact" method="get">
+  {% for f in form %}<div class="col-6 col-md-2">{{ f.label_tag }}{{ f }}</div>{% endfor %}
+  <div class="col-12 col-md-2 d-flex align-items-end"><button class="btn btn-outline-primary">Tampilkan</button></div>
+  {% if form.non_field_errors %}<div class="col-12 text-danger">{{ form.non_field_errors }}</div>{% endif %}
+</form>
+{% if rep %}{% include "laporan/_isi.html" %}{% endif %}
+{% endblock %}

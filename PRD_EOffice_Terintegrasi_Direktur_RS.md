@@ -536,7 +536,7 @@ Skill minimum yang direkomendasikan untuk proyek ini:
 | `django-model-migration` | Model, migrasi, integritas data, transaksi, dan prosedur perubahan skema |
 | `django-permission-security` | Role, permission, akses per unit, klasifikasi dokumen, dan pengujian akses |
 | `eoffice-workflow` | Aturan disposisi, instruksi, task, verifikasi, reminder, dan audit trail |
-| `eoffice-e2e-testing` | Strategi pengujian end-to-end dan skenario alur utama E-Office |
+| `uji-e2e` | Strategi pengujian end-to-end (lapis 1/2/2b, gerbang katalog, rencana uji) dan skenario alur utama E-Office |
 | `emboss-blue-glass-theme` | Tema UI Emboss Blue Glass, kontrak markup shell (sidebar/topbar), area kertas, halaman login |
 
 Lokasi dan format skill mengikuti alat agent yang digunakan. Sebagai contoh, skill dapat disimpan pada direktori konfigurasi agent yang dipakai repository. Lokasi final harus ditulis dalam dokumentasi proyek dan tidak boleh diasumsikan sama untuk semua agent.
@@ -663,7 +663,7 @@ Kriteria berikut melengkapi kriteria penerimaan MVP pada Bab 13:
 
 1. Versi Python dan Django yang akan distandardisasi. (Implementasi awal: Python 3.12, Django 5.2 LTS.)
 2. Apakah test runner memakai Django Test Framework, `pytest-django`, atau kombinasi. (Implementasi awal: Django Test Framework.)
-3. Apakah Playwright digunakan sebagai standar E2E dan browser apa yang wajib diuji.
+3. Apakah Playwright digunakan sebagai standar E2E dan browser apa yang wajib diuji. (Implementasi awal: patchright — fork Playwright — dengan Chromium headless, mengikuti pola casemix.)
 4. Apakah pipeline CI akan menggunakan GitHub Actions, GitLab CI, atau sistem internal.
 5. Di mana skill AI coding agent disimpan sesuai tool yang digunakan tim.
 6. Apakah ada persyaratan code review wajib untuk seluruh perubahan atau hanya perubahan kritis.
@@ -684,10 +684,23 @@ Kriteria berikut melengkapi kriteria penerimaan MVP pada Bab 13:
 | Audit trail append-only | Tersedia |
 | Dockerfile & Docker Compose port 8090 | Tersedia |
 | Tema UI Emboss Blue Glass (Kaca Biru Timbul) + halaman login seragam casemix | Tersedia |
+| Halaman Panduan pengguna per modul (12) dan per peran (`/panduan/`) | Tersedia; nilai aturan dibaca dari konfigurasi |
 | Skill AI coding agent (Bab 18.3) di `.claude/skills/` + tema | Tersedia (7 skill) |
 | Unit & integration test | Tersedia |
-| E2E browser (Playwright) | Belum; skenario 1, 2, 7, dan 9 baru diuji pada level HTTP |
-| E-Agenda, E-Notulen, E-Follow Up, E-Arsip lanjutan, E-Reporting | Tahap 2–3 |
+| Uji end-to-end (skill `uji-e2e`) | Tersedia: lapis 1 test client di DB dev dengan rollback (45 skenario), lapis 2 browser (menu, HP 390 px), lapis 2b alur penuh di browser; gerbang cakupan 74/74 rute; skenario PRD 18.4 C no. 1–10 lolos. Alat browser: patchright (fork Playwright) |
+| E-Agenda (jadwal, undangan, perubahan, bahan, kalender, pengingat H-1/hari-H) | Tersedia |
+| E-Notulen & Keputusan (butir keputusan, PIC, persetujuan pimpinan rapat, cetak) | Tersedia |
+| E-Follow Up (tugas dari keputusan rapat; ringkasan per rapat/unit/periode; cetak belum selesai) | Tersedia |
+| E-Arsip (arsip otomatis & manual, metadata, versi, akses, retensi, pemusnahan berjenjang) | Tersedia; retensi bawaan 5 tahun menunggu kebijakan RS |
+| E-Reporting (per periode/unit/PIC/jenis/status, waktu penyelesaian, % tepat waktu, Excel, cetak/PDF, simpan ke arsip) | Tersedia |
+| Executive Dashboard: agenda hari ini & mendatang, tindak lanjut keputusan rapat | Tersedia |
+
+### Keputusan default yang dipakai implementasi (perlu dikonfirmasi, Bab 16)
+
+- Notulen disetujui oleh pimpinan rapat (penyelenggara agenda); keputusan bertindakan menjadi tugas setelah disetujui, dengan pimpinan rapat sebagai pemeriksa.
+- Agenda dapat dibuat Direktur, Wakil Direktur, Kepala Unit, dan Sekretaris; pengingat agenda H-1 dan hari-H.
+- Retensi arsip 5 tahun sejak tanggal dokumen (dapat diatur per jenis); pemusnahan diusulkan Petugas Arsip dan disetujui Direktur dengan berita acara; berkas ditutup, metadata tetap disimpan.
+- Ekspor laporan: Excel (.xlsx) dan PDF melalui cetak browser.
 
 ### Riwayat revisi
 

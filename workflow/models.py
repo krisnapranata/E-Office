@@ -68,6 +68,10 @@ class Task(models.Model):
         "instructions.Instruction", null=True, blank=True, on_delete=models.PROTECT,
         related_name="tasks",
     )
+    decision = models.ForeignKey(
+        "notulen.MeetingDecision", null=True, blank=True, on_delete=models.PROTECT,
+        related_name="tasks", verbose_name="keputusan rapat",
+    )
     source_note = models.CharField(
         "alasan/sumber lain", max_length=255, blank=True,
         help_text="Wajib untuk penugasan langsung.",
@@ -127,6 +131,7 @@ class Task(models.Model):
                 fields=["instruction", "unit", "pic"], name="uniq_task_per_instruction_target"
             ),
             models.UniqueConstraint(fields=["disposition"], name="uniq_task_per_disposition"),
+            models.UniqueConstraint(fields=["decision", "unit", "pic"], name="uniq_task_per_decision_target"),
             models.CheckConstraint(
                 condition=Q(progress__lte=100), name="task_progress_lte_100"
             ),
@@ -164,7 +169,7 @@ class Task(models.Model):
 
     @property
     def source_object(self):
-        return self.disposition or self.instruction
+        return self.disposition or self.instruction or self.decision
 
 
 class TaskUpdate(models.Model):

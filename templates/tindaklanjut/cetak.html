@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Cetak tindak lanjut{% endblock %}
+{% block content %}
+<div class="d-flex gap-2 mb-3 d-print-none"><button type="button" class="btn btn-primary" data-print>Cetak / simpan PDF</button>
+  <a class="btn btn-outline-secondary" href="{% url 'tindaklanjut:meeting' event.pk %}">Kembali</a></div>
+<article class="paper">
+  <h2 class="h5 text-center mb-1">DAFTAR TINDAK LANJUT {% if hanya_belum %}BELUM SELESAI{% endif %}</h2>
+  <p class="text-center mb-3">{{ event.title }} — {{ event.start|date:"d F Y" }}</p>
+  <table class="table table-sm table-bordered"><thead><tr><th>No</th><th>Keputusan</th><th>PIC (unit)</th><th>Tenggat</th><th>Progres</th><th>Status</th></tr></thead><tbody>
+  {% for d, tugas in keputusan.items %}{% for t in tugas %}<tr><td>{{ d.number }}</td><td>{{ d.text|truncatechars:160 }}</td><td>{{ t.pic }} ({{ t.unit.code }})</td>
+    <td>{{ t.due_date|date:"d-m-Y" }}{% if t.is_overdue %} (terlambat){% endif %}</td><td>{{ t.progress }}%</td><td>{{ t.get_status_display }}</td></tr>{% endfor %}
+  {% empty %}<tr><td colspan="6">Tidak ada.</td></tr>{% endfor %}</tbody></table>
+  <p class="small">Dicetak {{ dicetak|date:"d-m-Y H:i" }} dari E-Office · data sesuai hak akses pencetak.</p>
+</article>
+{% endblock %}

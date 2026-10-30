@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Kalender agenda{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Kalender {{ bulan|date:"F Y" }}</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="?bulan={{ sebelum }}" aria-label="Bulan sebelumnya"><i class="bi bi-chevron-left"></i></a>
+    <a class="btn btn-outline-secondary" href="{% url 'agenda:calendar' %}">Bulan ini</a>
+    <a class="btn btn-outline-secondary" href="?bulan={{ sesudah }}" aria-label="Bulan berikutnya"><i class="bi bi-chevron-right"></i></a>
+    <a class="btn btn-outline-primary" href="{% url 'agenda:list' %}">Daftar</a>
+  </div>
+</div>
+<div class="card"><div class="table-responsive"><table class="table table-bordered mb-0 kalender">
+  <thead><tr>{% for h in nama_hari %}<th class="text-center">{{ h }}</th>{% endfor %}</tr></thead>
+  <tbody>
+  {% for minggu_ini in minggu %}<tr>
+    {% for hari, acara in minggu_ini %}
+    <td class="{% if hari.month != bulan.month %}text-muted bg-light{% endif %}{% if hari == hari_ini %} kalender-hari-ini{% endif %}">
+      <div class="d-flex justify-content-between"><span class="fw-semibold">{{ hari.day }}</span>
+        {% if can_create and hari >= hari_ini %}<a class="small text-decoration-none" href="{% url 'agenda:create' %}?tanggal={{ hari|date:'Y-m-d' }}" aria-label="Tambah agenda {{ hari|date:'d M' }}">+</a>{% endif %}</div>
+      {% for ev in acara %}<a class="d-block small text-truncate kalender-acara{% if ev.status == 'DIBATALKAN' %} text-decoration-line-through{% endif %}" href="{% url 'agenda:detail' ev.pk %}" title="{{ ev.title }}">{{ ev.start|time:"H:i" }} {{ ev.title }}</a>{% endfor %}
+    </td>{% endfor %}
+  </tr>{% endfor %}
+  </tbody></table></div></div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Pengguna{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div><h1 class="h3 mb-0">Pengguna</h1>
+    <span class="text-muted small">{{ total }} pengguna ditampilkan, dikelompokkan per bidang sesuai Master Organisasi</span></div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'organisasi:index' %}"><i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>Pilih dari pohon organisasi</a>
+    <a class="btn btn-primary" href="{% url 'pengguna:create' %}{% if f.unit %}?unit={{ f.unit }}{% endif %}">+ Tambah pengguna</a>
+  </div>
+</div>
+<form class="row g-2 mb-3 form-compact" method="get">
+  <div class="col-12 col-md-3"><label for="f-q">Cari</label><input id="f-q" name="q" value="{{ f.q }}" placeholder="nama, login, jabatan"></div>
+  <div class="col-12 col-md-4"><label for="f-unit">Unit/bidang (beserta sub-unit)</label><select id="f-unit" name="unit"><option value="">Semua unit</option>
+    {% for pk, label in opsi_unit %}<option value="{{ pk }}"{% if f.unit == pk|stringformat:'s' %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+  <div class="col-6 col-md-2"><label for="f-role">Peran</label><select id="f-role" name="role"><option value="">Semua</option>
+    {% for v, l in roles %}<option value="{{ v }}"{% if f.role == v %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="col-6 col-md-1"><label for="f-status">Status</label><select id="f-status" name="status">
+    <option value="">Aktif</option><option value="nonaktif"{% if f.status == 'nonaktif' %} selected{% endif %}>Nonaktif</option>
+    <option value="semua"{% if f.status == 'semua' %} selected{% endif %}>Semua</option></select></div>
+  <div class="col-12 col-md-2 d-flex align-items-end gap-2"><button class="btn btn-outline-primary">Terapkan</button><a class="btn btn-link" href="{% url 'pengguna:index' %}">Reset</a></div>
+</form>
+<div class="row g-4">
+  <div class="col-xl-9">
+    {% for g in grup %}
+    <section class="card mb-3"><div class="card-header d-flex justify-content-between align-items-center gap-2">
+      <span>{% if g.bidang %}<span class="org-card org-{{ g.bidang.kind|lower }} org-legenda me-1"><span class="org-badge">{{ g.bidang.get_kind_display }}</span></span>{{ g.bidang.name }}{% else %}<i class="bi bi-exclamation-triangle text-warning me-1" aria-hidden="true"></i>Belum ditempatkan di unit{% endif %}
+        <span class="text-muted small">· {{ g.pengguna|length }} orang</span></span>
+      {% if g.bidang and g.bidang.is_active %}<a class="btn btn-sm btn-outline-primary" href="{% url 'pengguna:create' %}?unit={{ g.bidang.pk }}">+ pengguna</a>{% endif %}</div>
+      <div class="table-responsive"><table class="table table-sm mb-0 align-middle">
+        <thead><tr><th>Nama</th><th>Jabatan</th><th>Unit</th><th>Peran</th><th>Atasan langsung</th><th></th></tr></thead><tbody>
+        {% for p in g.pengguna %}<tr class="{% if not p.is_active %}text-muted{% endif %}">
+          <td><a href="{% url 'pengguna:edit' p.pk %}" class="fw-semibold">{{ p.get_full_name|default:p.username }}</a>
+            <div class="small text-muted">{{ p.username }}</div></td>
+          <td>{{ p.position|default:"–" }}{% if p.is_kepala %} <span class="badge text-bg-primary">kepala</span>{% endif %}</td>
+          <td>{% if p.unit %}<a href="{% url 'organisasi:edit' p.unit_id %}">{{ p.unit.name }}</a>{% else %}–{% endif %}</td>
+          <td><span class="small">{{ p.get_role_display }}</span></td>
+          <td>{{ p.supervisor|default:"–" }}</td>
+          <td>{% if not p.is_active %}<span class="badge text-bg-dark">nonaktif</span>{% endif %}</td></tr>{% endfor %}
+        </tbody></table></div></section>
+    {% empty %}<div class="card"><div class="card-body text-muted">Tidak ada pengguna yang cocok dengan filter.</div></div>{% endfor %}
+  </div>
+  <div class="col-xl-3">
+    <section class="card mb-3"><div class="card-header">Cara cepat</div><div class="card-body small">
+      <ol class="ps-3 mb-0"><li>Buka <a href="{% url 'organisasi:index' %}">Master Organisasi</a>.</li>
+        <li>Klik ikon <i class="bi bi-person-plus" aria-hidden="true"></i> pada unit/bidang.</li>
+        <li>Isi nama &amp; login. Jabatan, peran, dan atasan langsung terisi dari struktur.</li></ol>
+      {% if tanpa_unit %}<p class="mt-2 mb-0 text-warning-emphasis"><b>{{ tanpa_unit }}</b> pengguna aktif belum punya unit.</p>{% endif %}
+    </div></section>
+    <section class="card mb-3"><div class="card-header">Unit belum ada pengguna <span class="badge text-bg-light border">{{ tanpa_pengguna|length }}</span></div>
+      <ul class="list-group list-group-flush small daftar-gulir">{% for u in tanpa_pengguna %}
+        <li class="list-group-item d-flex justify-content-between gap-2"><span>{{ u.name }}</span><a href="{% url 'pengguna:create' %}?unit={{ u.pk }}" aria-label="Tambah pengguna di {{ u.name }}" title="Tambah pengguna"><i class="bi bi-person-plus" aria-hidden="true"></i></a></li>
+      {% empty %}<li class="list-group-item text-muted">Semua unit sudah terisi.</li>{% endfor %}</ul></section>
+  </div>
+</div>
+{% endblock %}

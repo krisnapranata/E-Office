@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Notulen {{ m.event.title }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div><h1 class="h3 mb-1">Notulen: {{ m.event.title }}</h1>
+    <span class="badge text-bg-{% if m.status == 'DISETUJUI' %}success{% elif m.status == 'DIAJUKAN' %}info{% else %}secondary{% endif %}">{{ m.get_status_display }}</span>
+    <span class="badge text-bg-light border">Revisi {{ m.revision }}</span></div>
+  <div class="d-flex gap-2"><a class="btn btn-outline-secondary" href="{% url 'notulen:print' m.pk %}">Cetak</a>
+    <a class="btn btn-outline-secondary" href="{% url 'agenda:detail' m.event_id %}">Ke agenda</a></div>
+</div>
+{% if m.return_note and m.status == 'DRAF' %}<div class="alert alert-warning"><b>Dikembalikan pimpinan rapat:</b> {{ m.return_note }}</div>{% endif %}
+<div class="row g-4"><div class="col-lg-7">
+  <div class="card mb-4"><div class="card-body"><dl class="row mb-0">
+    <dt class="col-sm-4">Waktu rapat</dt><dd class="col-sm-8">{{ m.event.start|date:"l, d F Y H:i" }}</dd>
+    <dt class="col-sm-4">Pimpinan rapat</dt><dd class="col-sm-8">{{ m.event.organizer }}</dd>
+    <dt class="col-sm-4">Notulis</dt><dd class="col-sm-8">{{ m.created_by }}</dd>
+    <dt class="col-sm-4">Hadir</dt><dd class="col-sm-8">{{ hadir|join:", "|default:"–" }}{% if m.guests %}; {{ m.guests }}{% endif %}</dd>
+    <dt class="col-sm-4">Pokok pembahasan</dt><dd class="col-sm-8">{{ m.discussion|linebreaksbr }}</dd>
+    <dt class="col-sm-4">Ringkasan</dt><dd class="col-sm-8">{{ m.summary|linebreaksbr|default:"–" }}</dd>
+    <dt class="col-sm-4">Lampiran</dt><dd class="col-sm-8">{% if m.attachment %}<a href="{% url 'notulen:attachment' m.pk %}">Unduh</a>{% else %}–{% endif %}</dd>
+    {% if m.approved_at %}<dt class="col-sm-4">Disetujui</dt><dd class="col-sm-8">{{ m.approved_by }} · {{ m.approved_at|date:"d-m-Y H:i" }}</dd>{% endif %}
+  </dl></div></div>
+
+  <div class="card mb-4"><div class="card-header">Butir keputusan</div><div class="card-body">
+    {% for d in keputusan %}
+    <div class="border rounded p-3 mb-3 bg-white">
+      <div class="d-flex justify-content-between gap-2"><div><b>Keputusan {{ d.number }}.</b> {{ d.text|linebreaksbr }}</div>
+        {% if boleh_ubah %}<form method="post" action="{% url 'notulen:decision_remove' m.pk d.pk %}">{% csrf_token %}<button class="btn btn-sm btn-link text-danger" data-confirm="Hapus keputusan {{ d.number }}?">hapus</button></form>{% endif %}</div>
+      {% if d.requires_action %}
+      <div class="small text-muted mt-1">Memerlukan tindakan · prioritas {{ d.get_priority_display }} · tenggat {{ d.due_date|date:"d-m-Y" }}{% if d.completion_criteria %} · kriteria: {{ d.completion_criteria }}{% endif %}</div>
+      <div class="mt-2"><b class="small">PIC/unit:</b>
+        {% for a in d.assignees.all %}<span class="badge text-bg-light border me-1">{{ a.unit.code }} / {{ a.pic }}
+          {% if boleh_ubah %}<form method="post" action="{% url 'notulen:assignee_remove' m.pk a.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-link btn-sm p-0 text-danger" aria-label="hapus PIC">×</button></form>{% endif %}</span>
+        {% empty %}<span class="small text-danger">belum ada</span>{% endfor %}</div>
+      {% if boleh_ubah %}<form method="post" action="{% url 'notulen:assignee_add' m.pk d.pk %}" class="row g-2 mt-1 form-compact">{% csrf_token %}
+        <div class="col-sm-5">{{ assignee_form.unit }}</div><div class="col-sm-5">{{ assignee_form.pic }}</div>
+        <div class="col-sm-2"><button class="btn btn-sm btn-outline-primary w-100">Tambah PIC</button></div></form>{% endif %}
+      {% if d.tasks.all %}<div class="small mt-2">Tindak lanjut: {% for t in d.tasks.all %}<a href="{% url 'workflow:detail' t.pk %}">T-{{ t.pk }}</a> ({{ t.pic }}, {{ t.get_status_display }}){% if not forloop.last %}, {% endif %}{% endfor %}</div>{% endif %}
+      {% else %}<div class="small text-muted mt-1">Untuk diketahui (tanpa tindak lanjut).</div>{% endif %}
+    </div>
+    {% empty %}<p class="text-muted mb-0">Belum ada butir keputusan.</p>{% endfor %}
+  </div></div>
+</div>
+<div class="col-lg-5">
+  {% if boleh_ubah %}
+  <div class="card mb-3"><div class="card-header">Tambah keputusan</div><div class="card-body">
+    <form method="post" action="{% url 'notulen:decision_add' m.pk %}">{% csrf_token %}{% with form=decision_form %}{% include "_form.html" %}{% endwith %}<button class="btn btn-outline-primary">Tambah keputusan</button></form>
+  </div></div>
+  <div class="card mb-3"><div class="card-body d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'notulen:edit' m.pk %}">Ubah notulen</a>
+    <form method="post" action="{% url 'notulen:submit' m.pk %}">{% csrf_token %}<button class="btn btn-success" data-confirm="Ajukan notulen ke pimpinan rapat?">Ajukan untuk persetujuan</button></form>
+  </div></div>
+  {% endif %}
+  {% if boleh_setujui %}
+  <div class="card mb-3 border-info"><div class="card-header">Persetujuan pimpinan rapat</div><div class="card-body">
+    <form method="post" action="{% url 'notulen:approve' m.pk %}" class="mb-3">{% csrf_token %}<button class="btn btn-success" data-confirm="Setujui notulen? Keputusan yang memerlukan tindakan akan menjadi tugas.">Setujui &amp; buat tindak lanjut</button></form>
+    <form method="post" action="{% url 'notulen:return' m.pk %}">{% csrf_token %}<textarea name="note" rows="2" class="mb-2" placeholder="Catatan pengembalian" required></textarea>
+      <button class="btn btn-outline-warning btn-sm">Kembalikan ke notulis</button></form>
+  </div></div>
+  {% endif %}
+</div></div>
+{% endblock %}

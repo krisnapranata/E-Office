@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}E-Arsip{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h3 mb-0">E-Arsip</h1>
+  {% if can_create %}<a class="btn btn-primary" href="{% url 'arsip:create' %}">+ Arsipkan dokumen</a>{% endif %}</div>
+<form class="row g-2 mb-3 form-compact" method="get">
+  {% for f in form %}<div class="col-6 col-md">{{ f.label_tag }}{{ f }}</div>{% endfor %}
+  <div class="col-12 col-md-2 d-flex align-items-end gap-2"><button class="btn btn-outline-primary">Cari</button><a class="btn btn-link" href="{% url 'arsip:list' %}">Reset</a></div>
+</form>
+<p class="text-muted small">{{ page.paginator.count }} dokumen</p>
+<div class="table-responsive"><table class="table table-hover bg-white">
+<thead><tr><th>Tanggal</th><th>Jenis</th><th>Nomor</th><th>Judul</th><th>Unit</th><th>Klasifikasi</th><th>Retensi s.d.</th><th>Status</th></tr></thead><tbody>
+{% for d in page %}<tr><td class="text-nowrap">{{ d.doc_date|date:"d-m-Y" }}</td><td>{{ d.get_doc_type_display }}</td><td>{{ d.number|default:"–" }}</td>
+  <td><a href="{% url 'arsip:detail' d.pk %}">{{ d.title }}</a></td><td>{{ d.unit.code|default:"–" }}</td><td>{{ d.get_classification_display }}</td>
+  <td class="text-nowrap">{{ d.retention_until|date:"d-m-Y" }}</td><td>{{ d.get_status_display }}</td></tr>
+{% empty %}<tr><td colspan="8" class="text-muted">Tidak ada dokumen.</td></tr>{% endfor %}
+</tbody></table></div>
+{% include "_pagination.html" %}
+{% endblock %}

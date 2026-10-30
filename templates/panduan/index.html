@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Panduan{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Panduan Penggunaan E-Office</h1>
+  <span class="text-muted small">Anda masuk sebagai <b>{{ user.get_role_display }}</b>{% if user.unit %} · {{ user.unit }}{% endif %}</span>
+</div>
+
+<div class="row g-4">
+<div class="col-xl-9">
+
+  <section id="alur" class="card mb-4"><div class="card-header"><i class="bi bi-signpost-2 me-2" aria-hidden="true"></i>Alur besar E-Office</div>
+    <div class="card-body">
+      <p class="mb-3">Setiap arahan yang memerlukan tindakan menjadi <b>tugas</b> yang memiliki penanggung jawab (PIC),
+        tenggat, bukti, dan pemeriksa — lalu dipantau sampai ditutup.</p>
+      <ol class="list-unstyled panduan-alur mb-0">
+        {% for ikon, judul, teks in alur %}
+        <li class="d-flex gap-3 mb-3"><span class="panduan-ikon" aria-hidden="true"><i class="bi {{ ikon }}"></i></span>
+          <div><div class="fw-semibold">{{ judul }}</div><div class="text-muted">{{ teks|safe }}</div></div></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </section>
+
+  <section id="modul" class="card mb-4"><div class="card-header"><i class="bi bi-grid-3x3-gap me-2" aria-hidden="true"></i>Panduan per modul (12 modul)</div>
+    <div class="card-body"><div class="row g-3">
+      <div class="col-md-4 col-lg-3">
+        <div class="nav flex-column nav-pills gap-1" role="tablist" aria-orientation="vertical">
+          {% for m in modul %}
+          <button class="nav-link text-start{% if forloop.first %} active{% endif %}" id="tab-modul-{{ m.no }}" data-bs-toggle="pill" data-bs-target="#modul-{{ m.no }}"
+                  type="button" role="tab" aria-controls="modul-{{ m.no }}" aria-selected="{{ forloop.first|yesno:'true,false' }}">
+            <i class="bi {{ m.ikon }} me-1" aria-hidden="true"></i>{{ m.no }}. {{ m.nama }}</button>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-8 col-lg-9"><div class="tab-content">
+        {% for m in modul %}
+        <div class="tab-pane fade{% if forloop.first %} show active{% endif %}" id="modul-{{ m.no }}" role="tabpanel" aria-labelledby="tab-modul-{{ m.no }}">
+          <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+            <h2 class="h5 mb-1"><i class="bi {{ m.ikon }} me-2" aria-hidden="true"></i>{{ m.no }}. {{ m.nama }}</h2>
+            <a class="btn btn-sm btn-outline-primary" href="{{ m.url }}">Buka modul <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          </div>
+          <p class="mb-1">{{ m.fungsi|safe }}</p>
+          <p class="small text-muted mb-3"><b>Siapa:</b> {{ m.siapa|safe }}</p>
+          <div class="accordion mb-3" id="akordeon-modul-{{ m.no }}">
+            {% for t in m.tugas %}
+            <div class="accordion-item"><h3 class="accordion-header">
+              <button class="accordion-button{% if not forloop.first %} collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#m-{{ m.no }}-{{ forloop.counter }}"
+                      aria-expanded="{{ forloop.first|yesno:'true,false' }}">{{ t.judul }}</button></h3>
+              <div id="m-{{ m.no }}-{{ forloop.counter }}" class="accordion-collapse collapse{% if forloop.first %} show{% endif %}" data-bs-parent="#akordeon-modul-{{ m.no }}">
+                <div class="accordion-body"><ol class="mb-0">{% for l in t.langkah %}<li class="mb-1">{{ l|safe }}</li>{% endfor %}</ol></div></div>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="alert alert-light border mb-0"><b>Aturan penting:</b><ul class="mb-0">{% for x in m.aturan %}<li>{{ x|safe }}</li>{% endfor %}</ul></div>
+        </div>
+        {% endfor %}
+      </div></div>
+    </div></div>
+  </section>
+
+  <section id="peran" class="card mb-4"><div class="card-header"><i class="bi bi-person-lines-fill me-2" aria-hidden="true"></i>Panduan per peran</div>
+    <div class="card-body">
+      <ul class="nav nav-pills flex-wrap gap-1 mb-3" role="tablist">
+        {% for p in peran %}
+        <li class="nav-item" role="presentation">
+          <button class="nav-link{% if forloop.first %} active{% endif %}" id="tab-{{ p.kode }}" data-bs-toggle="pill" data-bs-target="#peran-{{ p.kode }}"
+                  type="button" role="tab" aria-controls="peran-{{ p.kode }}" aria-selected="{{ forloop.first|yesno:'true,false' }}">
+            <i class="bi {{ p.ikon }} me-1" aria-hidden="true"></i>{{ p.nama }}{% if p.milik_saya %} <span class="badge text-bg-primary ms-1">Anda</span>{% endif %}
+          </button>
+        </li>
+        {% endfor %}
+      </ul>
+      <div class="tab-content">
+        {% for p in peran %}
+        <div class="tab-pane fade{% if forloop.first %} show active{% endif %}" id="peran-{{ p.kode }}" role="tabpanel" aria-labelledby="tab-{{ p.kode }}">
+          <h2 class="h5 mb-1"><i class="bi {{ p.ikon }} me-2" aria-hidden="true"></i>{{ p.nama }}</h2>
+          <p class="mb-2">{{ p.ringkas }}</p>
+          <p class="small text-muted mb-3"><b>Yang dapat Anda lihat:</b> {{ p.lingkup|safe }}</p>
+          <div class="accordion mb-3" id="akordeon-{{ p.kode }}">
+            {% for t in p.tugas %}
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button{% if not forloop.first %} collapsed{% endif %}" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#t-{{ p.kode }}-{{ forloop.counter }}" aria-expanded="{{ forloop.first|yesno:'true,false' }}">
+                  {{ forloop.counter }}. {{ t.judul }}
+                </button>
+              </h3>
+              <div id="t-{{ p.kode }}-{{ forloop.counter }}" class="accordion-collapse collapse{% if forloop.first %} show{% endif %}" data-bs-parent="#akordeon-{{ p.kode }}">
+                <div class="accordion-body">
+                  <ol class="mb-2">{% for l in t.langkah %}<li class="mb-1">{{ l|safe }}</li>{% endfor %}</ol>
+                  {% if t.url and p.milik_saya %}<a class="btn btn-sm btn-outline-primary" href="{{ t.url }}">Buka halaman <i class="bi bi-arrow-right" aria-hidden="true"></i></a>{% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% if p.tidak %}
+          <div class="alert alert-light border mb-0"><b>Bukan wewenang peran ini:</b>
+            <ul class="mb-0">{% for x in p.tidak %}<li>{{ x }}</li>{% endfor %}</ul></div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <section id="status" class="card mb-4"><div class="card-header"><i class="bi bi-flag me-2" aria-hidden="true"></i>Status &amp; penanda tugas</div>
+    <div class="table-responsive"><table class="table mb-0">
+      <thead><tr><th>Status</th><th>Artinya</th></tr></thead><tbody>
+      {% for nama, warna, arti in status %}<tr><td class="text-nowrap"><span class="badge text-bg-{{ warna }}">{{ nama }}</span></td><td>{{ arti|safe }}</td></tr>{% endfor %}
+      {% for nama, warna, arti in penanda %}<tr><td class="text-nowrap"><span class="badge text-bg-{{ warna }} border">{{ nama }}</span> <span class="small text-muted">penanda</span></td><td>{{ arti|safe }}</td></tr>{% endfor %}
+      </tbody></table></div>
+  </section>
+
+  <section id="tampilan" class="card mb-4"><div class="card-header"><i class="bi bi-window me-2" aria-hidden="true"></i>Mengenal tampilan</div>
+    <div class="card-body"><ul class="mb-0">
+      <li class="mb-1"><b>Sidebar kiri</b>: arahkan mouse untuk melebarkan; tombol <i class="bi bi-list" aria-hidden="true"></i> di kiri atas menyematkannya agar tetap lebar. Di ponsel, tombol yang sama membuka menu.</li>
+      <li class="mb-1"><b>Kotak cari</b> (atau tekan <kbd>Ctrl</kbd>+<kbd>K</kbd>): mencari tugas berdasarkan judul/deskripsi.</li>
+      <li class="mb-1"><b>Lonceng</b>: jumlah notifikasi belum dibaca. <b>Nama Anda</b> di kanan atas: peran, unit, dan tombol <b>Keluar</b>.</li>
+      <li class="mb-1">Aksi penting (terbitkan, kirim hasil, batalkan) meminta konfirmasi sebelum dijalankan.</li>
+      <li>Pesan hijau = berhasil, merah = ditolak beserta alasannya (mis. kolom wajib belum diisi).</li>
+    </ul></div>
+  </section>
+
+  <section id="keamanan" class="card mb-4"><div class="card-header"><i class="bi bi-shield-lock me-2" aria-hidden="true"></i>Klasifikasi &amp; keamanan</div>
+    <div class="card-body"><ul class="mb-0">
+      <li class="mb-1"><b>Biasa</b>: dapat dilihat sesuai lingkup peran. <b>Terbatas</b>: sama dengan Biasa pada tahap ini, gunakan untuk dokumen internal. <b>Rahasia</b>: hanya pihak yang terlibat dan Direktur.</li>
+      <li class="mb-1">Setiap perubahan penting (penerbitan, perubahan PIC/tenggat, verifikasi, pembatalan, unduhan berkas) tercatat di <b>audit trail</b> dan tidak dapat dihapus.</li>
+      <li class="mb-1">Dokumen resmi yang sudah diterbitkan tidak dapat diubah diam-diam; perubahan dilakukan lewat pembatalan atau perubahan beralasan.</li>
+      <li>Jangan membagikan password. Tekan <b>Keluar</b> bila memakai komputer bersama.</li>
+    </ul></div>
+  </section>
+
+  <section id="faq" class="card mb-4"><div class="card-header"><i class="bi bi-question-circle me-2" aria-hidden="true"></i>Pertanyaan umum</div>
+    <div class="accordion accordion-flush" id="akordeon-faq">
+      {% for q, a in faq %}
+      <div class="accordion-item">
+        <h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq-{{ forloop.counter }}">{{ q }}</button></h3>
+        <div id="faq-{{ forloop.counter }}" class="accordion-collapse collapse" data-bs-parent="#akordeon-faq"><div class="accordion-body">{{ a|safe }}</div></div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<div class="col-xl-3 d-none d-xl-block">
+  <nav class="card panduan-toc" aria-label="Daftar isi"><div class="card-header">Daftar isi</div>
+    <div class="list-group list-group-flush">
+      <a class="list-group-item list-group-item-action" href="#alur">Alur besar</a>
+      <a class="list-group-item list-group-item-action" href="#modul">Panduan per modul</a>
+      <a class="list-group-item list-group-item-action" href="#peran">Panduan per peran</a>
+      <a class="list-group-item list-group-item-action" href="#status">Status &amp; penanda</a>
+      <a class="list-group-item list-group-item-action" href="#tampilan">Mengenal tampilan</a>
+      <a class="list-group-item list-group-item-action" href="#keamanan">Klasifikasi &amp; keamanan</a>
+      <a class="list-group-item list-group-item-action" href="#faq">Pertanyaan umum</a>
+    </div>
+    <div class="card-body small text-muted border-top">
+      Pengingat: {{ aturan.hari_pengingat }}, pukul {{ aturan.jam_pengingat }}.00<br>
+      Eskalasi: terlambat ≥ {{ aturan.hari_eskalasi }} hari<br>
+      Berkas: maks. {{ aturan.ukuran_berkas }} MB<br>
+      Pengingat agenda: {{ aturan.hari_agenda }}<br>
+      Retensi arsip: {{ aturan.tahun_retensi }} tahun
+    </div>
+  </nav>
+</div>
+</div>
+{% endblock %}

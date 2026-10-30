@@ -18,4 +18,13 @@ urlpatterns = [
     path("instruksi/", include("instructions.urls")),
     path("tugas/", include("workflow.urls")),
     path("notifikasi/", include("notifications.urls")),
+    path("agenda/", include("agenda.urls")),
+    path("notulen/", include("notulen.urls")),
+    path("tindak-lanjut/", include("tindaklanjut.urls")),
+    path("arsip/", include("arsip.urls")),
+    path("laporan/", include("laporan.urls")),
+    path("organisasi/", include("accounts.urls")),
+    path("pengguna/", include("accounts.urls_pengguna")),
+    path("panduan/", include("panduan.urls")),
+    path("pengaturan/", include("pengaturan.urls")),
 ]

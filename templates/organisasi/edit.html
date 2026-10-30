@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ unit.name }}{% endblock %}
+{% block content %}
+<nav aria-label="Jalur struktural" class="small mb-2"><a href="{% url 'organisasi:index' %}">Master Organisasi</a>
+  {% for p in jalur %} › <a href="{% url 'organisasi:edit' p.pk %}">{{ p.name }}</a>{% endfor %} › <b>{{ unit.name }}</b></nav>
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div><h1 class="h3 mb-1">{{ unit.name }}</h1>
+    <span class="org-card org-{{ unit.kind|lower }} org-legenda"><span class="org-badge">{{ unit.get_kind_display }}</span></span>
+    <span class="badge text-bg-light border">{{ unit.code }}</span>
+    <span class="badge text-bg-{{ unit.is_active|yesno:'success,dark' }}">{{ unit.is_active|yesno:"Aktif,Nonaktif" }}</span></div>
+  {% if kelola and unit.is_active %}<a class="btn btn-primary" href="{% url 'organisasi:create' %}?induk={{ unit.pk }}">+ Tambah sub-unit</a>{% endif %}
+</div>
+<div class="row g-4"><div class="col-lg-7">
+  <div class="card mb-4"><div class="card-header">{% if kelola %}Ubah data unit{% else %}Data unit{% endif %}</div><div class="card-body">
+    {% if kelola %}<form method="post">{% csrf_token %}{% include "_form.html" %}<button class="btn btn-primary">Simpan perubahan</button></form>
+    {% else %}<dl class="row mb-0">
+      <dt class="col-sm-4">Induk struktural</dt><dd class="col-sm-8">{{ unit.parent.name|default:"– (unit puncak/non-struktural)" }}</dd>
+      <dt class="col-sm-4">Kepala unit</dt><dd class="col-sm-8">{{ unit.head|default:"–" }}</dd>
+      <dt class="col-sm-4">Pengguna di unit</dt><dd class="col-sm-8">{{ anggota }}</dd></dl>{% endif %}
+  </div></div>
+  <div class="card mb-4"><div class="card-header d-flex justify-content-between align-items-center gap-2"><span>Pengguna di unit ini ({{ anggota }})</span>
+    {% if kelola and unit.is_active %}<a class="btn btn-sm btn-outline-primary" href="{% url 'pengguna:create' %}?unit={{ unit.pk }}"><i class="bi bi-person-plus me-1" aria-hidden="true"></i>Tambah pengguna</a>{% endif %}</div>
+    <ul class="list-group list-group-flush">
+    {% for p in daftar_anggota %}<li class="list-group-item">{% if kelola %}<a href="{% url 'pengguna:edit' p.pk %}">{{ p }}</a>{% else %}{{ p }}{% endif %}
+      <span class="small text-muted">{{ p.position|default:p.get_role_display }}</span>{% if unit.head_id == p.pk %} <span class="badge text-bg-primary">kepala</span>{% endif %}</li>
+    {% empty %}<li class="list-group-item text-muted">Belum ada pengguna.</li>{% endfor %}</ul></div>
+  <div class="card mb-4"><div class="card-header">Sub-unit langsung</div><ul class="list-group list-group-flush">
+    {% for c in anak %}<li class="list-group-item"><a href="{% url 'organisasi:edit' c.pk %}">{{ c.name }}</a> <span class="small text-muted">{{ c.get_kind_display }} · {{ c.code }}</span>{% if not c.is_active %} <span class="badge text-bg-dark">nonaktif</span>{% endif %}</li>
+    {% empty %}<li class="list-group-item text-muted">Tidak ada.</li>{% endfor %}</ul></div>
+</div>
+<div class="col-lg-5">
+  <div class="card mb-4"><div class="card-header">Hubungan koordinasi/pengawasan</div><ul class="list-group list-group-flush">
+    {% for r in relasi_keluar %}<li class="list-group-item d-flex justify-content-between align-items-center gap-2">
+      <span>{{ r.get_kind_display }} → <a href="{% url 'organisasi:edit' r.target_id %}">{{ r.target.name }}</a>{% if r.note %} <span class="small text-muted">{{ r.note }}</span>{% endif %}</span>
+      {% if kelola %}<form method="post" action="{% url 'organisasi:relation_remove' unit.pk r.pk %}">{% csrf_token %}<button class="btn btn-sm btn-link text-danger" data-confirm="Hapus hubungan ini?">hapus</button></form>{% endif %}</li>{% endfor %}
+    {% for r in relasi_masuk %}<li class="list-group-item"><a href="{% url 'organisasi:edit' r.unit_id %}">{{ r.unit.name }}</a> → {{ r.get_kind_display|lower }} ke unit ini</li>{% endfor %}
+    {% if not relasi_keluar and not relasi_masuk %}<li class="list-group-item text-muted">Tidak ada.</li>{% endif %}
+  </ul>
+  {% if kelola and unit.is_active %}<div class="card-body border-top"><form method="post" action="{% url 'organisasi:relation_add' unit.pk %}">{% csrf_token %}
+    {% with form=relation_form %}{% include "_form.html" %}{% endwith %}<button class="btn btn-outline-primary btn-sm">Tambah hubungan</button></form></div>{% endif %}
+  </div>
+  {% if kelola %}<div class="card mb-4 {{ unit.is_active|yesno:'border-danger,border-success' }}"><div class="card-header">Status unit</div><div class="card-body">
+    {% if unit.is_active %}
+    <p class="small">Unit nonaktif tidak bisa dipilih lagi untuk tugas, disposisi, atau instruksi baru; data lama tetap utuh. {% if anggota %}<b>{{ anggota }} pengguna</b> masih tercatat di unit ini — pindahkan bila perlu.{% endif %}</p>
+    <form method="post" action="{% url 'organisasi:deactivate' unit.pk %}">{% csrf_token %}{% with form=reason_form %}{% include "_form.html" %}{% endwith %}
+      <button class="btn btn-outline-danger btn-sm" data-confirm="Nonaktifkan unit {{ unit.name }}?">Nonaktifkan unit</button></form>
+    {% else %}<form method="post" action="{% url 'organisasi:activate' unit.pk %}">{% csrf_token %}<button class="btn btn-outline-success btn-sm">Aktifkan kembali</button></form>{% endif %}
+  </div></div>{% endif %}
+  <div class="card mb-4"><div class="card-header">Riwayat perubahan</div><ul class="list-group list-group-flush small">
+    {% for a in audit %}<li class="list-group-item">{{ a.created_at|date:"d-m-Y H:i" }} · {{ a.user|default:"sistem" }} · {{ a.action }}{% if a.changes %} · {{ a.changes }}{% endif %}</li>
+    {% empty %}<li class="list-group-item text-muted">–</li>{% endfor %}</ul></div>
+</div></div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% with u=simpul.unit %}
+<li class="org-node">
+  {% if simpul.children %}<details{% if simpul.depth < buka %} open{% endif %}><summary>{% endif %}
+  <span class="org-card org-{{ u.kind|lower }}{% if not u.is_active %} org-nonaktif{% endif %}">
+    <span class="org-badge">{{ u.get_kind_display }}</span>
+    <a class="org-nama" href="{% url 'organisasi:edit' u.pk %}">{{ u.name }}</a>
+    <span class="org-kode">{{ u.code }}</span>
+    {% if simpul.children %}<span class="org-jumlah" title="Sub-unit langsung">{{ simpul.children|length }}</span>{% endif %}
+    {% if u.head and u.head.is_active %}<span class="org-kepala" title="Kepala unit"><i class="bi bi-person-badge" aria-hidden="true"></i> {{ u.head }}</span>{% endif %}
+    {% if simpul.members %}{% if kelola %}<a class="org-orang" href="{% url 'pengguna:index' %}?unit={{ u.pk }}" title="Pengguna di unit ini (beserta sub-unit di daftar)">{% else %}<span class="org-orang">{% endif %}<i class="bi bi-people" aria-hidden="true"></i> {{ simpul.members }}{% if kelola %}</a>{% else %}</span>{% endif %}{% endif %}
+    {% if not u.is_active %}<span class="badge text-bg-dark">nonaktif</span>{% endif %}
+    {% for r in simpul.relations %}<span class="org-relasi" title="Hubungan non-struktural">{{ r.get_kind_display }} → {{ r.target.name }}</span>{% endfor %}
+    {% if kelola and u.is_active %}<a class="org-tambah" href="{% url 'pengguna:create' %}?unit={{ u.pk }}" aria-label="Tambah pengguna di {{ u.name }}" title="Tambah pengguna di unit ini"><i class="bi bi-person-plus" aria-hidden="true"></i></a>{% endif %}
+    {% if kelola and u.is_active %}<a class="org-tambah" href="{% url 'organisasi:create' %}?induk={{ u.pk }}" aria-label="Tambah sub-unit di {{ u.name }}" title="Tambah sub-unit"><i class="bi bi-plus-lg" aria-hidden="true"></i></a>{% endif %}
+  </span>
+  {% if simpul.children %}</summary>
+  <ul class="org-tree">{% for c in simpul.children %}{% include "organisasi/_simpul.html" with simpul=c %}{% endfor %}</ul>
+  </details>{% endif %}
+</li>
+{% endwith %}

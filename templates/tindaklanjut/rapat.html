@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Tindak lanjut {{ event.title }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Tindak lanjut: {{ event.title }}</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="?belum=1&cetak=1">Cetak daftar belum selesai</a>
+    {% if hanya_belum %}<a class="btn btn-outline-primary" href="?">Tampilkan semua</a>{% else %}<a class="btn btn-outline-primary" href="?belum=1">Hanya yang belum selesai</a>{% endif %}
+    {% if minutes %}<a class="btn btn-outline-secondary" href="{% url 'notulen:detail' minutes.pk %}">Notulen</a>{% endif %}
+  </div>
+</div>
+<p class="text-muted">Rapat {{ event.start|date:"l, d F Y H:i" }} · pimpinan {{ event.organizer }}</p>
+{% for d, tugas in keputusan.items %}
+<div class="card mb-3"><div class="card-header">Keputusan {{ d.number }} — tenggat {{ d.due_date|date:"d-m-Y" }}</div><div class="card-body">
+  <p>{{ d.text|linebreaksbr }}</p>
+  <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Tugas</th><th>Unit / PIC</th><th>Progres</th><th>Status</th><th>Catatan terakhir</th></tr></thead><tbody>
+  {% for t in tugas %}<tr><td><a href="{% url 'workflow:detail' t.pk %}">T-{{ t.pk }}</a></td><td>{{ t.unit.code }} / {{ t.pic }}</td><td>{{ t.progress }}%</td>
+    <td>{% include "_status.html" with s=t.status label=t.get_status_display %}{% if t.is_overdue %} <span class="badge text-bg-danger">Terlambat</span>{% endif %}</td>
+    <td class="small">{% with u=t.updates.first %}{% if u %}{% if u.obstacle %}Hambatan: {{ u.obstacle|truncatechars:80 }}{% else %}{{ u.note|default:"–"|truncatechars:80 }}{% endif %}{% else %}–{% endif %}{% endwith %}</td></tr>{% endfor %}
+  </tbody></table></div>
+</div></div>
+{% empty %}<p class="text-muted">Tidak ada tindak lanjut{% if hanya_belum %} yang belum selesai{% endif %}.</p>{% endfor %}
+{% endblock %}

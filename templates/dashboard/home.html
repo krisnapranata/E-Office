@@ -38,7 +38,17 @@
     <div class="card mb-4"><div class="card-header">Terhambat — butuh perhatian</div><ul class="list-group list-group-flush">
       {% for t in blocked %}<li class="list-group-item"><a href="{% url 'workflow:detail' t.pk %}">{{ t }}</a> <span class="text-muted small">{{ t.unit.code }} · {{ t.pic }}</span></li>
       {% empty %}<li class="list-group-item text-muted">Tidak ada.</li>{% endfor %}</ul></div>
-    <div class="card mb-4"><div class="card-header">Agenda hari ini</div><div class="card-body text-muted small">Modul E-Agenda dijadwalkan pada Tahap 2.</div></div>
+    <div class="card mb-4"><div class="card-header d-flex justify-content-between"><span>Agenda hari ini</span><a class="small" href="{% url 'agenda:calendar' %}">kalender</a></div>
+      <ul class="list-group list-group-flush">
+      {% for ev in agenda_hari_ini %}<li class="list-group-item"><b>{{ ev.start|time:"H:i" }}</b> <a href="{% url 'agenda:detail' ev.pk %}">{{ ev.title }}</a> <span class="small text-muted">{{ ev.location }}{% if ev.status == 'SELESAI' %} · selesai{% endif %}</span></li>
+      {% empty %}<li class="list-group-item text-muted small">Tidak ada agenda hari ini.</li>{% endfor %}
+      {% if agenda_mendatang %}<li class="list-group-item small text-muted fw-semibold">7 hari ke depan</li>
+      {% for ev in agenda_mendatang %}<li class="list-group-item small">{{ ev.start|date:"D d M H:i" }} · <a href="{% url 'agenda:detail' ev.pk %}">{{ ev.title }}</a></li>{% endfor %}{% endif %}
+      </ul></div>
+    <div class="card mb-4"><div class="card-header">Tindak lanjut keputusan rapat</div><div class="card-body d-flex gap-4">
+      <a class="text-decoration-none" href="{% url 'tindaklanjut:index' %}?status=terbuka"><div class="text-muted small">Belum selesai</div><div class="fs-3 fw-bold">{{ tl_terbuka }}</div></a>
+      <a class="text-decoration-none" href="{% url 'tindaklanjut:index' %}?status=terlambat"><div class="text-muted small">Terlambat</div><div class="fs-3 fw-bold text-danger">{{ tl_terlambat }}</div></a>
+    </div></div>
     {% if recent_activity %}
     <div class="card mb-4"><div class="card-header">Aktivitas terbaru</div><ul class="list-group list-group-flush small">
       {% for a in recent_activity %}<li class="list-group-item">{{ a.created_at|date:"d-m H:i" }} · {{ a.user|default:"sistem" }} · {{ a.action }} · {{ a.object_repr }}</li>{% endfor %}</ul></div>

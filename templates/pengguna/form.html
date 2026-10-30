@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<nav aria-label="Jalur" class="small mb-2"><a href="{% url 'pengguna:index' %}">Pengguna</a> › <b>{% if obj %}{{ obj }}{% else %}Tambah{% endif %}</b></nav>
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div><h1 class="h3 mb-1">{{ title }}</h1>
+    {% if obj %}<span class="badge text-bg-{{ obj.is_active|yesno:'success,dark' }}">{{ obj.is_active|yesno:"Aktif,Nonaktif" }}</span>
+    {% if obj.unit %}<a class="small ms-1" href="{% url 'organisasi:edit' obj.unit_id %}">{{ obj.unit.name }}</a>{% endif %}{% endif %}</div>
+</div>
+{{ saran|json_script:"saran-unit" }}
+<div class="row g-4"><div class="col-lg-7">
+  <div class="card mb-4"><div class="card-body">
+    <form method="post" autocomplete="off" data-pengguna-form>{% csrf_token %}{% include "_form.html" %}
+      <div id="saran-info" class="alert alert-info small py-2" hidden></div>
+      <div class="d-flex flex-wrap gap-2"><button class="btn btn-primary">Simpan</button>
+        {% if not obj %}<button class="btn btn-outline-primary" name="lagi" value="1">Simpan &amp; tambah lagi di unit ini</button>{% endif %}
+        <a class="btn btn-link" href="{% url 'pengguna:index' %}">Batal</a></div>
+    </form>
+  </div></div>
+</div>
+<div class="col-lg-5">
+  <div class="card mb-4"><div class="card-header">Diisi otomatis dari Master Organisasi</div><div class="card-body small">
+    <ul class="mb-0 ps-3">
+      <li><b>Jabatan</b>: kepala → nama jabatan unit (mis. "Kepala Seksi HRD"); staf → "Staf &lt;unit&gt;".</li>
+      <li><b>Peran</b>: kepala Direksi → Direktur; kepala Bidang/Manajer → Wakil Direktur/Manajer; kepala unit lain → Kepala Unit; selain itu Staf.</li>
+      <li><b>Atasan langsung</b>: kepala unit sendiri; untuk kepala unit → kepala unit induknya. Dipakai untuk eskalasi keterlambatan.</li>
+    </ul><p class="mb-0 mt-2 text-muted">Semua isian tetap bisa diubah sebelum disimpan.</p></div></div>
+  {% if obj %}
+  {% if bawahan %}<div class="card mb-4"><div class="card-header">Bawahan langsung ({{ bawahan|length }})</div><ul class="list-group list-group-flush small">
+    {% for b in bawahan %}<li class="list-group-item"><a href="{% url 'pengguna:edit' b.pk %}">{{ b }}</a> <span class="text-muted">{{ b.position }}</span></li>{% endfor %}</ul></div>{% endif %}
+  <div class="card mb-4 {{ obj.is_active|yesno:'border-danger,border-success' }}"><div class="card-header">Status akun</div><div class="card-body">
+    {% if obj.is_active %}<p class="small">Pengguna nonaktif tidak bisa login dan tidak bisa dipilih untuk tugas baru; riwayat tugas, surat, dan audit tetap utuh.</p>
+    <form method="post" action="{% url 'pengguna:deactivate' obj.pk %}">{% csrf_token %}<button class="btn btn-outline-danger btn-sm" data-confirm="Nonaktifkan {{ obj }}?">Nonaktifkan pengguna</button></form>
+    {% else %}<form method="post" action="{% url 'pengguna:activate' obj.pk %}">{% csrf_token %}<button class="btn btn-outline-success btn-sm">Aktifkan kembali</button></form>{% endif %}
+  </div></div>
+  <div class="card mb-4"><div class="card-header">Riwayat perubahan</div><ul class="list-group list-group-flush small">
+    {% for a in audit %}<li class="list-group-item">{{ a.created_at|date:"d-m-Y H:i" }} · {{ a.user|default:"sistem" }} · {{ a.action }}{% if a.changes %} · {{ a.changes }}{% endif %}</li>
+    {% empty %}<li class="list-group-item text-muted">–</li>{% endfor %}</ul></div>
+  {% endif %}
+</div></div>
+{% endblock %}

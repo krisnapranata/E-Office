@@ -57,6 +57,13 @@ INSTALLED_APPS = [
     "workflow",
     "notifications",
     "dashboard",
+    "agenda",
+    "notulen",
+    "tindaklanjut",
+    "arsip",
+    "laporan",
+    "panduan",
+    "pengaturan",
 ]
 
 MIDDLEWARE = [
@@ -84,10 +91,18 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "notifications.context_processors.unread_notifications",
+                "pengaturan.context_processors.mode_aplikasi",
             ],
         },
     },
 ]
+
+
+# Mode awal instalasi baru: DEMO = data contoh dimuat otomatis saat container start (sekali saja);
+# PRODUKSI = tanpa data contoh. Setelah instalasi, mode diatur dari menu Pengaturan Aplikasi (tersimpan di DB).
+EOFFICE_MODE_AWAL = env("EOFFICE_MODE_AWAL", "DEMO").upper()
+# Kata sandi akun demo_* (salah satunya Administrator). Tanpa nilai ini data demo TIDAK dimuat otomatis.
+EOFFICE_DEMO_PASSWORD = env("EOFFICE_DEMO_PASSWORD", "")
 
 
 def database_config():
@@ -155,6 +170,13 @@ EOFFICE = {
     ),
     "REMINDER_DAYS_BEFORE": [int(d) for d in env_list("EOFFICE_REMINDER_DAYS_BEFORE", "2")],
     "ESCALATION_DAYS_OVERDUE": int(env("EOFFICE_ESCALATION_DAYS_OVERDUE", "3")),
+    "REMINDER_HOUR": int(env("EOFFICE_REMINDER_HOUR", "7")),
+    # Pengingat agenda: H-1 dan hari-H (0) pada jam pengingat harian.
+    "AGENDA_REMINDER_DAYS": [int(d) for d in env_list("EOFFICE_AGENDA_REMINDER_DAYS", "1,0")],
+    # Retensi arsip (tahun) — menunggu kebijakan RS (PRD 16 no. 10). Per jenis bisa diatur, mis.
+    # EOFFICE_RETENTION_YEARS="DEFAULT=5,SURAT_MASUK=10".
+    "RETENTION_YEARS": {k.strip(): int(v) for k, v in (
+        x.split("=") for x in env_list("EOFFICE_RETENTION_YEARS", "DEFAULT=5"))},
 }
 
 # Gunakan DB Redis dan nama antrean khusus agar tidak berbagi antrean dengan aplikasi lain
@@ -166,7 +188,7 @@ CELERY_TASK_ACKS_LATE = True
 CELERY_BEAT_SCHEDULE = {
     "daily-reminders": {
         "task": "notifications.tasks.run_daily_reminders",
-        "schedule": crontab(hour=int(env("EOFFICE_REMINDER_HOUR", "7")), minute=0),
+        "schedule": crontab(hour=EOFFICE["REMINDER_HOUR"], minute=0),
     },
 }
 

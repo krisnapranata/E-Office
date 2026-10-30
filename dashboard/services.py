@@ -41,6 +41,7 @@ def summary(user, today=None):
         "pending_dispositions": visible_dispositions(user).exclude(
             status=Disposition.Status.SELESAI).count(),
         "units": unit_performance(tasks, today),
+        **agenda_dan_tindak_lanjut(user, tasks, today),
         "trend": completion_trend(tasks, today),
         "blocked": tasks.filter(status=S.TERHAMBAT).select_related("pic", "unit")[:5],
         "overdue": tasks.overdue(today).select_related("pic", "unit").order_by("due_date")[:10],
@@ -79,3 +80,20 @@ def completion_trend(tasks, today, weeks=6):
     for r in result:
         r["pct"] = round(100 * r["done"] / peak)
     return result
+
+
+def agenda_dan_tindak_lanjut(user, tasks, today):
+    from agenda.models import AgendaEvent
+    from agenda.services import visible_events
+    from workflow.models import TaskSource
+
+    # agenda hari ini tetap tampil walau sudah selesai (mis. rapat yang notulennya disetujui); yang batal tidak
+    acara = visible_events(user).exclude(status=AgendaEvent.Status.DIBATALKAN).select_related("organizer")
+    tl = tasks.filter(source_type=TaskSource.KEPUTUSAN_RAPAT)
+    return {
+        "agenda_hari_ini": acara.filter(start__date=today).order_by("start")[:8],
+        "agenda_mendatang": acara.filter(status=AgendaEvent.Status.TERJADWAL, start__date__gt=today, start__date__lte=today + timedelta(days=7))
+        .order_by("start")[:6],
+        "tl_terbuka": tl.open().count(),
+        "tl_terlambat": tl.overdue(today).count(),
+    }

@@ -22,7 +22,8 @@ Prinsip PRD Bab 12 & 17: **satu sistem, satu model Task** sebagai pusat monitori
 7. Unggahan: `FileField(upload_to=accounts.files.protected_upload_to(...), validators=[validate_upload])` dan unduh via view berizin + audit.
 8. Dashboard: angka baru harus dihitung dari queryset lingkup pengguna dan menaut ke daftar dengan filter yang sama (`dashboard/services.py`).
 9. Template extend `base.html`, judul `<h1 class="h3">`, isi dalam `.card`. Ikuti skill `emboss-blue-glass-theme`.
-10. Test: unit untuk aturan, integration untuk izin diizinkan/ditolak, tambah skenario E2E bila alur kritis (skill `eoffice-e2e-testing`).
+10. Panduan: tambahkan langkah untuk peran terkait di `panduan/konten.py` (nama tombol persis sama dengan templat).
+11. Test: unit untuk aturan, integration untuk izin diizinkan/ditolak, tambah skenario E2E bila alur kritis (skill `uji-e2e`).
 
 ## Jangan
 - Duplikasi tugas di tabel modul (PRD 6.9: "Menghindari pencatatan tugas yang sama secara terpisah").

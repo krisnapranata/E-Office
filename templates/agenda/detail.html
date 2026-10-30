@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.title }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div><h1 class="h3 mb-1">{{ ev.title }}</h1>
+    <span class="badge text-bg-{% if ev.status == 'SELESAI' %}success{% elif ev.status == 'DIBATALKAN' %}dark{% else %}primary{% endif %}">{{ ev.get_status_display }}</span>
+    <span class="badge text-bg-light border">{{ ev.get_kind_display }}</span> <span class="badge text-bg-light border">{{ ev.get_classification_display }}</span></div>
+  <a class="btn btn-outline-secondary" href="{% url 'agenda:list' %}">Kembali</a>
+</div>
+<div class="row g-4"><div class="col-lg-7">
+  <div class="card mb-4"><div class="card-body"><dl class="row mb-0">
+    <dt class="col-sm-4">Waktu</dt><dd class="col-sm-8">{{ ev.start|date:"l, d F Y H:i" }}{% if ev.end %} – {{ ev.end|date:"H:i" }}{% endif %}</dd>
+    <dt class="col-sm-4">Lokasi</dt><dd class="col-sm-8">{{ ev.location|default:"–" }}</dd>
+    <dt class="col-sm-4">Tautan daring</dt><dd class="col-sm-8">{% if ev.link %}<a href="{{ ev.link }}" target="_blank" rel="noopener">{{ ev.link }}</a>{% else %}–{% endif %}</dd>
+    <dt class="col-sm-4">Pimpinan/penyelenggara</dt><dd class="col-sm-8">{{ ev.organizer }}</dd>
+    <dt class="col-sm-4">Peserta</dt><dd class="col-sm-8">{{ peserta|join:", "|default:"–" }}</dd>
+    <dt class="col-sm-4">Catatan/acara</dt><dd class="col-sm-8">{{ ev.notes|linebreaksbr|default:"–" }}</dd>
+    {% if ev.cancelled_reason %}<dt class="col-sm-4">Alasan batal</dt><dd class="col-sm-8">{{ ev.cancelled_reason }}</dd>{% endif %}
+  </dl></div></div>
+  <div class="card mb-4"><div class="card-header">Bahan rapat/kegiatan</div><ul class="list-group list-group-flush">
+    {% for b in bahan %}<li class="list-group-item"><a href="{% url 'agenda:material_download' b.pk %}">{{ b.original_name }}</a> <span class="small text-muted">{{ b.description }} · {{ b.uploaded_by }}</span></li>
+    {% empty %}<li class="list-group-item text-muted">Belum ada bahan.</li>{% endfor %}</ul></div>
+  {% if ev.is_meeting %}
+  <div class="card mb-4"><div class="card-header">Notulen &amp; keputusan</div><div class="card-body">
+    {% if minutes %}<a href="{% url 'notulen:detail' minutes.pk %}">Buka notulen</a> · status <b>{{ minutes.get_status_display }}</b>
+      {% if minutes.status == 'DISETUJUI' %} · <a href="{% url 'tindaklanjut:meeting' ev.pk %}">Tindak lanjut keputusan</a>{% endif %}
+    {% elif boleh_notulen %}<a class="btn btn-primary" href="{% url 'notulen:create' ev.pk %}">Tulis notulen</a>
+    {% else %}<span class="text-muted">Belum ada notulen.</span>{% endif %}
+  </div></div>
+  {% endif %}
+</div>
+<div class="col-lg-5">
+  {% if boleh_bahan and ev.status != 'DIBATALKAN' %}
+  <div class="card mb-3"><div class="card-header">Unggah bahan</div><div class="card-body">
+    <form method="post" enctype="multipart/form-data" action="{% url 'agenda:material_add' ev.pk %}">{% csrf_token %}{% with form=material_form %}{% include "_form.html" %}{% endwith %}<button class="btn btn-outline-primary">Unggah</button></form>
+  </div></div>
+  {% endif %}
+  {% if kelola and ev.status == 'TERJADWAL' %}
+  <div class="card mb-3"><div class="card-header">Pengelolaan</div><div class="card-body">
+    <a class="btn btn-outline-primary btn-sm mb-3" href="{% url 'agenda:edit' ev.pk %}">Ubah jadwal/peserta</a>
+    <form method="post" action="{% url 'agenda:complete' ev.pk %}" class="mb-3">{% csrf_token %}<button class="btn btn-outline-success btn-sm">Tandai selesai</button></form>
+    <form method="post" action="{% url 'agenda:cancel' ev.pk %}">{% csrf_token %}<textarea name="reason" rows="2" placeholder="Alasan pembatalan" class="mb-2" required></textarea>
+      <button class="btn btn-outline-danger btn-sm" data-confirm="Batalkan agenda dan beri tahu peserta?">Batalkan agenda</button></form>
+  </div></div>
+  {% endif %}
+</div></div>
+{% endblock %}

@@ -52,6 +52,8 @@ class PermissionTests(TestCase):
         self.assertEqual(self.get(self.w.staf_igd, url).status_code, 200)
         self.assertEqual(self.get(self.w.staf_farmasi, url).status_code, 404)
         self.assertTrue(AuditLog.objects.filter(action="task.evidence.download").exists())
+        ev.file.storage.delete(ev.file.name)                   # berkas hilang dari penyimpanan -> 404, bukan 500
+        self.assertEqual(self.get(self.w.staf_igd, url).status_code, 404)
 
     def test_post_actions_denied_for_unrelated_user(self):
         self.client.force_login(self.w.ka_farmasi)
@@ -169,3 +171,41 @@ class InstructionToClosureFlowTests(TestCase):
 
     def test_healthz(self):
         self.assertEqual(self.client.get("/healthz").status_code, 200)
+
+
+class InstructionReadTests(TestCase):
+    def test_pic_opening_task_marks_instruction_read(self):
+        from instructions import services as ins_services
+        from instructions.models import InstructionTarget
+
+        w = f.World()
+        ins = ins_services.create_instruction(w.direktur, title="X", description="Y", instruction_date=f.today())
+        target = InstructionTarget.objects.create(instruction=ins, unit=w.igd, pic=w.staf_igd)
+        ins_services.issue(ins, w.direktur)
+        task = ins.tasks.get()
+        self.client.force_login(w.ka_igd)            # bukan PIC: tidak menandai dibaca
+        self.client.get(reverse("workflow:detail", args=[task.pk]))
+        target.refresh_from_db()
+        self.assertIsNone(target.read_at)
+        self.client.force_login(w.staf_igd)
+        self.client.get(reverse("workflow:detail", args=[task.pk]))
+        target.refresh_from_db()
+        self.assertIsNotNone(target.read_at)
+
+
+class DashboardAgendaTests(TestCase):
+    def test_today_agenda_and_follow_ups(self):
+        from django.utils import timezone
+
+        from agenda.services import cancel_event, complete_event, create_event
+
+        w = f.World()
+        now = timezone.localtime().replace(hour=10, minute=0)
+        a = create_event(w.direktur, title="Rapat pagi", kind="RAPAT", start=now)
+        b = create_event(w.direktur, title="Batal", kind="RAPAT", start=now)
+        complete_event(a, w.direktur)
+        cancel_event(b, w.direktur, "x")
+        self.client.force_login(w.direktur)
+        ctx = self.client.get(reverse("dashboard:home")).context
+        self.assertEqual([e.title for e in ctx["agenda_hari_ini"]], ["Rapat pagi"])
+        self.assertEqual(ctx["tl_terbuka"], 0)

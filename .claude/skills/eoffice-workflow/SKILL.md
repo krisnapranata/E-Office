@@ -21,12 +21,25 @@ Tabel yang sama ada di PRD Bab 8 — ubah keduanya bersamaan.
   Penerusan hanya oleh penerima disposisi asal (`parent`).
 - Setiap perubahan status → `audit.log(... "task.status" ...)` otomatis di `_set_status`.
 
+## Rapat → keputusan → tindak lanjut
+- Agenda jenis Rapat → notulen (`notulen/services.py`): Draf → Diajukan → Disetujui (kembalikan = catatan wajib, revisi +1).
+- Disetujui oleh **pimpinan rapat** (`event.organizer`) → setiap `DecisionAssignee` dari keputusan `requires_action`
+  menjadi SATU tugas `KEPUTUSAN_RAPAT` (FK `Task.decision`, unique decision+unit+pic), pemeriksa = pimpinan rapat.
+- E-Follow Up tidak punya tabel: tampilan atas tugas tersebut (`tindaklanjut/services.py`).
+
+## E-Arsip
+- `arsip.services.arsipkan*()` dipanggil dari service modul asal (surat, instruksi, bukti, bahan agenda, notulen disetujui):
+  dokumen merujuk objek asal (GenericForeignKey) dan berkasnya; berkas baru di objek yang sama = versi baru.
+- Tidak ada penghapusan. Pemusnahan: ARSIP usulkan (setelah `retention_until`) → DIREKTUR setujui + berita acara.
+- `manage.py arsip_sinkron` mengarsipkan berkas lama (idempotent).
+
 ## Reminder (`notifications/services.py::run_reminders(today)`)
 - H-n dari `settings.EOFFICE["REMINDER_DAYS_BEFORE"]` (default `[2]`), terlambat sekali per tenggat, eskalasi ke `pic.supervisor`
   (atau kepala unit) setelah `ESCALATION_DAYS_OVERDUE` hari.
 - **Idempoten** lewat `ReminderLog` unique `(task, kind, days_offset, due_date, recipient, channel)`; tenggat berubah = kunci baru.
 - Gagal kirim → status FAILED + `error`; di-retry pada run berikutnya (bukan run yang sama). Tugas tertutup tidak diingatkan.
-- Jalankan: Celery beat `notifications.tasks.run_daily_reminders` (jam `EOFFICE_REMINDER_HOUR`) atau `manage.py send_reminders --date YYYY-MM-DD`.
+- Agenda: `agenda.services.run_agenda_reminders(today)` (H-n dari `AGENDA_REMINDER_DAYS`, unik per acara+penerima+hari).
+- Jalankan: Celery beat `notifications.tasks.run_daily_reminders` (tugas + agenda, jam `EOFFICE_REMINDER_HOUR`) atau `manage.py send_reminders --date YYYY-MM-DD`.
 
 ## Celery — PERINGATAN
 Redis host dipakai aplikasi lain (db 0, antrean `celery`). E-Office **wajib** `CELERY_BROKER_URL=redis://localhost:6379/5`,

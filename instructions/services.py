@@ -4,6 +4,7 @@ from django.utils import timezone
 
 from accounts.models import Role
 from accounts.permissions import Classification, can_issue_instruction
+from arsip import services as arsip
 from audit import services as audit
 from config.numbering import next_number
 from notifications import services as notify
@@ -42,6 +43,7 @@ def create_instruction(user, **fields):
     ins.code = next_number(Instruction, "code", "INS")
     ins.save()
     audit.log(user, "instruction.create", ins)
+    arsip.arsipkan_instruksi(ins)
     return ins
 
 

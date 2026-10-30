@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Agenda{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Agenda</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-primary" href="{% url 'agenda:calendar' %}"><i class="bi bi-calendar3 me-1" aria-hidden="true"></i>Kalender</a>
+    {% if can_create %}<a class="btn btn-primary" href="{% url 'agenda:create' %}">+ Agenda baru</a>{% endif %}
+  </div>
+</div>
+<ul class="nav nav-pills mb-3">
+  <li class="nav-item"><a class="nav-link{% if tampil == 'mendatang' %} active{% endif %}" href="?tampil=mendatang">Hari ini &amp; mendatang</a></li>
+  <li class="nav-item"><a class="nav-link{% if tampil == 'lalu' %} active{% endif %}" href="?tampil=lalu">Sudah lewat</a></li>
+  <li class="nav-item"><a class="nav-link{% if tampil == 'semua' %} active{% endif %}" href="?tampil=semua">Semua</a></li>
+</ul>
+<div class="table-responsive"><table class="table table-hover bg-white">
+<thead><tr><th>Waktu</th><th>Agenda</th><th>Jenis</th><th>Lokasi</th><th>Penyelenggara</th><th>Status</th></tr></thead><tbody>
+{% for ev in page %}
+<tr><td class="text-nowrap">{{ ev.start|date:"D, d M Y H:i" }}</td>
+  <td><a href="{% url 'agenda:detail' ev.pk %}">{{ ev.title }}</a></td><td>{{ ev.get_kind_display }}</td>
+  <td>{{ ev.location|default:"–" }}{% if ev.link %} <i class="bi bi-camera-video" aria-label="daring"></i>{% endif %}</td>
+  <td>{{ ev.organizer }}</td><td><span class="badge text-bg-{% if ev.status == 'SELESAI' %}success{% elif ev.status == 'DIBATALKAN' %}dark{% else %}primary{% endif %}">{{ ev.get_status_display }}</span></td></tr>
+{% empty %}<tr><td colspan="6" class="text-muted">Tidak ada agenda.</td></tr>{% endfor %}
+</tbody></table></div>
+{% include "_pagination.html" %}
+{% endblock %}
