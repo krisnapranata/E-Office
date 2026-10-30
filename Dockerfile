@@ -28,4 +28,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
     CMD python -c "import os,urllib.request; urllib.request.urlopen(f'http://127.0.0.1:{os.environ.get(\"PORT\",\"8090\")}/healthz', timeout=4)"
 
 ENTRYPOINT ["/app/docker/entrypoint.sh"]
-CMD ["sh", "-c", "exec gunicorn config.wsgi:application --bind 0.0.0.0:${PORT} --workers ${GUNICORN_WORKERS:-3} --timeout 60 --access-logfile -"]
+# Peran container: web | worker | beat (lihat docker/entrypoint.sh)
+CMD ["web"]

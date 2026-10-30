@@ -1,0 +1,37 @@
+# PENGEMBANGAN LOKAL: E-Office di port 8090 memakai MariaDB/MySQL dan Redis yang sudah ada di host.
+#   docker compose -f docker-compose.lokal.yml up -d --build
+# Server produksi memakai docker-compose.yml (pola SIMBAK: DB & Redis sendiri + Nginx Proxy Manager).
+# network_mode: host membuat DB_HOST=localhost di .env merujuk ke host, bukan ke container.
+x-app: &app
+  build: .
+  image: eoffice:latest
+  env_file: .env
+  network_mode: host
+  volumes:
+    - eoffice_media:/app/media
+  restart: unless-stopped
+
+services:
+  web:
+    <<: *app
+    container_name: eoffice-web
+    command: ["web"]            # migrate + data demo (bila Mode Demo) + Gunicorn
+    environment:
+      PORT: "8090"
+
+  worker:
+    <<: *app
+    container_name: eoffice-worker
+    command: ["worker"]
+    healthcheck:
+      disable: true
+
+  beat:
+    <<: *app
+    container_name: eoffice-beat
+    command: ["beat"]
+    healthcheck:
+      disable: true
+
+volumes:
+  eoffice_media:

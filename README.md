@@ -95,16 +95,16 @@ python manage.py send_reminders --date 2026-11-02
 
 ## Docker (port 8090)
 
-`docker-compose.yml` menjalankan `web` (Gunicorn, port 8090), `worker`, dan `beat` dengan
-`network_mode: host` sehingga `DB_HOST=localhost` dan Redis `localhost` di `.env` merujuk ke
-MariaDB/Redis di host.
+Dua berkas Compose:
 
-```bash
-docker compose up -d --build        # web menjalankan migrate otomatis (RUN_MIGRATIONS=1)
-docker compose exec web python manage.py createsuperuser
-curl http://localhost:8090/healthz
-docker compose logs -f web worker beat
-```
+| Berkas | Dipakai di | Isi |
+|---|---|---|
+| `docker-compose.yml` | **server produksi** (pola SIMBAK) | `eoffice_db` (MariaDB 10.11), `eoffice_redis`, `eoffice_web`, `eoffice_worker`, `eoffice_beat`, `eoffice_nginx` (port host 8090, ikut network Nginx Proxy Manager) |
+| `docker-compose.lokal.yml` | mesin pengembang | `network_mode: host`, memakai MariaDB/Redis yang sudah ada di host |
+
+Peran container ditentukan argumen entrypoint: `web` (migrate + data demo bila Mode Demo + Gunicorn),
+`worker`, `beat`. Hanya `eoffice_nginx` yang dibuka ke host dan tergabung di network NPM; ia memanggil
+backend dengan nama container unik `eoffice_web` (bukan "web") agar tidak tertukar dengan aplikasi lain.
 
 > Celery memakai DB Redis dan antrean khusus (`redis://localhost:6379/5`, antrean `eoffice`).
 > Jangan arahkan ke DB/antrean yang dipakai aplikasi lain: worker akan mengonsumsi dan membuang
@@ -113,11 +113,19 @@ docker compose logs -f web worker beat
 ### Deploy ke server (clone pertama) dan Mode Demo
 
 ```bash
-git clone https://github.com/krisnapranata/E-Office.git && cd E-Office
-cp .env.example .env               # isi DJANGO_SECRET_KEY, DB_*, ALLOWED_HOSTS, dan EOFFICE_DEMO_PASSWORD
-docker compose up -d --build       # migrate + struktur RSI Yatofa + data demo (Mode Demo, sekali saja)
+cd /srv && git clone https://github.com/krisnapranata/E-Office.git eoffice && cd eoffice
+cp deploy/env.production.contoh .env.production   # isi SECRET_KEY, domain, sandi DB, EOFFICE_DEMO_PASSWORD
+cp deploy/env.db.contoh .env.db                   # sandi DB harus sama dengan DB_PASSWORD
+docker inspect proxy-npm-1 -f '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}'
+#   bila hasilnya bukan proxy_default: echo "NPM_NETWORK=<nama>" > .env
+docker compose up -d --build
 docker compose exec web python manage.py createsuperuser   # admin ASLI, wajib untuk reset nanti
 ```
+
+Di Nginx Proxy Manager: Proxy Host baru → domain E-Office → Forward `http` ke `eoffice_nginx` port `80`,
+aktifkan SSL; di tab Advanced set `client_max_body_size 12m;`. Setelah HTTPS jalan, ubah
+`DJANGO_SECURE_COOKIES=true` di `.env.production` lalu `docker compose up -d`.
+Backup DB: `docker exec eoffice_db sh -c 'mariadb-dump -u root -p"$MARIADB_ROOT_PASSWORD" eoffice' > eoffice.sql`.
 
 - Instalasi baru berjalan dalam **Mode Demo** (`EOFFICE_MODE_AWAL=DEMO`): saat container start,
   `demo_otomatis` memuat 69 akun `demo_*` (sandi = `EOFFICE_DEMO_PASSWORD`) dan contoh isian semua

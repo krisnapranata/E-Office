@@ -9,3 +9,5 @@ staticfiles
 *.pptx
 *.jpeg
 docs
+.env.production
+.env.db

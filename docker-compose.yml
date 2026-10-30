@@ -1,35 +1,102 @@
-# Menjalankan E-Office di port 8090 memakai MariaDB/MySQL dan Redis yang sudah ada di host.
-# network_mode: host membuat DB_HOST=localhost di .env merujuk ke host, bukan ke container.
+# E-OFFICE RSI Yatofa — produksi (pola sama dengan SIMBAK). Jalankan dari folder ini:
+#   cp deploy/env.production.contoh .env.production && cp deploy/env.db.contoh .env.db   # lalu isi
+#   docker compose up -d --build
+# Container & volume diberi awalan "eoffice" supaya tidak bentrok dengan aplikasi lain.
+# Mesin pengembang yang memakai MariaDB/Redis host: docker-compose.lokal.yml.
+name: eoffice
+
 x-app: &app
-  build: .
-  image: eoffice:latest
-  env_file: .env
-  network_mode: host
-  volumes:
-    - eoffice_media:/app/media
+  image: eoffice-web:latest
   restart: unless-stopped
+  env_file: .env.production
+  volumes:
+    - media:/app/media          # lampiran & bukti (diunduh lewat Django setelah cek izin)
 
 services:
+  db:
+    image: mariadb:10.11
+    container_name: eoffice_db
+    restart: unless-stopped
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    env_file: .env.db
+    environment:
+      TZ: Asia/Makassar
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: eoffice_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
   web:
     <<: *app
-    container_name: eoffice-web
+    build: .
+    container_name: eoffice_web
+    command: ["web"]            # migrate + data demo (bila Mode Demo) + Gunicorn :8000
     environment:
-      RUN_MIGRATIONS: "1"
-      PORT: "8090"
+      PORT: "8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   worker:
     <<: *app
-    container_name: eoffice-worker
-    command: sh -c 'exec celery -A config worker --loglevel=info --concurrency=2 -Q $${CELERY_QUEUE:-eoffice}'
+    pull_policy: never          # image dibangun oleh service web
+    container_name: eoffice_worker
+    command: ["worker"]
     healthcheck:
       disable: true
+    depends_on:
+      web:
+        condition: service_healthy
 
   beat:
     <<: *app
-    container_name: eoffice-beat
-    command: celery -A config beat --loglevel=info --schedule /tmp/celerybeat-schedule
+    pull_policy: never
+    container_name: eoffice_beat
+    command: ["beat"]           # pengingat & eskalasi harian (EOFFICE_REMINDER_HOUR)
     healthcheck:
       disable: true
+    depends_on:
+      web:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: eoffice_nginx
+    restart: unless-stopped
+    ports:
+      - "${EOFFICE_PORT:-8090}:80"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      web:
+        condition: service_healthy
+    networks:
+      - default
+      - npm   # supaya Nginx Proxy Manager bisa memanggil "eoffice_nginx:80" tanpa IP
+
+networks:
+  # Network milik Nginx Proxy Manager (sama dengan SIMBAK). Cek nama di server:
+  #   docker inspect proxy-npm-1 -f '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}'
+  # Bila berbeda: tulis NPM_NETWORK=nama_network di file .env (folder ini), lalu docker compose up -d
+  npm:
+    external: true
+    name: ${NPM_NETWORK:-proxy_default}
 
 volumes:
-  eoffice_media:
+  db_data:
+  redis_data:
+  media:
