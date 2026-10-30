@@ -1,0 +1,133 @@
+AKUN DEMO E-OFFICE RSI YATOFA
+=============================
+
+Alamat aplikasi : (isi alamat server, mis. https://eoffice.domain-rs.id)
+Kata sandi      : sama untuk semua akun demo; lihat EOFFICE_DEMO_PASSWORD di
+                  .env.production server (tanyakan ke administrator)
+Jumlah akun     : 69 pegawai fiktif, satu atau lebih di setiap unit
+
+Catatan:
+- Nama pegawai FIKTIF, hanya untuk latihan dan presentasi.
+- Semua login berawalan demo_ dan dihapus sekaligus saat Reset data demo
+  (menu Pengaturan Aplikasi) sebelum aplikasi dipakai sungguhan.
+- Jangan dibagikan di luar tim; ganti kata sandi bila dipakai lebih luas.
+
+
+MULAI DARI SINI (10 akun untuk mengenal alur)
+---------------------------------------------
+Direktur               demo_ahmad.fauzi           dr. H. Ahmad Fauzi, M.Kes
+Sekretaris Direktur    demo_siti.nurhaliza        Siti Nurhaliza, A.Md
+Kabid Pelayanan        demo_budi.santoso          dr. Budi Santoso, MM
+Kabid Keuangan         demo_hendro.kusumo         Hendro Kusumo, SE, Ak
+Kepala IGD             demo_eko.saputra           dr. Eko Saputra
+Staf IGD               demo_fajar.nugroho         Ns. Fajar Nugroho, S.Kep
+Kepala Farmasi         demo_dian.purnamasari      apt. Dian Purnamasari, S.Farm
+Petugas Arsip          demo_rahayu.ningsih        Rahayu Ningsih, A.Md
+Auditor (Kepala SPI)   demo_bambang.supriyadi     Drs. Bambang Supriyadi, Ak.
+Administrator          demo_dimas.aditya          Dimas Aditya, S.Kom
+
+Saran urutan: Auditor (aman, hanya baca) -> Direktur -> Sekretaris -> Kabid
+Pelayanan -> Kepala IGD -> Staf IGD -> Kabid Keuangan -> Arsip & Admin.
+
+
+DAFTAR LENGKAP PER BIDANG
+-------------------------
+
+[Direktur RSI Yatofa]
+  demo_ahmad.fauzi             dr. H. Ahmad Fauzi, M.Kes          Direktur                   Direktur RSI Yatofa
+  demo_siti.nurhaliza          Siti Nurhaliza, A.Md               Sekretaris/Admin Direktur  Sekretaris Direktur
+
+[Satuan Pengawas Internal (SPI)]
+  demo_bambang.supriyadi       Drs. Bambang Supriyadi, Ak.        Auditor/Reviewer           Kepala Satuan Pengawas Internal (SPI)
+
+[Komite Medik]
+  demo_hendra.wijaya           dr. Hendra Wijaya, Sp.PD           Kepala Unit/Instalasi      Ketua Komite Medik
+
+[Komite Keperawatan]
+  demo_sri.wahyuni             Ns. Sri Wahyuni, S.Kep             Kepala Unit/Instalasi      Ketua Komite Keperawatan
+
+[Komite PPI]
+  demo_rina.kartika            dr. Rina Kartika, Sp.MK            Kepala Unit/Instalasi      Ketua Komite PPI
+
+[Komite Kesehatan Lainnya]
+  demo_yuni.astuti             Yuni Astuti, S.Gz                  Kepala Unit/Instalasi      Ketua Komite Kesehatan Lainnya
+
+[Komite K3RS]
+  demo_agus.salim              Agus Salim, S.KM                   Kepala Unit/Instalasi      Ketua Komite K3RS
+
+[Komite KMKP]
+  demo_nurul.hidayah           dr. Nurul Hidayah, MARS            Kepala Unit/Instalasi      Ketua Komite KMKP
+
+[Komite Farmasi & Terapi]
+  demo_lukman.hakim            apt. Lukman Hakim, S.Farm          Kepala Unit/Instalasi      Ketua Komite Farmasi & Terapi
+
+[Komite Etik RS]
+  demo_imam.santoso            dr. Imam Santoso, Sp.OG            Kepala Unit/Instalasi      Ketua Komite Etik RS
+
+[Komite PPRA]
+  demo_fitri.handayani         dr. Fitri Handayani, Sp.A          Kepala Unit/Instalasi      Ketua Komite PPRA
+
+[Casemix & Asuransi Lainnya]
+  demo_rudi.hartono            Rudi Hartono, S.Kom                Kepala Unit/Instalasi      Koordinator Casemix & Asuransi
+  demo_ayu.pratiwi             Ayu Pratiwi, A.Md.RMIK             Staf/PIC                   Staf Casemix & Asuransi Lainnya
+
+[Kepala Bidang Pelayanan]
+  demo_budi.santoso            dr. Budi Santoso, MM               Wakil Direktur/Manajer     Kepala Bidang Pelayanan
+  demo_indah.permatasari       dr. Indah Permatasari, MARS        Wakil Direktur/Manajer     Manager Pelayanan Pasien
+  demo_arif.rahman             dr. Arif Rahman                    Kepala Unit/Instalasi      Kepala Seksi Pelayanan Medik
+  demo_wahyu.hidayat           Ns. Wahyu Hidayat, S.Kep           Kepala Unit/Instalasi      Kepala Instalasi Rawat Inap
+  demo_rizki.amalia            Ns. Rizki Amalia, S.Kep            Staf/PIC                   Staf Instalasi Rawat Inap
+  demo_maya.sari               dr. Maya Sari                      Kepala Unit/Instalasi      Kepala Instalasi Rawat Jalan
+  demo_ani.rahmawati           Ani Rahmawati, A.Md.Kep            Staf/PIC                   Staf Instalasi Rawat Jalan
+  demo_teguh.prasetyo          dr. Teguh Prasetyo, Sp.B           Kepala Unit/Instalasi      Kepala Instalasi Bedah Sentral
+  demo_dedi.kurniawan          Ns. Dedi Kurniawan, S.Kep          Staf/PIC                   Staf Instalasi Bedah Sentral
+  demo_eko.saputra             dr. Eko Saputra                    Kepala Unit/Instalasi      Kepala Instalasi Gawat Darurat
+  demo_fajar.nugroho           Ns. Fajar Nugroho, S.Kep           Staf/PIC                   Staf Instalasi Gawat Darurat
+  demo_lina.marlina            Ns. Lina Marlina, S.Kep            Staf/PIC                   Staf Instalasi Gawat Darurat
+  demo_ratna.dewi              dr. Ratna Dewi                     Kepala Unit/Instalasi      Kepala Seksi Pelayanan Penunjang
+  demo_yuliana                 Yuliana, S.Gz                      Kepala Unit/Instalasi      Kepala Instalasi Gizi
+  demo_sri.mulyani             Sri Mulyani, A.Md.Gz               Staf/PIC                   Staf Instalasi Gizi
+  demo_dian.purnamasari        apt. Dian Purnamasari, S.Farm      Kepala Unit/Instalasi      Kepala Instalasi Farmasi
+  demo_rahmat.hidayat          apt. Rahmat Hidayat, S.Farm        Staf/PIC                   Staf Instalasi Farmasi
+  demo_nita.anggraini          Nita Anggraini, A.Md.Farm          Staf/PIC                   Staf Instalasi Farmasi
+  demo_herlina                 dr. Herlina, Sp.PK                 Kepala Unit/Instalasi      Kepala Instalasi Laboratorium
+  demo_andi.setiawan           Andi Setiawan, A.Md.AK             Staf/PIC                   Staf Instalasi Laboratorium
+  demo_gunawan                 dr. Gunawan, Sp.Rad                Kepala Unit/Instalasi      Kepala Instalasi Radiologi
+  demo_hadi.susanto            Hadi Susanto, A.Md.Rad             Staf/PIC                   Staf Instalasi Radiologi
+  demo_endang.susilowati       Ns. Endang Susilowati, S.Kep       Kepala Unit/Instalasi      Kepala Instalasi Pusat Sterilisasi
+  demo_muhammad.iqbal          Muhammad Iqbal, S.Kom              Kepala Unit/Instalasi      Kepala Instalasi Rekam Medis & SIM RS
+  demo_dimas.aditya            Dimas Aditya, S.Kom                Administrator Sistem       Administrator Sistem E-Office
+  demo_putri.ramadhani         Putri Ramadhani, A.Md.RMIK         Staf/PIC                   Staf Instalasi Rekam Medis & SIM RS
+  demo_suharto                 Suharto, S.KM                      Kepala Unit/Instalasi      Kepala Instalasi Kesehatan Lingkungan
+  demo_kartini                 Ns. Hj. Kartini, S.Kep, M.Kep      Kepala Unit/Instalasi      Kepala Seksi Keperawatan
+  demo_retno.wulandari         Ns. Retno Wulandari, S.Kep         Kepala Unit/Instalasi      Koordinator Asuhan Keperawatan
+  demo_yanti.susanti           Ns. Yanti Susanti, S.Kep           Kepala Unit/Instalasi      Koordinator Etik dan Mutu
+
+[Kepala Bidang Keuangan]
+  demo_hendro.kusumo           Hendro Kusumo, SE, Ak              Wakil Direktur/Manajer     Kepala Bidang Keuangan
+  demo_novita.sari             Novita Sari, SE                    Kepala Unit/Instalasi      Koordinator Perencanaan Anggaran
+  demo_taufik.hidayat          Taufik Hidayat, SE                 Kepala Unit/Instalasi      Koordinator Akuntansi & Pelaporan
+  demo_mega.puspita            Mega Puspita, SE                   Staf/PIC                   Staf Akuntansi & Pelaporan
+  demo_rina.wati               Rina Wati, SE                      Kepala Unit/Instalasi      Bendahara
+  demo_sari.indah              Sari Indah, A.Md                   Kepala Unit/Instalasi      Koordinator Kasir
+  demo_wulan.dari              Wulan Dari                         Staf/PIC                   Staf Kasir
+
+[Kepala Bidang Umum & Kepegawaian]
+  demo_slamet.riyadi           Drs. Slamet Riyadi, MM             Wakil Direktur/Manajer     Kepala Bidang Umum & Kepegawaian
+  demo_anisa.rahma             Anisa Rahma, S.I.Kom               Kepala Unit/Instalasi      Kepala Seksi Humas & PKRS
+  demo_fikri.maulana           Fikri Maulana, S.I.Kom             Kepala Unit/Instalasi      Koordinator Humas & Pemasaran
+  demo_desi.ratnasari          Desi Ratnasari, S.KM               Kepala Unit/Instalasi      Koordinator Promosi Kesehatan RS
+  demo_sugeng.widodo           Sugeng Widodo, SE                  Kepala Unit/Instalasi      Kepala Seksi Administrasi dan Rumah Tangga
+  demo_lestari.handayani       Lestari Handayani, A.Md            Kepala Unit/Instalasi      Koordinator Tata Usaha
+  demo_rahayu.ningsih          Rahayu Ningsih, A.Md               Petugas Arsip              Petugas Arsip
+  demo_heru.prasetya           Heru Prasetya, S.ST                Kepala Unit/Instalasi      Koordinator Pelaporan
+  demo_supardi                 Supardi                            Kepala Unit/Instalasi      Koordinator Rumah Tangga
+  demo_dwi.cahyono             Dwi Cahyono                        Kepala Unit/Instalasi      Koordinator Inventori
+  demo_bagus.wicaksono         Ir. Bagus Wicaksono                Kepala Unit/Instalasi      Kepala IPSRS
+  demo_rohman                  Rohman                             Staf/PIC                   Teknisi IPSRS
+  demo_erna.wijayanti          Erna Wijayanti, S.Psi              Kepala Unit/Instalasi      Kepala Seksi HRD
+  demo_ratih.kumalasari        Ratih Kumalasari, SE               Kepala Unit/Instalasi      Koordinator Personalia
+  demo_galih.pratama           dr. Galih Pratama                  Kepala Unit/Instalasi      Koordinator Diklat
+  demo_sutrisno                Sutrisno                           Kepala Unit/Instalasi      Kepala Seksi Keamanan
+  demo_bayu.saputra            Bayu Saputra                       Staf/PIC                   Anggota Satpam
+  demo_joko.susilo             Joko Susilo                        Staf/PIC                   Anggota Satpam
