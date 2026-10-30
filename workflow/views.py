@@ -24,7 +24,7 @@ from .models import Task, TaskEvidence, TaskSource, TaskStatus
 def filter_tasks(user, params):
     """Filter server-side; dipakai oleh daftar monitoring dan tautan angka dashboard."""
     form = TaskFilterForm(params or None)
-    qs = visible_tasks(user).select_related("pic", "unit")
+    qs = visible_tasks(user).select_related("pic", "unit", *Task.RELASI_PEMBERI)
     if form.is_valid():
         d = form.cleaned_data
         if d["q"]:
@@ -96,7 +96,7 @@ def task_create(request):
 
 
 def _get_task(request, pk):
-    task = get_object_or_404(Task.objects.select_related("pic", "unit", "verifier", "created_by"),
+    task = get_object_or_404(Task.objects.select_related("pic", "unit", "verifier", *Task.RELASI_PEMBERI),
                              pk=pk)
     if not can_view_task(request.user, task):
         # 404 agar keberadaan tugas terbatas tidak terungkap lewat tebakan URL.

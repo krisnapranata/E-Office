@@ -15,7 +15,8 @@ ALUR = [
      "(agenda → notulen disetujui), atau <b>penugasan langsung</b> oleh atasan. Semuanya menjadi <b>tugas</b> dengan "
      "PIC, tenggat, dan pemeriksa (verifikator)."),
     ("bi-person-check", "2. PIC menerima",
-     "PIC mendapat notifikasi <i>Tugas baru</i>, membuka tugas, lalu menekan <b>Terima tugas</b>."),
+     "PIC mendapat notifikasi <i>Tugas baru</i>, membuka tugas, lalu menekan <b>Terima tugas</b>. Nama pemberi tugas "
+     "(beserta jabatannya) tertera di bawah judul tugas, di Beranda, dan di daftar tugas."),
     ("bi-graph-up-arrow", "3. Dikerjakan & dilaporkan",
      "PIC melaporkan progres (%), menandai <b>Terhambat</b> bila ada kendala, dan mengunggah <b>bukti</b>."),
     ("bi-send-check", "4. Hasil dikirim",

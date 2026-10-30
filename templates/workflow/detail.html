@@ -7,6 +7,7 @@
     {% include "_status.html" with s=task.status label=task.get_status_display %}
     {% if task.is_overdue %}<span class="badge text-bg-danger">Terlambat</span>{% endif %}
     {% if task.classification != 'BIASA' %}<span class="badge text-bg-light border">{{ task.get_classification_display }}</span>{% endif %}
+    <div class="mt-1">{% include "workflow/_pemberi.html" with t=task tanggal=True %}</div>
   </div>
   <a class="btn btn-outline-secondary" href="{% url 'workflow:list' %}"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Kembali</a>
 </div>
@@ -68,6 +69,7 @@
 <div class="col-lg-7 order-lg-1">
   <div class="card mb-4"><div class="card-body">
     <dl class="row mb-0 info-tugas">
+      {% with p=task.pemberi %}<dt class="col-sm-4">Diberikan oleh</dt><dd class="col-sm-8">{{ p }}{% if p|jabatan %} <span class="text-muted">· {{ p|jabatan }}</span>{% endif %} <span class="text-muted small">· {{ task.created_at|date:"d-m-Y H:i" }}</span></dd>{% endwith %}
       <dt class="col-sm-4">Penanggung jawab</dt><dd class="col-sm-8">{{ task.pic }} <span class="text-muted">· {{ task.unit }}</span></dd>
       <dt class="col-sm-4">Tenggat</dt><dd class="col-sm-8">{{ task.due_date|date:"d-m-Y"|default:"–" }}{% if task.due_label %} ({{ task.due_label }}){% endif %}{% if task.start_date %} <span class="text-muted small">· mulai {{ task.start_date|date:"d-m-Y" }}</span>{% endif %}</dd>
       <dt class="col-sm-4">Progres</dt><dd class="col-sm-8"><div class="progress"><div class="progress-bar" style="width:{{ task.progress }}%">{{ task.progress }}%</div></div></dd>

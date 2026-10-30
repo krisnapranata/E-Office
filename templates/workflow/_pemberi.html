@@ -1,0 +1,1 @@
+{% load tugas %}{% with p=t.pemberi %}<span class="pemberi"><i class="bi bi-person-badge me-1" aria-hidden="true"></i>Dari <b>{{ p }}</b>{% if p|jabatan %} · {{ p|jabatan }}{% endif %}{% if tanggal %} · {{ t.created_at|date:"d M Y" }}{% endif %}</span>{% endwith %}

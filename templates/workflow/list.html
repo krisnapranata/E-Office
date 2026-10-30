@@ -24,7 +24,7 @@
 {% for t in page %}
 <tr>
   <td><a class="fw-semibold" href="{% url 'workflow:detail' t.pk %}">{{ t }}</a>
-    <div class="small text-muted">{{ t.get_source_type_display }} · {{ t.unit.code }}{% if t.priority == 'TINGGI' or t.priority == 'MENDESAK' %} · <span class="text-danger">prioritas {{ t.get_priority_display|lower }}</span>{% endif %}</div></td>
+    <div class="small text-muted">dari {{ t.pemberi }} · {{ t.get_source_type_display }} · {{ t.unit.code }}{% if t.priority == 'TINGGI' or t.priority == 'MENDESAK' %} · <span class="text-danger">prioritas {{ t.get_priority_display|lower }}</span>{% endif %}</div></td>
   <td>{{ t.pic }}</td>
   <td class="text-nowrap">{{ t.due_date|date:"d-m-Y"|default:"–" }}{% if t.is_overdue %} <span class="badge text-bg-danger">Terlambat</span>{% endif %}</td>
   <td>{% include "_status.html" with s=t.status label=t.get_status_display %}

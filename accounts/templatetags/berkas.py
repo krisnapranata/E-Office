@@ -25,3 +25,4 @@ def tombol_berkas(url, nama, label=""):
 def pratinjau_berkas(url, nama):
     """Berkas ditampilkan langsung di halaman (PDF dalam bingkai, gambar sebagai gambar)."""
     return {"url": url, "nama": nama, "jenis": jenis_pratinjau(nama)}
+

@@ -88,11 +88,15 @@ def _(u):
            ada=["sudah ditutup"])
 
 
-@skenario("tugas", "PIC minta keputusan → muncul di Beranda Direktur → Beri arahan → PIC dinotifikasi; bukti PDF dilihat di browser",
+@skenario("tugas", "PIC melihat pemberi tugas → minta keputusan → muncul di Beranda Direktur → Beri arahan → PIC dinotifikasi; bukti PDF dilihat di browser",
           crud=True, role="ka_igd", menu=["dashboard:home", "workflow:direction", "workflow:evidence_download"])
 def _(u):
     t = _langsung(u, f"{JUDUL_QA} Ganti kompresor")
     u.sebagai("staf_igd")
+    pemberi = str(u.w.ka_igd)                                   # PIC harus tahu siapa yang memberi tugas
+    u.get("/", ada=[f"Dari {pemberi}"])
+    u.get(url("workflow:detail", t.pk), ada=["Diberikan oleh", pemberi])
+    u.get(url("workflow:list"), ada=[f"dari {pemberi}"])
     u.post(url("workflow:accept", t.pk), harap=302)
     u.post(url("workflow:progress", t.pk), {"progress": 20, "status": "TERHAMBAT", "obstacle": "Kompresor rusak",
                                             "decision_needed": "Setujui pembelian kompresor QA"}, harap=302)

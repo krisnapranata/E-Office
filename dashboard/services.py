@@ -117,20 +117,20 @@ def beranda(user, today=None):
         kabar.append({"urut": urut, "ikon": ikon, "warna": warna, "judul": judul, "teks": teks, "ket": ket,
                       "url": url, "tombol": tombol, "keputusan": keputusan})
 
-    milik = Task.objects.filter(pic=user).select_related("unit", "created_by")
+    milik = Task.objects.filter(pic=user).select_related("unit", *Task.RELASI_PEMBERI)
     for t in milik.filter(status=S.MENUNGGU_PENERIMAAN).order_by("due_date")[:10]:
         tambah(1, "bi-inbox", "primary", "Tugas baru untuk Anda", t.title,
-               f"Dari {t.created_by} · tenggat {_tgl(t.due_date)}", reverse("workflow:detail", args=[t.pk]),
+               f"{_dari(t)} · tenggat {_tgl(t.due_date)}", reverse("workflow:detail", args=[t.pk]),
                "Lihat & terima")
     for t in milik.filter(status=S.PERLU_PERBAIKAN).order_by("due_date")[:10]:
         tambah(2, "bi-arrow-counterclockwise", "warning", "Hasil Anda perlu diperbaiki", t.title,
-               f"Tenggat {_tgl(t.due_date)}", reverse("workflow:detail", args=[t.pk]), "Perbaiki")
+               f"{_dari(t)} · tenggat {_tgl(t.due_date)}", reverse("workflow:detail", args=[t.pk]), "Perbaiki")
     dekat = milik.filter(status__in=[S.BELUM_DIMULAI, S.BERJALAN, S.TERHAMBAT], due_date__lte=today + timedelta(days=2))
     for t in dekat.order_by("due_date")[:10]:
         telat = t.due_date < today
         tambah(3, "bi-alarm", "danger" if telat else "warning",
                "Tugas Anda terlambat" if telat else "Tenggat tugas sudah dekat", t.title,
-               f"Tenggat {_tgl(t.due_date)} · progres {t.progress}%", reverse("workflow:detail", args=[t.pk]),
+               f"{_dari(t)} · tenggat {_tgl(t.due_date)} · progres {t.progress}%", reverse("workflow:detail", args=[t.pk]),
                "Laporkan progres")
     periksa = Task.objects.filter(verifier=user, status=S.MENUNGGU_VERIFIKASI).select_related("pic")
     for t in periksa.order_by("submitted_at")[:10]:
@@ -154,6 +154,13 @@ def beranda(user, today=None):
 
     aktif = milik.exclude(status__in=[*CLOSED_STATUSES, S.DRAF]).order_by(F("due_date").asc(nulls_last=True))
     return {"kabar": kabar, "tugas_saya": aktif[:6], "jumlah_tugas_saya": aktif.count()}
+
+
+def _dari(t):
+    from workflow.templatetags.tugas import jabatan
+
+    p = t.pemberi
+    return f"Dari {p}" + (f" ({jabatan(p)})" if jabatan(p) else "")
 
 
 def _tgl(d):

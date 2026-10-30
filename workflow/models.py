@@ -171,6 +171,33 @@ class Task(models.Model):
     def source_object(self):
         return self.disposition or self.instruction or self.decision
 
+    # Relasi yang dibutuhkan `pemberi`/`asal_singkat`; pakai di select_related agar daftar tidak N+1.
+    RELASI_PEMBERI = ("created_by__unit", "disposition__from_user__unit", "disposition__letter",
+                      "instruction__created_by__unit", "instruction__on_behalf_of__unit",
+                      "decision__minutes__event__organizer__unit")
+
+    @property
+    def pemberi(self):
+        """Orang yang SEBENARNYA memberi tugas (bukan sekadar yang mengetik): pemberi disposisi, pemberi instruksi
+        (termasuk 'atas nama'), pimpinan rapat untuk keputusan rapat, atau pembuat penugasan langsung."""
+        if self.disposition_id:
+            return self.disposition.from_user
+        if self.instruction_id:
+            return self.instruction.issuer
+        if self.decision_id:
+            return self.decision.minutes.event.organizer
+        return self.created_by
+
+    @property
+    def asal_singkat(self):
+        if self.disposition_id:
+            return f"Disposisi surat: {self.disposition.letter.subject}"
+        if self.instruction_id:
+            return f"Instruksi {self.instruction.code}: {self.instruction.title}"
+        if self.decision_id:
+            return f"Keputusan rapat: {self.decision.minutes.event.title}"
+        return f"Penugasan langsung{': ' + self.source_note if self.source_note else ''}"
+
 
 class TaskUpdate(models.Model):
     """Riwayat progres/komentar/hambatan yang dilaporkan PIC."""
